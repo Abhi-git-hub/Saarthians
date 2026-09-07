@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
+import { TestPlayer } from "./test-player";
 
 export default async function TestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,17 +29,7 @@ export default async function TestDetailPage({ params }: { params: Promise<{ id:
         <strong>{questions.length} question{questions.length === 1 ? "" : "s"}</strong>
         {test.duration_seconds ? <span style={{ color: "var(--muted)", marginLeft: 12 }}>{Math.ceil(test.duration_seconds / 60)} minutes</span> : null}
       </div>
-      <section style={{ marginTop: 36, display: "grid", gap: 14 }}>
-        {questions.map((question, index) => (
-          <article key={question.id} style={{ border: "1px solid var(--line)", borderRadius: 20, padding: 24, background: "white" }}>
-            <span className="eyebrow">Question {index + 1} · {question.points} pts</span>
-            <h2 style={{ fontSize: 20, lineHeight: 1.4, margin: "14px 0 0" }}>{question.prompt}</h2>
-          </article>
-        ))}
-      </section>
-      <div style={{ marginTop: 28, padding: 18, borderRadius: 16, background: "#eef2ec", color: "var(--muted)", lineHeight: 1.6, fontSize: 14 }}>
-        Attempt submission is intentionally gated until the server-side grading workflow is enabled. Your browser will never be trusted to calculate or persist a score.
-      </div>
+      <TestPlayer testId={test.id} questions={questions} />
     </main>
   );
 }
