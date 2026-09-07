@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Role } from "@/lib/security";
 
@@ -30,10 +31,28 @@ export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> 
   return { id: userId, email, role: profile.role as Role };
 }
 
+export function homeForRole(role: Role) {
+  switch (role) {
+    case "admin":
+      return "/admin";
+    case "teacher":
+      return "/teacher";
+    case "student":
+    default:
+      return "/app";
+  }
+}
+
 export async function requireRole(allowed: Role[]): Promise<AuthenticatedUser> {
   const user = await getAuthenticatedUser();
-  if (!user || !allowed.includes(user.role)) {
-    throw new Error("AUTHORIZATION_REQUIRED");
+
+  if (!user) {
+    redirect("/login?reason=signin_required");
   }
+
+  if (!allowed.includes(user.role)) {
+    redirect(homeForRole(user.role));
+  }
+
   return user;
 }
