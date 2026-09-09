@@ -25,7 +25,7 @@ export async function createTeacherTest(input: unknown) {
   await requireRole(["teacher", "admin"]);
   const parsed = testSchema.parse(input);
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("create_test", {
+  const { data, error } = await supabase.rpc("create_teacher_test", {
     p_title: parsed.title,
     p_instructions: parsed.instructions,
     p_duration_seconds: parsed.durationSeconds,
@@ -64,6 +64,6 @@ export async function publishTeacherTest(testId: string) {
   await requireRole(["teacher", "admin"]);
   if (!z.string().uuid().safeParse(testId).success) throw new Error("Invalid test.");
   const supabase = await createClient();
-  const { error } = await supabase.rpc("publish_test", { p_test_id: testId });
+  const { error } = await supabase.rpc("publish_teacher_test", { p_test_id: testId });
   if (error) throw new Error("Unable to publish the test.");
 }
