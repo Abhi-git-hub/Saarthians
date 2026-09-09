@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "saarthians",
+  "name": "saarthians-production",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-08",
   "compatibility_flags": ["nodejs_compat"],
@@ -11,19 +11,14 @@
   "observability": {
     "enabled": true
   },
-  "env": {
-    "production": {
-      "name": "saarthians-production",
-      "routes": [
-        { "pattern": "saarthians.online/login", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/login/*", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/app", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/app/*", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/teacher", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/teacher/*", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/admin", "zone_name": "saarthians.online" },
-        { "pattern": "saarthians.online/admin/*", "zone_name": "saarthians.online" }
-      ]
-    }
-  }
+  "routes": [
+    { "pattern": "saarthians.online/login", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/login/*", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/app", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/app/*", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/teacher", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/teacher/*", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/admin", "zone_name": "saarthians.online" },
+    { "pattern": "saarthians.online/admin/*", "zone_name": "saarthians.online" }
+  ]
 }
