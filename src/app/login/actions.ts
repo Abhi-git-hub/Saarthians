@@ -43,3 +43,35 @@ export async function signInWithIdentifier(input: { identifier: string; password
   const redirectTo = safeNext ?? (profile.role === "admin" ? "/admin" : profile.role === "teacher" ? "/teacher" : "/app");
   return { ok: true, redirectTo };
 }
+
+// Completes a password-recovery flow. Requires the recovery session established
+// by the emailed link (exchanged server-side on the reset page) — an arbitrary
+// signed-out caller cannot change anyone's password through this action.
+type RecoveryResult = { ok: true } | { error: string };
+
+export async function updateRecoveryPassword(input: { password: string; confirm: string }): Promise<RecoveryResult> {
+  const { password, confirm } = input;
+
+  if (typeof password !== "string" || password.length < 10 || password.length > 128) {
+    return { error: "Use a password between 10 and 128 characters." };
+  }
+  if (password !== confirm) {
+    return { error: "The two passwords do not match." };
+  }
+
+  const supabase = await createClient();
+  const { data: authUser } = await supabase.auth.getUser();
+  if (!authUser.user) {
+    return { error: "This reset link is invalid or has expired. Request a new link and try again." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) {
+    return { error: "We couldn't update your password. Request a fresh link and try again." };
+  }
+
+  // End the single-purpose recovery session so the new password is verified
+  // through a normal login immediately afterwards.
+  await supabase.auth.signOut();
+  return { ok: true };
+}

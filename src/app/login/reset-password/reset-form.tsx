@@ -1,22 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { updateRecoveryPassword } from "../actions";
 
-export function PasswordResetForm() {
+type Mode = "request" | "update" | "invalid";
+
+export function PasswordResetForm({ initialMode }: { initialMode: Mode }) {
+  const router = useRouter();
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [email, setEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [isRecovery, setIsRecovery] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
+  // Legacy implicit-flow links (#access_token=...&type=recovery) establish the
+  // session on the client and emit PASSWORD_RECOVERY — upgrade to the update
+  // form when that happens.
   useEffect(() => {
     const supabase = createClient();
     const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setIsRecovery(true);
+      if (event === "PASSWORD_RECOVERY") setMode("update");
     });
-
     return () => data.subscription.unsubscribe();
   }, []);
 
@@ -27,8 +35,10 @@ export function PasswordResetForm() {
     setError(null);
 
     const supabase = createClient();
+    // The callback exchanges the emailed code for a session server-side
+    // (reliable cookie handling) and returns to this page with a session.
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/login/reset-password`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/login/reset-password`,
     });
 
     if (resetError) setError("We couldn't send the reset email. Check the address and try again.");
@@ -43,32 +53,41 @@ export function PasswordResetForm() {
     setMessage(null);
     setError(null);
 
-    if (newPassword.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    const result = await updateRecoveryPassword({ password: newPassword, confirm: confirmPassword });
+    if ("error" in result) {
+      setError(result.error);
       setPending(false);
       return;
     }
 
-    const supabase = createClient();
-    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
-
-    if (updateError) setError("We couldn't update your password. Request a fresh reset link and try again.");
-    else setMessage("Password updated. Return to the sign-in page and use your new password.");
-
-    setPending(false);
+    router.replace("/login?reset=success");
+    router.refresh();
   }
 
-  if (isRecovery) {
+  if (mode === "update") {
     return (
       <form onSubmit={updatePassword} className="auth-form">
         <label className="field-label">
           New password
-          <input required minLength={8} maxLength={128} type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+          <input required minLength={10} maxLength={128} type="password" autoComplete="new-password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Minimum 10 characters" />
+        </label>
+        <label className="field-label">
+          Confirm new password
+          <input required minLength={10} maxLength={128} type="password" autoComplete="new-password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
         </label>
         {error && <p role="alert" className="form-error">{error}</p>}
         {message && <p role="status" className="auth-hint">{message}</p>}
         <button disabled={pending} type="submit" className="primary-button">{pending ? "Updating…" : "Update password →"}</button>
       </form>
+    );
+  }
+
+  if (mode === "invalid") {
+    return (
+      <div className="auth-form">
+        <p role="alert" className="form-error">This reset link is invalid or has expired. Links work best when opened in the same browser they were requested from.</p>
+        <button type="button" className="primary-button" onClick={() => { setMode("request"); setError(null); }}>Request a new link →</button>
+      </div>
     );
   }
 
