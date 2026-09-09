@@ -8,14 +8,24 @@ import { requireRole } from "@/lib/auth";
 const uuid = z.string().uuid();
 
 export async function startTest(testId: string) {
-  await requireRole(["student"]);
+  const user = await requireRole(["student"]);
   const parsed = uuid.safeParse(testId);
   if (!parsed.success) return { error: "Invalid test." };
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("start_test_attempt", { p_test_id: parsed.data });
-  if (error) return { error: "This test is not available." };
-  return { attemptId: data as string };
+  if (error || !data) return { error: "This test is not available." };
+
+  const attemptId = String(data);
+  const { data: attempt, error: attemptError } = await supabase
+    .from("test_attempts")
+    .select("id,started_at")
+    .eq("id", attemptId)
+    .eq("student_id", user.id)
+    .single();
+
+  if (attemptError || !attempt) return { error: "This test could not be started safely." };
+  return { attemptId, startedAt: attempt.started_at };
 }
 
 export async function saveAnswer(input: { attemptId: string; questionId: string; answer: unknown }) {
