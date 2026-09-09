@@ -9,6 +9,15 @@
 --   * the parent test must still be a draft (published tests are immutable),
 --   * inputs are validated server-side,
 --   * revoked from anon/public, granted only to authenticated.
+--
+-- Drift note: production already contains an older delete_test_question(uuid)
+-- with a different return type, which CREATE OR REPLACE cannot change (error
+-- 42P13). Drop first so this file applies cleanly on fresh and drifted
+-- databases alike. Nothing in the app depends on the old variant — the editor
+-- was broken precisely because no compatible version existed.
+
+drop function if exists public.upsert_test_question(uuid, uuid, text, text, jsonb, jsonb, numeric, integer);
+drop function if exists public.delete_test_question(uuid);
 
 create or replace function public.upsert_test_question(
   p_question_id uuid default null,
