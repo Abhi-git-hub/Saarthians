@@ -27,7 +27,7 @@ export default async function StudentWorkspace() {
         <section className="dashboard-grid two-column">
           <article className="surface-card">
             <div className="section-heading"><div><span className="eyebrow">Continue</span><h2>Pick up where you left off.</h2></div><Link href="/app/results" className="text-link">View results →</Link></div>
-            {latestAttempt ? <div className="focus-row"><div><strong>{latestAttempt.tests?.title ?? "Assessment"}</strong><span>{latestAttempt.status.replaceAll("_", " ")}</span></div><div className="focus-score">{latestAttempt.score !== null && latestAttempt.max_score ? `${Math.round(Number(latestAttempt.score) / Number(latestAttempt.max_score) * 100)}%` : "—"}</div></div> : <div className="empty-state">Your first assessment will appear here once you start one.</div>}
+            {latestAttempt ? <div className="focus-row"><div><strong>{latestAttempt.tests?.[0]?.title ?? "Assessment"}</strong><span>{latestAttempt.status.replaceAll("_", " ")}</span></div><div className="focus-score">{latestAttempt.score !== null && latestAttempt.max_score ? `${Math.round(Number(latestAttempt.score) / Number(latestAttempt.max_score) * 100)}%` : "—"}</div></div> : <div className="empty-state">Your first assessment will appear here once you start one.</div>}
           </article>
           <article className="surface-card">
             <div className="section-heading"><div><span className="eyebrow">Your rhythm</span><h2>Keep the next step obvious.</h2></div></div>
