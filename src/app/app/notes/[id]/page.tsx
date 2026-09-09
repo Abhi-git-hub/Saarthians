@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { updateNote } from "../actions";
+import { updateNote } from "../../actions";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function NotePage({ params }: { params: Promise<{ id: string }> }) {
