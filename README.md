@@ -36,5 +36,6 @@ npm run lint
 npm test
 npm run build
 ```
+**Still in the making**
 
 See [`docs/PRD.md`](docs/PRD.md) and [`docs/TRD.md`](docs/TRD.md) for the product and technical contract.
