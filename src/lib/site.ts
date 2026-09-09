@@ -76,6 +76,32 @@ export const COURSES: Course[] = [
 // pages never render broken-image icons.
 export const BRAND_IMAGES = {
   logo: "/images/saarthi-logo.png",
-  signature: "/images/founder-signature.png",
+  signature: "/images/founder-signature.jpg",
   classroom: "/images/classroom.jpg",
 };
+
+export type Review = {
+  name: string;
+  meta: string;
+  stars: number;
+  text: string;
+  ownerResponse?: string;
+};
+
+// Verbatim excerpts from the Saarthi Classes Google Maps listing (truncation
+// marked with …). Never invent reviewer names, stars, or words.
+export const REVIEWS: Review[] = [
+  {
+    name: "Pragya Sharma",
+    meta: "Google review · 2 months ago",
+    stars: 5,
+    text: "Sarthi Classes provides an excellent learning experience. Abhi Sir is an outstanding teacher with remarkable concept clarity and a unique way of explaining topics that makes even difficult concepts easy to understand…",
+  },
+  {
+    name: "Google review",
+    meta: "5 stars · 2 months ago",
+    stars: 5,
+    text: "Sarthi Classes is one of the best coaching institutes I have come across…",
+    ownerResponse: "Response from the owner: Thanks for the descriptive review!",
+  },
+];
