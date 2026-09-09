@@ -24,7 +24,7 @@ export async function createTest(formData: FormData) {
 
   if (error || !data) throw new Error("TEST_CREATION_FAILED");
   revalidatePath("/teacher/tests");
-  redirect(`/teacher/tests/${data}`);
+  redirect(`/teacher/tests/${data}/edit`);
 }
 
 export async function publishTest(testId: string) {

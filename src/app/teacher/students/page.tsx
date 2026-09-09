@@ -17,7 +17,7 @@ export default async function TeacherStudentsPage() {
         <section style={{ marginTop: 36, border: "1px solid var(--line)", borderRadius: 20, padding: 28, background: "white" }}>
           <span className="eyebrow">No learners yet</span>
           <h2 style={{ margin: "12px 0 8px", fontSize: 24 }}>Your student roster is empty.</h2>
-          <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.65 }}>Student-teacher assignment will be added through the controlled onboarding flow rather than a client-editable role field.</p>
+          <p style={{ margin: 0, color: "var(--muted)", lineHeight: 1.65 }}>Students appear here once an administrator assigns them to your account.</p>
         </section>
       ) : (
         <section style={{ marginTop: 36, display: "grid", gap: 12 }}>
