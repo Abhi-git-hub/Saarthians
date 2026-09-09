@@ -16,7 +16,17 @@ export async function signInWithIdentifier(input: { identifier: string; password
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password: input.password });
 
-  if (error) return { error: "We couldn't sign you in. Check your credentials and try again." };
+  // Only reached after a correct password, so distinguishing the cause here
+  // does not aid account enumeration — but it tells the user what to fix.
+  if (error) {
+    if (/email not confirmed/i.test(error.message)) {
+      return { error: "This account's email is not confirmed yet. Ask the administrator to confirm it, then try again." };
+    }
+    if (/invalid login credentials/i.test(error.message)) {
+      return { error: "We couldn't sign you in. Check your username and password and try again." };
+    }
+    return { error: "We couldn't sign you in. Check your credentials and try again." };
+  }
 
   const { data: authUser } = await supabase.auth.getUser();
   const { data: profile } = authUser.user
