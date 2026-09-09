@@ -26,46 +26,141 @@ function Stars({ count }: { count: number }) {
   );
 }
 
+const principles = [
+  ["01", "Attention is personal", "Small batches mean Abhi Sir knows exactly where each student stands — which concept clicked, which doubt keeps returning, what to revise next."],
+  ["02", "Concepts before shortcuts", "Every chapter is taught until it feels obvious. Tests and tricks come after understanding, never instead of it."],
+  ["03", "Progress you can see", "Regular tests, honest feedback, and a workspace where students, teachers and parents watch understanding grow week by week."],
+];
+
+const signals = [
+  ["6", "Programs", "Classes 9–12, all subjects, plus NEET & JEE tracks."],
+  ["9–12", "Grades covered", "The full secondary + senior-secondary arc in one place."],
+  ["2", "Entrance tracks", "Dedicated NEET and JEE preparation alongside boards."],
+  ["5★", "Google reviews", "Five-star parent reviews on our Maps listing."],
+];
+
 export default function Home() {
   return (
     <main className="public-site">
       <PublicHeader />
 
-      <section className="public-hero">
+      <section className="public-hero hero-story">
         <div className="container public-hero-grid">
           <div className="public-hero-copy">
             <span className="eyebrow">Saarthi Classes · Shahdara, Delhi</span>
-            <h1>Classes 9–12, all subjects.<br /><em>NEET & JEE coaching.</em></h1>
-            <p>Saarthians brings notes, assessments, progress and intelligent learning support into one calm workspace — built around the classroom teaching of Saarthi Classes.</p>
+            <h1>Where Shahdara comes <em>to understand.</em></h1>
+            <p>Classes 9–12 in every subject, with NEET & JEE coaching built in — taught by teachers students describe as patient, personal, and relentlessly clear.</p>
             <div className="hero-actions">
-              <Link href="/login" className="public-button public-button-primary">Enter your workspace →</Link>
-              <a href={whatsAppLink("Hi Saarthi Classes, I would like to know more about admission for Classes 9–12 / NEET / JEE.")} target="_blank" rel="noreferrer" className="public-button public-button-secondary">WhatsApp {WHATSAPP_DISPLAY}</a>
+              <a href={whatsAppLink("Hi Saarthi Classes, I would like to know more about admission.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Talk to Saarthi →</a>
+              <Link href="/programs" className="public-button public-button-secondary">Explore programs</Link>
             </div>
-            <div className="hero-proof"><span>01</span><p>Concept-first teaching for school and competitive exams, with personal mentoring from the founder.</p></div>
+            <div className="hero-trust">
+              <Stars count={5} />
+              <p><strong>Loved by parents on Google.</strong><br />Real 5-star reviews on our Maps listing — read them below.</p>
+            </div>
           </div>
-          <div className="hero-visual tilt">
+          <div className="hero-visual hero-arch">
             <SafeImage src={BRAND_IMAGES.classroom} alt="Inside a Saarthi Classes classroom" eager />
-            <div className="hero-float-card float"><strong>Learn deeply.</strong><span>Notes · Tests · Progress · AI</span></div>
+            <div className="hero-seal"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthi Classes seal" eager /><span>Guiding towards success</span></div>
+            <div className="hero-float-card float"><strong>Doubts cleared daily.</strong><span>Ask anything · No hesitation</span></div>
           </div>
         </div>
       </section>
 
-      <section className="public-marquee" aria-label="Saarthians values">
-        <div>CLASSES 9–12 · ALL SUBJECTS</div><span>•</span><div>NEET COACHING</div><span>•</span><div>JEE COACHING</div><span>•</span><div>CLASSES 9–12 · ALL SUBJECTS</div>
+      <section className="trust-ticker" aria-label="What reviewers mention">
+        <div className="trust-ticker-track">
+          {["CONCEPT CLARITY", "DOUBT CLEARING", "PERSONAL ATTENTION", "REGULAR TESTS", "PATIENT TEACHING", "PARENT TRUST"].concat(["CONCEPT CLARITY", "DOUBT CLEARING", "PERSONAL ATTENTION", "REGULAR TESTS", "PATIENT TEACHING", "PARENT TRUST"]).map((item, i) => (
+            <span key={i}>{item}<i>✦</i></span>
+          ))}
+        </div>
       </section>
 
-      <section className="public-section container" id="experience">
+      <section className="public-section container" id="why">
         <Reveal>
           <div className="section-intro">
-            <div><span className="eyebrow">The Saarthians experience</span><h2>Everything important,<br /><em>in one place.</em></h2></div>
-            <p>A premium learning environment without the clutter. Every surface is designed to make the next useful action obvious.</p>
+            <div><span className="eyebrow">Why Saarthians</span><h2>Teaching that treats every child <em>as capable.</em></h2></div>
+            <p>Parents keep describing the same three things. So we built the whole experience around them.</p>
           </div>
         </Reveal>
-        <div className="feature-grid">
-          <Reveal delay={60} className="span-all"><article className="feature-card feature-card-large lift"><span>01</span><h3>Notes that stay useful.</h3><p>Write, organize and revisit learning material without losing the thread.</p><div className="feature-image"><SafeImage src={BRAND_IMAGES.classroom} alt="Saarthi Classes classroom" /></div></article></Reveal>
-          <Reveal delay={120}><article className="feature-card lift"><span>02</span><h3>Tests that show what to fix.</h3><p>Practice, submit and turn results into clear areas for improvement.</p><div className="mini-stat"><strong>9–12</strong><span>NEET · JEE</span></div></article></Reveal>
-          <Reveal delay={180}><article className="feature-card dark-card lift"><span>03</span><h3>Progress you can understand.</h3><p>See patterns across your learning instead of chasing isolated marks.</p><div className="progress-lines"><i style={{ width: "82%" }} /><i style={{ width: "64%" }} /><i style={{ width: "91%" }} /></div></article></Reveal>
-          <Reveal delay={240}><article className="feature-card feature-card-image logo-card lift"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthi Classes — guiding towards success" /><div><span>04</span><h3>Better teaching visibility.</h3><p>Teachers get focused tools for students, materials and assessments.</p></div></article></Reveal>
+        <ol className="principle-list">
+          {principles.map(([n, title, body], i) => (
+            <Reveal key={n} delay={i * 90}>
+              <li><span>{n}</span><div><h3>{title}</h3><p>{body}</p></div></li>
+            </Reveal>
+          ))}
+        </ol>
+      </section>
+
+      <section className="experience-band">
+        <div className="container experience-grid">
+          <Reveal className="experience-media">
+            <SafeImage src={BRAND_IMAGES.classroom} alt="Students learning at Saarthi Classes" />
+            <p className="media-caption">A real classroom in Shahdara — whiteboard, trophies, and chairs that fill up.</p>
+          </Reveal>
+          <div>
+            <Reveal>
+              <span className="eyebrow">The learning experience</span>
+              <h2>Understand in class.<br /><em>Prove it in the workspace.</em></h2>
+            </Reveal>
+            <ul className="experience-rows">
+              <Reveal delay={60}><li><strong>Learn</strong><p>Concept-first classroom teaching for Classes 9–12, NEET and JEE.</p></li></Reveal>
+              <Reveal delay={120}><li><strong>Practice</strong><p>Notes, assignments and server-graded tests inside the student workspace.</p></li></Reveal>
+              <Reveal delay={180}><li><strong>Improve</strong><p>Results become visible patterns — teachers intervene before small gaps grow.</p></li></Reveal>
+            </ul>
+            <Reveal delay={220}><Link href="/login" className="text-link-big">Enter the student workspace →</Link></Reveal>
+          </div>
+        </div>
+      </section>
+
+      <section className="public-section container" id="signals">
+        <Reveal>
+          <div className="section-intro compact">
+            <div><span className="eyebrow">Honest signals</span><h2>Only what we can <em>actually claim.</em></h2></div>
+          </div>
+        </Reveal>
+        <dl className="signal-grid">
+          {signals.map(([value, label, note], i) => (
+            <Reveal key={label} delay={i * 80}>
+              <div className="signal"><dt>{value}</dt><dd><strong>{label}</strong><span>{note}</span></dd></div>
+            </Reveal>
+          ))}
+        </dl>
+      </section>
+
+      <section className="public-section reviews-section" id="reviews">
+        <div className="container">
+          <Reveal>
+            <div className="section-intro">
+              <div><span className="eyebrow">Wall of love</span><h2>Parents notice.<br /><em>Students feel it.</em></h2></div>
+              <p>Unedited excerpts from our Google Maps listing — with a link to read every word in context.</p>
+            </div>
+          </Reveal>
+          <div className="testimonial-stage">
+            <Reveal delay={80}>
+              <figure className="testimonial-feature lift">
+                <Stars count={REVIEWS[0].stars} />
+                <blockquote>“{REVIEWS[0].text}”</blockquote>
+                <figcaption><strong>{REVIEWS[0].name}</strong><span>{REVIEWS[0].meta}</span></figcaption>
+              </figure>
+            </Reveal>
+            <div className="testimonial-side">
+              <Reveal delay={160}>
+                <figure className="testimonial lift">
+                  <Stars count={REVIEWS[1].stars} />
+                  <blockquote>“{REVIEWS[1].text}”</blockquote>
+                  <figcaption><strong>{REVIEWS[1].name}</strong><span>{REVIEWS[1].meta}</span></figcaption>
+                  {REVIEWS[1].ownerResponse && <p className="review-owner">{REVIEWS[1].ownerResponse}</p>}
+                </figure>
+              </Reveal>
+              <Reveal delay={220}>
+                <a className="testimonial-more lift" href={MAPS_PLACE_URL} target="_blank" rel="noreferrer">
+                  <Stars count={5} />
+                  <p><strong>Read every review — or leave your own.</strong></p>
+                  <span>Open Google Maps →</span>
+                </a>
+              </Reveal>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -73,42 +168,23 @@ export default function Home() {
         <Reveal>
           <div className="section-intro">
             <div><span className="eyebrow">Courses</span><h2>9th to 12th, all subjects.<br /><em>NEET & JEE included.</em></h2></div>
-            <p>Complete classroom coaching for secondary and senior-secondary science — plus dedicated medical and engineering entrance preparation.</p>
+            <p>Six focused tracks. One rhythm: understand, practice, review, improve.</p>
           </div>
         </Reveal>
-        <div className="feature-grid">
+        <div className="course-rows">
           {COURSES.map((course, i) => (
-            <Reveal key={course.tag} delay={(i % 3) * 80}><article className="feature-card lift"><span>{course.tag}</span><h3>{course.title}</h3><p>{course.body}</p></article></Reveal>
-          ))}
-        </div>
-      </section>
-
-      <section className="public-section container" id="reviews">
-        <Reveal>
-          <div className="section-intro">
-            <div><span className="eyebrow">Wall of love</span><h2>Parents notice.<br /><em>Students feel it.</em></h2></div>
-            <p>Real reviews from the Saarthi Classes Google listing — unedited excerpts, linked to the source.</p>
-          </div>
-        </Reveal>
-        <div className="review-track">
-          {REVIEWS.map((review, i) => (
-            <Reveal key={review.name} delay={i * 100}>
-              <article className="review-card lift">
-                <Stars count={review.stars} />
-                <p>“{review.text}”</p>
-                <div className="review-who"><strong>{review.name}</strong><span>{review.meta}</span></div>
-                {review.ownerResponse && <p className="review-owner">{review.ownerResponse}</p>}
+            <Reveal key={course.tag} delay={Math.min(i, 2) * 70}>
+              <article className="course-row">
+                <span className="course-tag">{course.tag}</span>
+                <div><h3>{course.title}</h3><p>{course.body}</p></div>
+                <a className="course-cta" href={whatsAppLink(`Hi Saarthi Classes, I want details about ${course.title}.`)} target="_blank" rel="noreferrer" aria-label={`Ask about ${course.title} on WhatsApp`}>Ask →</a>
               </article>
             </Reveal>
           ))}
-          <Reveal delay={200}>
-            <a className="review-card review-more lift" href={MAPS_PLACE_URL} target="_blank" rel="noreferrer">
-              <Stars count={5} />
-              <p><strong>Read every review — or leave your own.</strong></p>
-              <span className="light-link-dark">Open Google Maps →</span>
-            </a>
-          </Reveal>
         </div>
+        <Reveal>
+          <div className="center-cta"><Link href="/programs" className="public-button public-button-secondary">Compare all programs →</Link></div>
+        </Reveal>
       </section>
 
       <section className="split-story">
@@ -127,40 +203,33 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="public-section container">
-        <Reveal>
-          <div className="section-intro compact"><div><span className="eyebrow">Choose your next step</span><h2>Start where you are.</h2></div></div>
-        </Reveal>
-        <div className="path-grid">
-          <Reveal delay={60}><Link href="/programs" className="path-card lift"><span>FOR STUDENTS</span><strong>Build a stronger study rhythm →</strong><p>Focused programs, practice and a workspace that keeps you moving.</p></Link></Reveal>
-          <Reveal delay={120}><Link href="/contact" className="path-card path-card-accent lift"><span>FOR PARENTS</span><strong>Ask the right questions →</strong><p>Talk to Saarthians about programs, learning support and next steps.</p></Link></Reveal>
-          <Reveal delay={180}><Link href="/login" className="path-card lift"><span>FOR MEMBERS</span><strong>Return to your workspace →</strong><p>Pick up your notes, tests, progress and learning context where you left off.</p></Link></Reveal>
-        </div>
-      </section>
-
       <section className="public-section container" id="visit">
         <Reveal>
-          <div className="section-intro">
-            <div><span className="eyebrow">Visit us</span><h2>Come, sit in a class.<br /><em>Then decide.</em></h2></div>
-            <p>{ADDRESS_LINES.join(", ")}. Open the map for directions, or message us on WhatsApp first.</p>
+          <div className="location-card lift">
+            <div>
+              <span className="eyebrow">Visit Saarthi Classes</span>
+              <h2>Come, sit in a class. <em>Then decide.</em></h2>
+              <p>{ADDRESS_LINES.join(", ")}</p>
+              <div className="hero-actions">
+                <a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer" className="public-button public-button-secondary">Directions →</a>
+                <a href={whatsAppLink("Hi Saarthi Classes, I would like to visit the centre.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Plan a visit</a>
+              </div>
+            </div>
+            <div className="location-map">
+              <iframe title="Saarthi Classes on Google Maps" src={MAPS_EMBED_URL} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+            </div>
           </div>
         </Reveal>
-        <Reveal>
-          <div className="map-frame">
-            <iframe title="Saarthi Classes on Google Maps" src={MAPS_EMBED_URL} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
-          </div>
-        </Reveal>
-        <div className="hero-actions" style={{ marginTop: 18 }}>
-          <a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer" className="public-button public-button-secondary">Open in Google Maps →</a>
-          <a href={whatsAppLink("Hi Saarthi Classes, I would like to visit the centre.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Plan a visit on WhatsApp</a>
-        </div>
       </section>
 
       <section className="public-cta container">
         <Reveal>
-          <div><span className="eyebrow">A calmer way to learn</span><h2>Make the next hour<br /><em>count.</em></h2></div>
+          <div><span className="eyebrow">Begin</span><h2>Your rank journey<br /><em>starts with a message.</em></h2></div>
         </Reveal>
-        <Link href="/login" className="public-button public-button-primary">Enter Saarthians →</Link>
+        <div className="hero-actions">
+          <a href={whatsAppLink("Hi Saarthi Classes, I want to join.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Join Saarthians →</a>
+          <Link href="/login" className="public-button public-button-secondary">Member login</Link>
+        </div>
       </section>
 
       <footer className="public-footer"><div className="container footer-grid"><div><Link href="/" className="public-brand">saarthians<span>.online</span></Link><p>Learn with direction.</p><p>{ADDRESS_LINES[0]},<br />{ADDRESS_LINES[1]}</p><p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><br /><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY}</a></p></div><div><strong>Explore</strong><Link href="/about">About</Link><Link href="/programs">Programs</Link><Link href="/portfolio">Portfolio</Link></div><div><strong>Support</strong><Link href="/resources">Resources</Link><Link href="/contact">Contact</Link><Link href="/login">Sign in</Link></div><div><strong>Trust</strong><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/security">Security</Link></div></div><div className="container footer-bottom"><span>© 2026 Saarthians · Saarthi Classes</span><span>Built for focused learning.</span></div></footer>
