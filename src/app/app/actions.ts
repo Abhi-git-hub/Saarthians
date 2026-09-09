@@ -47,7 +47,7 @@ export async function updateNote(formData: FormData) {
   if (!id.success || !parsed.success) throw new Error("INVALID_NOTE");
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("notes")
     .update({
       title: parsed.data.title,
@@ -56,9 +56,10 @@ export async function updateNote(formData: FormData) {
       status: parsed.data.visibility === "published" ? "published" : "draft",
     })
     .eq("id", id.data)
-    .eq("owner_user_id", user.id);
+    .eq("owner_user_id", user.id)
+    .select("id");
 
-  if (error) throw new Error("NOTE_UPDATE_FAILED");
+  if (error || !data || data.length === 0) throw new Error("NOTE_UPDATE_FAILED");
   revalidatePath("/app");
   revalidatePath("/app/notes");
 }
@@ -69,13 +70,14 @@ export async function deleteNote(formData: FormData) {
   if (!id.success) throw new Error("INVALID_NOTE");
 
   const supabase = await createClient();
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("notes")
     .delete()
     .eq("id", id.data)
-    .eq("owner_user_id", user.id);
+    .eq("owner_user_id", user.id)
+    .select("id");
 
-  if (error) throw new Error("NOTE_DELETE_FAILED");
+  if (error || !data || data.length === 0) throw new Error("NOTE_DELETE_FAILED");
   revalidatePath("/app");
   revalidatePath("/app/notes");
 }
