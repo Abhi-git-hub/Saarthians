@@ -21,3 +21,9 @@ Configure the production site URL as `https://saarthians.online` and add the loc
 ## Database
 
 The core schema and security hardening migrations are applied to the Saarthians Supabase project. RLS is enabled on all application tables.
+
+Apply `supabase/migrations/20260909140000_admin_control_plane.sql` to enable the
+admin console sections (overview counts, user search, status changes, profile
+edits, relationships, test visibility, audit listing). It only adds admin-only
+`SECURITY DEFINER` functions plus the missing `test_answers.updated_at` column;
+it does not alter existing policies or the provision-user flow.
