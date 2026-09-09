@@ -36,38 +36,50 @@ export const MAPS_PLACE_URL =
 export const MAPS_EMBED_URL =
   "https://www.google.com/maps?q=Saarthi%20Classes%2C%20267%20Gali%20No.%2016%20Balbir%20Nagar%20Extension%2C%20Shahdara%2C%20Delhi%20110032&output=embed";
 
-export type Course = { tag: string; title: string; body: string };
+export type Course = { tag: string; title: string; body: string; audience: string; method: string };
 
 export const COURSES: Course[] = [
   {
     tag: "CLASS 9 · ALL SUBJECTS",
     title: "Strong foundations early",
     body: "Complete Class 9 coverage across all subjects with concept-first teaching that prepares students for board and competitive thinking.",
+    audience: "For students entering high school",
+    method: "Concept classes · Regular tests · Daily doubt clearing",
   },
   {
     tag: "CLASS 10 · ALL SUBJECTS",
     title: "Board year, done right",
     body: "All-subject Class 10 coaching with structured practice, regular assessment, and revision planned around board success.",
+    audience: "For the crucial board year",
+    method: "Board-pattern practice · Revision cycles · Progress tracking",
   },
   {
     tag: "CLASS 11 · SCIENCE + JEE / NEET",
     title: "The competitive launchpad",
     body: "Physics, Chemistry, Maths and Biology aligned to Class 11 with JEE and NEET orientation built in from day one.",
+    audience: "For science students starting +1",
+    method: "NCERT mastery · Entrance-oriented problems · Mentoring",
   },
   {
     tag: "CLASS 12 · SCIENCE + JEE / NEET",
     title: "Rank-focused finishing",
     body: "Class 12 boards plus intensive JEE and NEET preparation — problem solving, test temperament, and rank-oriented mentoring.",
+    audience: "For board + entrance year students",
+    method: "Mock analysis · Speed & accuracy drills · 1:1 guidance",
   },
   {
     tag: "NEET COACHING",
     title: "Medical entrance, mentored",
     body: "Biology-first NEET preparation with NCERT mastery, assertion-reason practice, and regular mock analysis.",
+    audience: "For medical aspirants",
+    method: "NCERT line-by-line · Assertion-reason drills · Mock reviews",
   },
   {
     tag: "JEE COACHING",
     title: "Engineering entrance, engineered",
     body: "Physics, Chemistry and Maths drilled the JEE way — from Mains-level speed to Advanced-level depth.",
+    audience: "For engineering aspirants",
+    method: "Mains speed work · Advanced depth · Error-log reviews",
   },
 ];
 
