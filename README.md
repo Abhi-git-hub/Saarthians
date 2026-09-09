@@ -37,6 +37,6 @@ npm test
 npm run build
 ```
 
-**Deployment trigger: production Worker.**
+**Deployment trigger: production Worker**
 
 See [`docs/PRD.md`](docs/PRD.md) and [`docs/TRD.md`](docs/TRD.md) for the product and technical contract.
