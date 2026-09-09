@@ -13,7 +13,17 @@
   },
   "env": {
     "production": {
-      "name": "saarthians-production"
+      "name": "saarthians-production",
+      "routes": [
+        { "pattern": "saarthians.online/login", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/login/*", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/app", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/app/*", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/teacher", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/teacher/*", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/admin", "zone_name": "saarthians.online" },
+        { "pattern": "saarthians.online/admin/*", "zone_name": "saarthians.online" }
+      ]
     }
   }
 }
