@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { AdminUserProvisioner, type AdminManagedUser } from "./user-provisioner";
@@ -36,6 +37,18 @@ export default async function AdminWorkspace() {
           <article className="metric-card"><span>Students</span><strong>{students.length}</strong><small>learner identities provisioned</small></article>
           <article className="metric-card"><span>Teachers</span><strong>{teachers.length}</strong><small>teaching identities provisioned</small></article>
           <article className="metric-card"><span>Total profiles</span><strong>{users.length}</strong><small>including inactive accounts</small></article>
+        </section>
+
+        <section aria-label="Management sections" style={{ marginTop: 28 }}>
+          <span className="eyebrow">Manage</span>
+          <div className="metric-grid" style={{ marginTop: 12 }}>
+            <Link className="metric-card" href="/admin/users"><span>User management</span><strong>→</strong><small>search, status, detail, add student/teacher</small></Link>
+            <Link className="metric-card" href="/admin/relationships"><span>Relationships</span><strong>→</strong><small>assign students to teachers</small></Link>
+            <Link className="metric-card" href="/admin/tests"><span>Assessments</span><strong>→</strong><small>visibility into tests and attempts</small></Link>
+            <Link className="metric-card" href="/admin/audit"><span>Audit</span><strong>→</strong><small>server-generated action trail</small></Link>
+            <Link className="metric-card" href="/admin/security"><span>Security</span><strong>→</strong><small>account states and recent actions</small></Link>
+            <Link className="metric-card" href="/admin/system"><span>System</span><strong>→</strong><small>connectivity and readiness</small></Link>
+          </div>
         </section>
 
         <section id="users" className="admin-grid">

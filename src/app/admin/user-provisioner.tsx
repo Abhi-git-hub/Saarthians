@@ -17,8 +17,8 @@ export type AdminManagedUser = {
 
 const emptyForm = { displayName: "", username: "", role: "student", password: "", phone: "", gradeLevel: "", subject: "" };
 
-export function AdminUserProvisioner({ initialUsers }: { initialUsers: AdminManagedUser[] }) {
-  const [form, setForm] = useState(emptyForm);
+export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: { initialUsers: AdminManagedUser[]; initialRole?: "student" | "teacher" }) {
+  const [form, setForm] = useState({ ...emptyForm, role: initialRole });
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: "success" | "error"; text: string } | null>(null);
@@ -43,7 +43,7 @@ export function AdminUserProvisioner({ initialUsers }: { initialUsers: AdminMana
         return;
       }
       setFeedback({ kind: "success", text: `Account @${data.user.username} is active and ready to use.` });
-      setForm(emptyForm);
+      setForm({ ...emptyForm, role: initialRole });
       window.location.reload();
     } catch {
       setFeedback({ kind: "error", text: "We couldn't provision that account. Please try again." });

@@ -8,7 +8,7 @@ import type { Role } from "@/lib/security";
 const navigation: Record<Role, Array<[string, string]>> = {
   student: [["Overview", "/app"], ["Notes", "/app/notes"], ["Tests", "/app/tests"], ["Results", "/app/results"], ["Progress", "/app/progress"], ["Profile", "/app/profile"]],
   teacher: [["Overview", "/teacher"], ["Students", "/teacher/students"], ["Tests", "/teacher/tests"], ["Results", "/teacher/results"], ["Profile", "/teacher/profile"]],
-  admin: [["Overview", "/admin"], ["Users", "/admin#users"]],
+  admin: [["Overview", "/admin"], ["Users", "/admin/users"], ["Relationships", "/admin/relationships"], ["Tests", "/admin/tests"], ["Audit", "/admin/audit"], ["Security", "/admin/security"], ["System", "/admin/system"]],
 };
 
 const labels: Record<Role, string> = { student: "Student", teacher: "Teacher", admin: "Admin" };
