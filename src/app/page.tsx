@@ -1,50 +1,75 @@
-const features = [
-  ["01", "Learn with direction", "A focused home for notes, tests, results and the next best action."],
-  ["02", "Understand, don’t memorize", "An AI learning partner that explains, questions and helps you practice."],
-  ["03", "Progress you can see", "Turn every test and review into a clearer picture of where to improve."],
-];
+import Link from "next/link";
+import { PublicHeader } from "@/components/public-header";
+import { WhatsAppFab } from "@/components/whatsapp-fab";
+
+const imageHero = "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1800&q=85";
+const imageStudy = "https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&fit=crop&w=1200&q=85";
+const imageTeacher = "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=85";
 
 export default function Home() {
-  return <main>
-    <header className="container" style={{paddingTop:24}}>
-      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 0"}}>
-        <a href="/" style={{fontWeight:800,fontSize:20,letterSpacing:"-.04em"}}>saarthians<span style={{color:"var(--accent)"}}>.online</span></a>
-        <div style={{display:"flex",gap:28,alignItems:"center",fontSize:14}}>
-          <a href="#experience">Experience</a><a href="#approach">Approach</a>
-          <a href="/login" style={{background:"var(--ink)",color:"white",padding:"11px 17px",borderRadius:999}}>Sign in ↗</a>
+  return (
+    <main className="public-site">
+      <PublicHeader />
+
+      <section className="public-hero">
+        <div className="container public-hero-grid">
+          <div className="public-hero-copy">
+            <span className="eyebrow">A learning system with direction</span>
+            <h1>Study with clarity.<br /><em>Grow with confidence.</em></h1>
+            <p>Saarthians brings notes, assessments, progress and intelligent learning support into one calm workspace designed around how students actually learn.</p>
+            <div className="hero-actions">
+              <Link href="/login" className="public-button public-button-primary">Enter your workspace →</Link>
+              <Link href="/programs" className="public-button public-button-secondary">Explore programs</Link>
+            </div>
+            <div className="hero-proof"><span>01</span><p>Focused study systems for students. Practical visibility for teachers. Built for everyday progress.</p></div>
+          </div>
+          <div className="hero-visual">
+            <img src={imageHero} alt="Students learning together" />
+            <div className="hero-float-card"><strong>Learn deeply.</strong><span>Notes · Tests · Progress · AI</span></div>
+          </div>
         </div>
-      </nav>
-    </header>
+      </section>
 
-    <section className="grid-bg" style={{marginTop:20,borderTop:"1px solid var(--line)",borderBottom:"1px solid var(--line)"}}>
-      <div className="container" style={{padding:"100px 0 112px"}}>
-        <div className="rise"><span className="eyebrow">A learning system with direction</span></div>
-        <h1 className="rise-2" style={{fontSize:"clamp(54px,9vw,112px)",lineHeight:.91,letterSpacing:"-.075em",maxWidth:950,margin:"28px 0"}}>
-          Study less randomly.<br/><i style={{fontFamily:"Georgia,serif",fontWeight:400}}>Learn more deeply.</i>
-        </h1>
-        <p className="rise-3" style={{fontSize:18,lineHeight:1.6,color:"var(--muted)",maxWidth:620,marginBottom:34}}>Saarthians brings your learning life into one calm, intelligent workspace — with notes, assessments, progress and an AI tutor built around your context.</p>
-        <div className="rise-3" style={{display:"flex",gap:12,flexWrap:"wrap"}}>
-          <a href="/login" style={{background:"var(--accent)",color:"white",padding:"14px 22px",borderRadius:999,fontWeight:700}}>Enter your workspace →</a>
-          <a href="#experience" style={{border:"1px solid #cdd1c9",padding:"14px 22px",borderRadius:999,fontWeight:700}}>Explore Saarthians</a>
+      <section className="public-marquee" aria-label="Saarthians values">
+        <div>LEARN WITH DIRECTION</div><span>•</span><div>BUILD BETTER HABITS</div><span>•</span><div>SEE REAL PROGRESS</div><span>•</span><div>LEARN WITH DIRECTION</div>
+      </section>
+
+      <section className="public-section container" id="experience">
+        <div className="section-intro">
+          <div><span className="eyebrow">The Saarthians experience</span><h2>Everything important,<br /><em>in one place.</em></h2></div>
+          <p>A premium learning environment without the clutter. Every surface is designed to make the next useful action obvious.</p>
         </div>
-      </div>
-    </section>
+        <div className="feature-grid">
+          <article className="feature-card feature-card-large"><span>01</span><h3>Notes that stay useful.</h3><p>Write, organize and revisit learning material without losing the thread.</p><div className="feature-image"><img src={imageStudy} alt="Student studying" /></div></article>
+          <article className="feature-card"><span>02</span><h3>Tests that show what to fix.</h3><p>Practice, submit and turn results into clear areas for improvement.</p><div className="mini-stat"><strong>78%</strong><span>Concept mastery</span></div></article>
+          <article className="feature-card dark-card"><span>03</span><h3>Progress you can understand.</h3><p>See patterns across your learning instead of chasing isolated marks.</p><div className="progress-lines"><i style={{width:"82%"}} /><i style={{width:"64%"}} /><i style={{width:"91%"}} /></div></article>
+          <article className="feature-card feature-card-image"><img src={imageTeacher} alt="Teacher helping students" /><div><span>04</span><h3>Better teaching visibility.</h3><p>Teachers get focused tools for students, materials and assessments.</p></div></article>
+        </div>
+      </section>
 
-    <section id="experience" className="container" style={{padding:"100px 0"}}>
-      <span className="eyebrow">The experience</span>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1.5fr",gap:60,marginTop:28}}>
-        <h2 style={{fontSize:"clamp(34px,5vw,62px)",lineHeight:1,letterSpacing:"-.055em",margin:0}}>Everything you need to move forward.</h2>
-        <div style={{display:"grid",gap:0}}>{features.map(([n,t,d])=><article key={n} style={{borderTop:"1px solid var(--line)",padding:"25px 0",display:"grid",gridTemplateColumns:"52px 1fr",gap:10}}><span style={{color:"var(--muted)",fontSize:13}}>{n}</span><div><h3 style={{margin:"0 0 7px",fontSize:21}}>{t}</h3><p style={{margin:0,color:"var(--muted)",lineHeight:1.6}}>{d}</p></div></article>)}</div>
-      </div>
-    </section>
+      <section className="split-story">
+        <div className="container split-story-grid">
+          <div><span className="eyebrow light">Built around real learning</span><h2>Technology should disappear.<br /><em>Learning should stay.</em></h2></div>
+          <div className="split-story-copy"><p>Private student information is protected by server-side authorization and database rules. The interface stays simple because the complexity belongs in the system, not in the student's head.</p><Link href="/about" className="light-link">Why Saarthians exists →</Link></div>
+        </div>
+      </section>
 
-    <section id="approach" style={{background:"var(--accent)",color:"white"}}>
-      <div className="container" style={{padding:"90px 0",display:"grid",gridTemplateColumns:"1fr 1fr",gap:60}}>
-        <div><span className="eyebrow" style={{color:"#dff4c0"}}>Built for real learning</span><h2 style={{fontSize:"clamp(40px,5vw,68px)",lineHeight:.98,letterSpacing:"-.06em",margin:"25px 0 0"}}>Technology should disappear.<br/>Learning should stay.</h2></div>
-        <div style={{alignSelf:"end",color:"#d5dfdb",lineHeight:1.8,fontSize:16}}>Students get clarity without clutter. Teachers get the operational visibility they need. Every private record is protected by server-side authorization — not by what a browser happens to show.</div>
-      </div>
-    </section>
+      <section className="public-section container">
+        <div className="section-intro compact"><div><span className="eyebrow">Choose your next step</span><h2>Start where you are.</h2></div></div>
+        <div className="path-grid">
+          <Link href="/programs" className="path-card"><span>FOR STUDENTS</span><strong>Build a stronger study rhythm →</strong><p>Focused programs, practice and a workspace that keeps you moving.</p></Link>
+          <Link href="/contact" className="path-card path-card-accent"><span>FOR PARENTS</span><strong>Ask the right questions →</strong><p>Talk to Saarthians about programs, learning support and next steps.</p></Link>
+          <Link href="/login" className="path-card"><span>FOR MEMBERS</span><strong>Return to your workspace →</strong><p>Pick up your notes, tests, progress and learning context where you left off.</p></Link>
+        </div>
+      </section>
 
-    <footer className="container" style={{padding:"34px 0 60px",display:"flex",justifyContent:"space-between",gap:20,color:"var(--muted)",fontSize:13}}><span>© 2026 Saarthians</span><span>Learn with direction.</span></footer>
-  </main>;
+      <section className="public-cta container">
+        <div><span className="eyebrow">A calmer way to learn</span><h2>Make the next hour<br /><em>count.</em></h2></div>
+        <Link href="/login" className="public-button public-button-primary">Enter Saarthians →</Link>
+      </section>
+
+      <footer className="public-footer"><div className="container footer-grid"><div><Link href="/" className="public-brand">saarthians<span>.online</span></Link><p>Learn with direction.</p></div><div><strong>Explore</strong><Link href="/about">About</Link><Link href="/programs">Programs</Link><Link href="/portfolio">Portfolio</Link></div><div><strong>Support</strong><Link href="/resources">Resources</Link><Link href="/contact">Contact</Link><Link href="/login">Sign in</Link></div><div><strong>Trust</strong><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/security">Security</Link></div></div><div className="container footer-bottom"><span>© 2026 Saarthians</span><span>Built for focused learning.</span></div></footer>
+      <WhatsAppFab />
+    </main>
+  );
 }
