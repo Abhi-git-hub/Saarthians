@@ -5,6 +5,8 @@ export const loginSchema = z.object({
   password: z.string().min(8).max(128),
 });
 
+export const loginIdentifierSchema = z.string().trim().min(3).max(254);
+
 export type Role = "student" | "teacher" | "admin";
 
 export function canAccessRole(role: Role, allowed: readonly Role[]) {

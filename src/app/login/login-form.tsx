@@ -2,44 +2,27 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { loginSchema } from "@/lib/security";
+import { signInWithIdentifier } from "./actions";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(
-    searchParams.get("error") === "auth_callback"
-      ? "That sign-in link is invalid or has expired. Please sign in again."
-      : null,
-  );
+  const [error, setError] = useState<string | null>(searchParams.get("error") === "auth_callback" ? "That sign-in link is invalid or has expired. Please sign in again." : null);
   const [pending, setPending] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setError(null);
-
-    const parsed = loginSchema.safeParse({ email, password });
-    if (!parsed.success) {
-      setError("Enter a valid email and password.");
-      setPending(false);
-      return;
-    }
-
     try {
-      const supabase = createClient();
-      const { error: signInError } = await supabase.auth.signInWithPassword(parsed.data);
-      if (signInError) {
-        setError("We couldn't sign you in. Check your credentials and try again.");
+      const result = await signInWithIdentifier({ identifier, password, next: searchParams.get("next") });
+      if (result.error) {
+        setError(result.error);
         return;
       }
-
-      const next = searchParams.get("next");
-      const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : "/app";
-      router.replace(safeNext);
+      router.replace(result.redirectTo ?? "/app");
       router.refresh();
     } catch {
       setError("We couldn't complete sign in. Please try again.");
@@ -49,43 +32,18 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} style={{ display: "grid", gap: 16 }}>
-      <label style={labelStyle}>
-        Email
-        <input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+    <form onSubmit={submit} className="auth-form">
+      <label className="field-label">
+        Username
+        <input required minLength={3} maxLength={254} autoCapitalize="none" autoCorrect="off" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="your username" />
       </label>
-      <label style={labelStyle}>
+      <label className="field-label">
         Password
-        <input required type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} style={inputStyle} />
+        <input required minLength={8} maxLength={128} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </label>
-      {error && <p role="alert" style={{ color: "#a33", margin: 0 }}>{error}</p>}
-      <button disabled={pending} type="submit" style={buttonStyle}>
-        {pending ? "Signing in…" : "Sign in →"}
-      </button>
-      <p style={{ color: "var(--muted)", fontSize: 14, margin: 0 }}>
-        New to Saarthians? <a href="/signup" style={{ textDecoration: "underline" }}>Create a student account</a>.
-      </p>
+      <p className="auth-hint">Administrators may sign in with their existing email address.</p>
+      {error && <p role="alert" className="form-error">{error}</p>}
+      <button disabled={pending} type="submit" className="primary-button">{pending ? "Signing in…" : "Enter workspace →"}</button>
     </form>
   );
 }
-
-const labelStyle = { display: "grid", gap: 8, fontSize: 14, fontWeight: 650 };
-const inputStyle = {
-  width: "100%",
-  border: "1px solid var(--line)",
-  borderRadius: 14,
-  padding: "13px 14px",
-  background: "var(--paper)",
-  color: "var(--ink)",
-  font: "inherit",
-  boxSizing: "border-box" as const,
-};
-const buttonStyle = {
-  border: 0,
-  borderRadius: 999,
-  padding: "14px 20px",
-  background: "var(--accent)",
-  color: "white",
-  fontWeight: 750,
-  cursor: "pointer",
-};

@@ -1,17 +1,13 @@
-import { SignupForm } from "./signup-form";
+import Link from "next/link";
 
 export default function SignupPage() {
   return (
-    <main className="container" style={{ padding: "90px 0" }}>
-      <div style={{ maxWidth: 520, margin: "0 auto" }}>
-        <span className="eyebrow">Start learning</span>
-        <h1 style={{ fontSize: "clamp(44px,7vw,72px)", lineHeight: 0.95, letterSpacing: "-.06em", margin: "22px 0 16px" }}>
-          Create your workspace.
-        </h1>
-        <p style={{ color: "var(--muted)", lineHeight: 1.6, marginBottom: 32 }}>
-          Student accounts start with the learning workspace. Teacher and admin access is provisioned separately.
-        </p>
-        <SignupForm />
+    <main className="auth-page">
+      <div className="auth-card">
+        <span className="eyebrow">Account access</span>
+        <h1>Accounts are provisioned.</h1>
+        <p className="auth-lede">Saarthians does not use open self-registration. A signed-in administrator creates each student and teacher account with the correct role and profile details.</p>
+        <Link href="/login" className="primary-button" style={{ display: "inline-flex", justifyContent: "center" }}>Go to sign in →</Link>
       </div>
     </main>
   );
