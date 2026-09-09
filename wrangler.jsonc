@@ -1,24 +1,19 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "saarthians-production",
+  "name": "saarthians",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-09-08",
   "compatibility_flags": ["nodejs_compat"],
-  "routes": [
-    { "pattern": "saarthians.online/login", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/login/*", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/app", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/app/*", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/teacher", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/teacher/*", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/admin", "zone_name": "saarthians.online" },
-    { "pattern": "saarthians.online/admin/*", "zone_name": "saarthians.online" }
-  ],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
   "observability": {
     "enabled": true
+  },
+  "env": {
+    "production": {
+      "name": "saarthians-production"
+    }
   }
 }
