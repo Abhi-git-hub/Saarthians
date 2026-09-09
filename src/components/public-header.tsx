@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { SafeImage } from "./safe-image";
+import { BRAND_IMAGES } from "@/lib/site";
 
 export function PublicHeader() {
   return (
     <header className="public-header">
       <div className="public-header-inner container">
         <Link href="/" className="public-brand" aria-label="Saarthians home">
+          <SafeImage src={BRAND_IMAGES.logo} alt="" className="public-brand-logo" eager />
           saarthians<span>.online</span>
         </Link>
         <nav className="public-nav" aria-label="Main navigation">

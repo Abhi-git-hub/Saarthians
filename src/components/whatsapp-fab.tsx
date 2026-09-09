@@ -1,9 +1,7 @@
+import { whatsAppLink } from "@/lib/site";
+
 export function WhatsAppFab() {
-  const message = encodeURIComponent("Hi Saarthians, I would like to know more about the learning programs.");
-  const number = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "");
-  const href = number
-    ? `https://wa.me/${number}?text=${message}`
-    : `https://wa.me/?text=${message}`;
+  const href = whatsAppLink("Hi Saarthi Classes, I would like to know more about the learning programs.");
 
   return (
     <a
@@ -11,7 +9,7 @@ export function WhatsAppFab() {
       className="whatsapp-fab"
       target="_blank"
       rel="noreferrer"
-      aria-label="Chat with Saarthians on WhatsApp"
+      aria-label="Chat with Saarthi Classes on WhatsApp"
     >
       <span className="whatsapp-icon" aria-hidden="true">✆</span>
       <span>Chat on WhatsApp</span>
