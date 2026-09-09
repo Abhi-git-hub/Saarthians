@@ -34,16 +34,17 @@ export function LoginForm() {
   return (
     <form onSubmit={submit} className="auth-form">
       <label className="field-label">
-        Username
-        <input required minLength={3} maxLength={254} autoCapitalize="none" autoCorrect="off" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="your username" />
+        Username or email
+        <input required minLength={3} maxLength={254} autoCapitalize="none" autoCorrect="off" autoComplete="username" value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="your username or email" />
       </label>
       <label className="field-label">
         Password
         <input required minLength={8} maxLength={128} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </label>
-      <p className="auth-hint">Administrators may sign in with their existing email address.</p>
+      <p className="auth-hint">Students and teachers use their provisioned username. Administrators use their existing account email.</p>
       {error && <p role="alert" className="form-error">{error}</p>}
       <button disabled={pending} type="submit" className="primary-button">{pending ? "Signing in…" : "Enter workspace →"}</button>
+      <a href="/login/reset-password" className="auth-hint">Forgot your password?</a>
     </form>
   );
 }
