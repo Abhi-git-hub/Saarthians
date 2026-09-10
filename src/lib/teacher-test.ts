@@ -30,7 +30,7 @@ export async function createTeacherTest(input: unknown) {
     p_instructions: parsed.instructions,
     p_duration_seconds: parsed.durationSeconds,
   });
-  if (error) throw new Error("Unable to create the test.");
+  if (error) throw new Error(`Unable to create the test (${error.code ?? "unknown"}).`);
   return data as string;
 }
 
@@ -48,7 +48,7 @@ export async function saveTeacherQuestion(input: unknown) {
     p_points: parsed.points,
     p_position: parsed.position,
   });
-  if (error) throw new Error("Unable to save the question.");
+  if (error) throw new Error(`Unable to save the question (${error.code ?? "unknown"}).`);
   return data as string;
 }
 
@@ -57,7 +57,7 @@ export async function removeTeacherQuestion(questionId: string) {
   if (!z.string().uuid().safeParse(questionId).success) throw new Error("Invalid question.");
   const supabase = await createClient();
   const { error } = await supabase.rpc("delete_test_question", { p_question_id: questionId });
-  if (error) throw new Error("Unable to delete the question.");
+  if (error) throw new Error(`Unable to delete the question (${error.code ?? "unknown"}).`);
 }
 
 export async function publishTeacherTest(testId: string) {
@@ -65,5 +65,5 @@ export async function publishTeacherTest(testId: string) {
   if (!z.string().uuid().safeParse(testId).success) throw new Error("Invalid test.");
   const supabase = await createClient();
   const { error } = await supabase.rpc("publish_teacher_test", { p_test_id: testId });
-  if (error) throw new Error("Unable to publish the test.");
+  if (error) throw new Error(`Unable to publish the assessment (${error.code ?? "unknown"}).`);
 }

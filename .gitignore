@@ -26,3 +26,6 @@ coverage/
 # misc
 .DS_Store
 *.pem
+
+# local bug-report reference (screenshots/notes) — never commit or deploy
+bug&Fixes/
