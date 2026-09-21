@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { updateRecoveryPassword } from "../actions";
@@ -16,17 +16,6 @@ export function PasswordResetForm({ initialMode }: { initialMode: Mode }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-
-  // Legacy implicit-flow links (#access_token=...&type=recovery) establish the
-  // session on the client and emit PASSWORD_RECOVERY — upgrade to the update
-  // form when that happens.
-  useEffect(() => {
-    const supabase = createClient();
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") setMode("update");
-    });
-    return () => data.subscription.unsubscribe();
-  }, []);
 
   async function requestReset(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

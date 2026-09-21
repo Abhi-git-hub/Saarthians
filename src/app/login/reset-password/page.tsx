@@ -1,47 +1,26 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { decideResetMode, getRecoveryUserId } from "@/lib/recovery";
 import { PasswordResetForm } from "./reset-form";
 
-type Mode = "request" | "update" | "invalid";
-
-// Recovery links from Supabase arrive as /login/reset-password?code=... (PKCE).
-// The code must be exchanged server-side for a session; only then is the
-// update-password form shown. Legacy implicit links (#access_token=...) are
-// picked up by the client form, which upgrades itself on PASSWORD_RECOVERY.
+// /auth/callback is the single canonical place that exchanges emailed PKCE
+// codes. A successful recovery exchange sets a short-lived, HTTP-only marker
+// bound to the recovered user — and ONLY that marker (never a bare session)
+// unlocks the update-password form. A normally signed-in visitor always sees
+// the email-entry form here.
 export default async function ResetPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const code = typeof params.code === "string" && params.code ? params.code : null;
-  const errorParam = typeof params.error === "string" && params.error ? params.error : null;
-  const recoveryFlag = params.recovery === "1";
+  const hasError = typeof params.error === "string" && params.error ? true : false;
 
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    redirect(
-      error
-        ? "/login/reset-password?error=invalid_link"
-        : "/login/reset-password?recovery=1",
-    );
-  }
-
-  let mode: Mode = "request";
-  if (errorParam) {
-    mode = "invalid";
-  } else if (recoveryFlag) {
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    mode = data.user ? "update" : "invalid";
-  } else {
-    // Primary path: /auth/callback exchanged the code and returned here with
-    // a session. A signed-in visitor may also change their own password here.
-    const supabase = await createClient();
-    const { data } = await supabase.auth.getUser();
-    if (data.user) mode = "update";
-  }
+  const supabase = await createClient();
+  const [{ data }, markerUserId] = await Promise.all([
+    supabase.auth.getUser(),
+    getRecoveryUserId(),
+  ]);
+  const mode = decideResetMode(markerUserId, data.user?.id ?? null, hasError);
 
   return (
     <main className="auth-page">

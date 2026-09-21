@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { clearRecoveryMarker, getRecoveryUserId } from "@/lib/recovery";
 import { loginIdentifierSchema } from "@/lib/security";
 
 const managedAccountDomain = "accounts.saarthians.online";
@@ -44,10 +45,15 @@ export async function signInWithIdentifier(input: { identifier: string; password
   return { ok: true, redirectTo };
 }
 
-// Completes a password-recovery flow. Requires the recovery session established
-// by the emailed link (exchanged server-side on the reset page) — an arbitrary
-// signed-out caller cannot change anyone's password through this action.
+// Completes a password-recovery flow. Requires BOTH the server-verified
+// recovery marker (set by /auth/callback after a successful code exchange,
+// bound to the recovered user) AND a live session for that same user. A
+// normal logged-in session alone is never sufficient, and neither is the
+// marker without its session.
 type RecoveryResult = { ok: true } | { error: string };
+
+const INVALID_RECOVERY_ERROR =
+  "This reset link is invalid or has expired. Request a new link and try again.";
 
 export async function updateRecoveryPassword(input: { password: string; confirm: string }): Promise<RecoveryResult> {
   const { password, confirm } = input;
@@ -60,9 +66,23 @@ export async function updateRecoveryPassword(input: { password: string; confirm:
   }
 
   const supabase = await createClient();
-  const { data: authUser } = await supabase.auth.getUser();
-  if (!authUser.user) {
-    return { error: "This reset link is invalid or has expired. Request a new link and try again." };
+  const [markerUserId, { data: authUser }] = await Promise.all([
+    getRecoveryUserId(),
+    supabase.auth.getUser(),
+  ]);
+  const sessionUserId = authUser.user?.id ?? null;
+
+  if (!markerUserId || !sessionUserId || markerUserId !== sessionUserId) {
+    // Stale or mismatched marker (e.g. a different account signed in after
+    // the recovery link was opened): drop it so it cannot linger.
+    if (markerUserId) {
+      try {
+        await clearRecoveryMarker();
+      } catch {
+        // Non-fatal: the marker self-expires within minutes.
+      }
+    }
+    return { error: INVALID_RECOVERY_ERROR };
   }
 
   const { error } = await supabase.auth.updateUser({ password });
@@ -70,8 +90,15 @@ export async function updateRecoveryPassword(input: { password: string; confirm:
     return { error: "We couldn't update your password. Request a fresh link and try again." };
   }
 
-  // End the single-purpose recovery session so the new password is verified
-  // through a normal login immediately afterwards.
+  // Invalidate the marker and end the single-purpose recovery session so the
+  // new password is verified through a normal login immediately afterwards.
+  // The marker is cleared first: even if sign-out below failed, the marker
+  // alone can never authorize another update.
+  try {
+    await clearRecoveryMarker();
+  } catch {
+    // Non-fatal for the same reason as above.
+  }
   await supabase.auth.signOut();
   return { ok: true };
 }

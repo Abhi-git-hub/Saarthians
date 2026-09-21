@@ -20,6 +20,13 @@ export function WorkspaceNav({ role, displayName, username }: { role: Role; disp
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    // Route the sign-out through the server as well so server-managed state
+    // (e.g. the password-recovery marker, which is HTTP-only) is cleared too.
+    try {
+      await fetch("/api/auth/signout", { method: "POST" });
+    } catch {
+      // Non-fatal: the local session is already destroyed above.
+    }
     router.replace("/login");
     router.refresh();
   }
