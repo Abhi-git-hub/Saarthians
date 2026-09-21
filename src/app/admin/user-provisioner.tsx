@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { provisionAccount } from "./users/actions";
 
 export type AdminManagedUser = {
   id: string;
@@ -18,6 +19,7 @@ export type AdminManagedUser = {
 const emptyForm = { displayName: "", username: "", role: "student", password: "", phone: "", gradeLevel: "", subject: "" };
 
 export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: { initialUsers: AdminManagedUser[]; initialRole?: "student" | "teacher" }) {
+  const router = useRouter();
   const [form, setForm] = useState({ ...emptyForm, role: initialRole });
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState(false);
@@ -29,22 +31,31 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
     return initialUsers.filter((item) => `${item.display_name} ${item.username ?? ""} ${item.role}`.toLowerCase().includes(normalized));
   }, [initialUsers, query]);
 
+  // Provisioning always goes through the provisionAccount server action:
+  // server-side requireRole(["admin"]) + Zod validation first, then the single
+  // audited provision-user Edge Function invoked with the admin session. The
+  // browser never calls the Edge Function directly.
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setFeedback(null);
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.functions.invoke("provision-user", {
-        body: form,
-      });
-      if (error || !data?.ok) {
-        setFeedback({ kind: "error", text: data?.error ?? "We couldn't provision that account." });
+      const formData = new FormData();
+      formData.set("username", form.username);
+      formData.set("displayName", form.displayName);
+      formData.set("password", form.password);
+      formData.set("role", form.role);
+      formData.set("phone", form.phone);
+      formData.set("gradeLevel", form.gradeLevel);
+      formData.set("subject", form.subject);
+      const result = await provisionAccount(formData);
+      if ("error" in result) {
+        setFeedback({ kind: "error", text: result.error });
         return;
       }
-      setFeedback({ kind: "success", text: `Account @${data.user.username} is active and ready to use.` });
+      setFeedback({ kind: "success", text: `Account @${result.username ?? form.username} is active and ready to use.` });
       setForm({ ...emptyForm, role: initialRole });
-      window.location.reload();
+      router.refresh();
     } catch {
       setFeedback({ kind: "error", text: "We couldn't provision that account. Please try again." });
     } finally {

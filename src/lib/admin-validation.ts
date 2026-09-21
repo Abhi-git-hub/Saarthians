@@ -106,8 +106,15 @@ export function totalPages(totalCount: number, pageSize: number) {
 
 // Map database/RPC/Edge-Function failures to safe, user-friendly messages.
 // Never surfaces SQL text, stack traces, or infrastructure detail.
+// Accepts Error instances as well as plain { message } shapes, because
+// rejected promises from data clients are not guaranteed to be Errors.
 export function adminErrorMessage(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error ?? "");
+  const raw =
+    error instanceof Error
+      ? error.message
+      : typeof error === "object" && error !== null && "message" in error
+        ? String((error as { message: unknown }).message)
+        : String(error ?? "");
 
   if (/AUTHORIZATION_REQUIRED|NOT_AUTHORIZED|not authorized|permission denied|Administrator access required/i.test(raw)) {
     return "You are not authorized to perform this action.";
