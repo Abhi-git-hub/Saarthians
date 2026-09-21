@@ -3,7 +3,7 @@
 Production-oriented foundation for **saarthians.online**.
 
 ## Product
-- Premium public brand + portfolio experience
+- Premium public brand experience for an education/coaching center
 - Secure student workspace
 - Secure teacher workspace
 - Reasoning-augmented learning assistant

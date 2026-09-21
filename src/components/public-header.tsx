@@ -7,9 +7,15 @@ import { SafeImage } from "./safe-image";
 import { BRAND_IMAGES } from "@/lib/site";
 
 const links: [string, string][] = [
-  ["About", "/about"],
+  ["Why Saarthians", "/#why"],
   ["Programs", "/programs"],
-  ["Portfolio", "/portfolio"],
+  ["Reviews", "/#reviews"],
+  ["About", "/about"],
+  ["Visit", "/#visit"],
+];
+
+const mobileLinks: [string, string][] = [
+  ...links,
   ["Resources", "/resources"],
   ["Contact", "/contact"],
 ];
@@ -74,7 +80,7 @@ export function PublicHeader() {
       </div>
       <div id="public-mobile-menu" className="public-mobile-menu" data-open={open} hidden={!open} onClick={() => setOpen(false)}>
         <nav aria-label="Mobile navigation">
-          {links.map(([label, href], i) => (
+          {mobileLinks.map(([label, href], i) => (
             <Link key={href} href={href} style={{ transitionDelay: `${60 + i * 45}ms` }}>
               {label}
             </Link>

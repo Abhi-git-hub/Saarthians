@@ -1,20 +1,12 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+// Self-hosted variable fonts (Inter + Fraunces). Deliberately not next/font:
+// its Turbopack font pipeline fails the production build in this
+// Next.js 16.3.4 toolchain, while plain font CSS bundles identically on
+// every runtime including Cloudflare Workers.
+import "@fontsource-variable/inter";
+import "@fontsource-variable/fraunces";
+import "@fontsource-variable/fraunces/opsz-italic.css";
 import "./globals.css";
-
-const sans = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: "swap",
-});
-
-const display = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-display",
-  display: "swap",
-  style: ["normal", "italic"],
-  weight: ["400", "500", "600"],
-});
 
 export const metadata: Metadata = {
   title: "Saarthians — Learn with direction",
@@ -22,5 +14,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en" className={`${sans.variable} ${display.variable}`}><body>{children}</body></html>;
+  return <html lang="en"><body>{children}</body></html>;
 }

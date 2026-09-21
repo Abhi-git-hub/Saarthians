@@ -7,10 +7,10 @@
 **Primary domain:** saarthians.online
 
 ## Product vision
-Saarthians is a premium education and learning experience combining a public-facing portfolio/brand site with authenticated student and teacher workspaces. It should feel like a modern learning platform: fast, elegant, trustworthy, private by default, and useful in day-to-day study.
+Saarthians is a premium education and learning experience combining a public-facing brand/learning site with authenticated student and teacher workspaces. It should feel like a modern learning platform: fast, elegant, trustworthy, private by default, and useful in day-to-day study. (Developer portfolio work belongs to the separate PragyaLabs brand, which may reference Saarthians as a flagship project.)
 
 ### Three major surfaces
-1. Public experience — brand story, portfolio, programs/resources, social proof, contact/lead capture, premium visual identity.
+1. Public experience — brand story, programs/resources, social proof, contact/lead capture, premium visual identity.
 2. Student experience — secure space for notes, tests, scores, progress, learning activity, and AI assistance.
 3. Teacher experience — secure workspace for student oversight, notes/material management, test creation/review, scores, and teaching operations.
 
@@ -34,7 +34,7 @@ The chatbot is not RAG-first. It is a reasoning-augmented educational assistant 
 - Native mobile applications.
 
 ## Information architecture
-Public: `/`, `/about`, `/portfolio`, `/programs`, `/resources`, `/contact`, `/login`, `/privacy`, `/terms`, `/security`.
+Public: `/`, `/about`, `/programs`, `/resources`, `/contact`, `/login`, `/privacy`, `/terms`, `/security`.
 
 Student: `/app`, `/app/notes`, `/app/notes/:id`, `/app/tests`, `/app/tests/:id`, `/app/results`, `/app/progress`, `/app/chat`, `/app/profile`, `/app/settings`.
 
@@ -44,7 +44,7 @@ Admin: `/admin`, `/admin/users`, `/admin/audit`, `/admin/security`, `/admin/syst
 
 ## Core requirements
 ### Public
-Premium landing, portfolio storytelling, learning outcomes, methodology, resources, proof when available, clear login/access, responsive accessibility, performance, privacy/security expectations, and meaningful loading/empty/error/success states. No fabricated metrics or testimonials.
+Premium landing, brand storytelling, learning outcomes, methodology, resources, proof when available, clear login/access, responsive accessibility, performance, privacy/security expectations, and meaningful loading/empty/error/success states. No fabricated metrics or testimonials.
 
 ### Authentication
 Email/username + password, secure reset, session persistence, role-aware routing, rate limits, generic authentication errors, and architecture ready for MFA/social login/email verification/trusted-device management. Roles: `student`, `teacher`, `admin`. Server/database enforcement is mandatory.
