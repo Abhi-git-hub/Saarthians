@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { clearRecoveryMarker, getRecoveryUserId } from "@/lib/recovery";
 import { loginIdentifierSchema } from "@/lib/security";
+import { mapUpdatePasswordError } from "./recovery-errors";
 
 const managedAccountDomain = "accounts.saarthians.online";
 
@@ -87,7 +88,7 @@ export async function updateRecoveryPassword(input: { password: string; confirm:
 
   const { error } = await supabase.auth.updateUser({ password });
   if (error) {
-    return { error: "We couldn't update your password. Request a fresh link and try again." };
+    return { error: mapUpdatePasswordError(error) };
   }
 
   // Invalidate the marker and end the single-purpose recovery session so the
