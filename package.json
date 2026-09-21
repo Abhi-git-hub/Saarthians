@@ -17,6 +17,7 @@
     "@opennextjs/cloudflare": "1.20.6",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.116.0",
+    "esbuild": "0.28.2",
     "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8",
