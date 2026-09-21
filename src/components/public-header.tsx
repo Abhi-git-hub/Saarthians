@@ -17,10 +17,14 @@ const links: [string, string][] = [
 export function PublicHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
-  useEffect(() => {
+  // Close the menu on navigation via render-time derived-state update
+  // (the documented alternative to setState inside an effect).
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setOpen(false);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -58,7 +62,7 @@ export function PublicHeader() {
           </button>
         </div>
       </div>
-      <div id="public-mobile-menu" className="public-mobile-menu" data-open={open} hidden={!open}>
+      <div id="public-mobile-menu" className="public-mobile-menu" data-open={open} hidden={!open} onClick={() => setOpen(false)}>
         <nav aria-label="Mobile navigation">
           {links.map(([label, href], i) => (
             <Link key={href} href={href} style={{ transitionDelay: `${60 + i * 45}ms` }}>

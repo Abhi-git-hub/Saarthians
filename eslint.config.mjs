@@ -2,11 +2,13 @@ import { defineConfig } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 
 export default defineConfig([
+  // Generated deployment output is never source: Next's own preset ignores
+  // .next/, and .open-next/ is the OpenNext/Cloudflare build directory.
+  { ignores: [".open-next/**"] },
   ...nextVitals,
   {
-    // eslint-plugin-react's version auto-detection calls a context API
-    // removed in ESLint 10 and crashes every file. Pinning the version
-    // (matching package.json) avoids the detector without touching rules.
+    // Pin the React version explicitly so eslint-plugin-react never needs
+    // its auto-detection path, without touching any rules.
     settings: { react: { version: "19.2.8" } },
   },
 ]);

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { AUDIT_PAGE_SIZE, PAGE_SIZE, pageToOffset } from "@/lib/admin-validation";
 import type { Role } from "@/lib/security";
+import type { Database } from "@/lib/supabase/database.types";
 
 export type AdminProfile = {
   id: string;
@@ -66,10 +67,12 @@ export type AdminAuditRow = {
   metadata_json: unknown;
 };
 
-async function rpc<T>(name: string, args: Record<string, unknown>): Promise<T> {
+type PublicFunctions = Database["public"]["Functions"];
+
+async function rpc<T>(name: keyof PublicFunctions, args: Record<string, unknown>): Promise<T> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc(name, args);
-  if (error) throw new Error(error.message || `${name} failed`);
+  const { data, error } = await supabase.rpc(name, args as never);
+  if (error) throw new Error(error.message || `${String(name)} failed`);
   return data as T;
 }
 
