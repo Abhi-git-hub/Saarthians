@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { Reveal } from "@/components/reveal";
 import { SafeImage } from "@/components/safe-image";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { BRAND_IMAGES, FOUNDER_NAME, FOUNDER_QUOTE, FOUNDER_TITLE, whatsAppLink } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "About Saarthians — Saarthi Classes, Shahdara",
+  description: "The philosophy behind Saarthi Classes: understanding first, personal attention, and visible progress for Classes 9–12, NEET and JEE.",
+};
 
 const beliefs = [
   ["Understanding first", "A student who truly understands a concept can face any variation of it. Shortcuts fade; clarity compounds."],
@@ -14,7 +20,7 @@ const beliefs = [
 
 export default function AboutPage() {
   return (
-    <main className="public-site">
+    <main className="public-site" id="main-content">
       <PublicHeader />
       <section className="public-section container">
         <Reveal>
@@ -39,8 +45,8 @@ export default function AboutPage() {
         </Reveal>
         <ol className="principle-list">
           {beliefs.map(([title, body], i) => (
-            <Reveal key={title} delay={i * 80}>
-              <li><span>0{i + 1}</span><div><h3>{title}</h3><p>{body}</p></div></li>
+            <Reveal as="li" key={title} delay={i * 80}>
+              <span>0{i + 1}</span><div><h3>{title}</h3><p>{body}</p></div>
             </Reveal>
           ))}
         </ol>

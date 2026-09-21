@@ -41,7 +41,7 @@ const signals = [
 
 export default function Home() {
   return (
-    <main className="public-site">
+    <main className="public-site" id="main-content">
       <PublicHeader />
 
       <section className="public-hero hero-story">
@@ -84,8 +84,8 @@ export default function Home() {
         </Reveal>
         <ol className="principle-list">
           {principles.map(([n, title, body], i) => (
-            <Reveal key={n} delay={i * 90}>
-              <li><span>{n}</span><div><h3>{title}</h3><p>{body}</p></div></li>
+            <Reveal as="li" key={n} delay={i * 90}>
+              <span>{n}</span><div><h3>{title}</h3><p>{body}</p></div>
             </Reveal>
           ))}
         </ol>
@@ -103,9 +103,9 @@ export default function Home() {
               <h2>Understand in class.<br /><em>Prove it in the workspace.</em></h2>
             </Reveal>
             <ul className="experience-rows">
-              <Reveal delay={60}><li><strong>Learn</strong><p>Concept-first classroom teaching for Classes 9–12, NEET and JEE.</p></li></Reveal>
-              <Reveal delay={120}><li><strong>Practice</strong><p>Notes, assignments and server-graded tests inside the student workspace.</p></li></Reveal>
-              <Reveal delay={180}><li><strong>Improve</strong><p>Results become visible patterns — teachers intervene before small gaps grow.</p></li></Reveal>
+              <Reveal as="li" delay={60}><strong>Learn</strong><p>Concept-first classroom teaching for Classes 9–12, NEET and JEE.</p></Reveal>
+              <Reveal as="li" delay={120}><strong>Practice</strong><p>Notes, assignments and server-graded tests inside the student workspace.</p></Reveal>
+              <Reveal as="li" delay={180}><strong>Improve</strong><p>Results become visible patterns — teachers intervene before small gaps grow.</p></Reveal>
             </ul>
             <Reveal delay={220}><Link href="/login" className="text-link-big">Enter the student workspace →</Link></Reveal>
           </div>

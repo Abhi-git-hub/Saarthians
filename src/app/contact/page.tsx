@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { Reveal } from "@/components/reveal";
@@ -12,9 +13,14 @@ import {
   whatsAppLink,
 } from "@/lib/site";
 
+export const metadata: Metadata = {
+  title: "Contact Saarthi Classes — Shahdara, Delhi | Saarthians",
+  description: "Talk to Saarthi Classes about admissions, batches and programs. WhatsApp, email, or visit the centre in Shahdara, Delhi.",
+};
+
 export default function ContactPage() {
   return (
-    <main className="public-site">
+    <main className="public-site" id="main-content">
       <PublicHeader />
       <section className="public-section container">
         <Reveal>

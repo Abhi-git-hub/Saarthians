@@ -33,8 +33,18 @@ export function PublicHeader() {
     };
   }, [open ]);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open ]);
+
   return (
     <header className="public-header">
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <div className="public-header-inner container">
         <Link href="/" className="public-brand" aria-label="Saarthians home">
           <SafeImage src={BRAND_IMAGES.logo} alt="" className="public-brand-logo" eager />

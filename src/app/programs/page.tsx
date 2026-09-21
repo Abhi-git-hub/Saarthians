@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicHeader } from "@/components/public-header";
 import { Reveal } from "@/components/reveal";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { COURSES, WHATSAPP_DISPLAY, whatsAppLink } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: "Programs — Classes 9–12, NEET & JEE | Saarthians",
+  description: "Six focused tracks at Saarthi Classes Shahdara: Classes 9–12 all subjects plus dedicated NEET and JEE preparation. Message us for batch timings.",
+};
 
 const rhythm = [
   ["Understand", "Concept-first classroom teaching where no doubt is too small."],
@@ -13,7 +19,7 @@ const rhythm = [
 
 export default function ProgramsPage() {
   return (
-    <main className="public-site">
+    <main className="public-site" id="main-content">
       <PublicHeader />
       <section className="public-section container">
         <Reveal>
@@ -49,8 +55,8 @@ export default function ProgramsPage() {
           </Reveal>
           <ol className="rhythm-list">
             {rhythm.map(([title, body], i) => (
-              <Reveal key={title} delay={i * 80}>
-                <li><span>0{i + 1}</span><div><strong>{title}</strong><p>{body}</p></div></li>
+              <Reveal as="li" key={title} delay={i * 80}>
+                <span>0{i + 1}</span><div><strong>{title}</strong><p>{body}</p></div>
               </Reveal>
             ))}
           </ol>

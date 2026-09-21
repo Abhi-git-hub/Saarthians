@@ -140,6 +140,8 @@ button:disabled { cursor:not-allowed; opacity:.6; }
 
 /* Restored public Saarthians experience */
 .public-site { overflow:hidden; }
+.skip-link { position:absolute; left:16px; top:-60px; z-index:100; background:var(--ink); color:#fff; padding:12px 18px; border-radius:999px; font-size:13px; font-weight:800; transition:top .2s var(--ease); }
+.skip-link:focus-visible { top:12px; }
 .public-header { position:sticky; top:0; z-index:50; border-bottom:1px solid rgba(16,24,39,.08); background:rgba(247,248,244,.82); backdrop-filter:blur(18px); }
 .public-header-inner { min-height:74px; display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:24px; }
 .public-brand { font-size:20px; font-weight:900; letter-spacing:-.06em; }
@@ -306,6 +308,10 @@ button:disabled { cursor:not-allowed; opacity:.6; }
 .signal dd span { color:var(--muted); font-size:13px; line-height:1.6; }
 .reviews-section { background:linear-gradient(var(--paper), #f4ecdc 30%, #f4ecdc 70%, var(--paper)); }
 .testimonial-stage { display:grid; grid-template-columns:1.15fr .85fr; gap:16px; margin-top:50px; align-items:stretch; }
+@media (max-width: 860px) {
+  .testimonial-stage { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; gap:12px; margin-left:-14px; margin-right:-14px; padding:4px 14px 18px; scrollbar-width:thin; }
+  .testimonial-stage > * { flex:0 0 min(84vw, 400px); scroll-snap-align:start; }
+}
 .testimonial-feature,.testimonial { margin:0; display:flex; flex-direction:column; gap:16px; height:100%; padding:34px; border-radius:28px; }
 .testimonial-feature { background:var(--ink); color:#f3ead8; }
 .testimonial-feature blockquote { margin:0; font-family:var(--font-display); font-size:clamp(22px,2.6vw,30px); line-height:1.4; }
