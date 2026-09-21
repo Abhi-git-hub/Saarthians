@@ -10,6 +10,7 @@ import {
   setStatusSchema,
   updateProfileSchema,
 } from "@/lib/admin-validation";
+import { asSafeProvisionMessage, mapProvisionInvokeError } from "./provision-errors";
 
 type ActionResult = { ok: true; userId?: string; username?: string } | { error: string };
 
@@ -43,6 +44,15 @@ export async function provisionAccount(formData: FormData): Promise<ActionResult
 
   try {
     const supabase = await createClient();
+    // Explicit auth propagation: the provision-user Edge Function requires a
+    // user JWT (withSupabase({ auth: "user" })), so attach the CURRENT admin
+    // session token server-side. The token is never logged, stored, returned,
+    // or sent anywhere except this single outbound request.
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      return { error: "Your session has expired. Please sign in again." };
+    }
     const { data, error } = await supabase.functions.invoke("provision-user", {
       body: {
         username: parsed.data.username,
@@ -53,9 +63,17 @@ export async function provisionAccount(formData: FormData): Promise<ActionResult
         gradeLevel: parsed.data.gradeLevel || null,
         subject: parsed.data.subject || null,
       },
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
-    if (error) throw error;
-    if (!data?.ok) throw new Error(typeof data?.error === "string" ? data.error : "PROVISION_FAILED");
+    if (error) {
+      const mapped = await mapProvisionInvokeError(error);
+      if (mapped) return { error: mapped };
+      throw error;
+    }
+    if (!data?.ok) {
+      const safe = asSafeProvisionMessage(data?.error);
+      throw new Error(safe ?? "PROVISION_FAILED");
+    }
     revalidatePath("/admin");
     revalidatePath("/admin/users");
     return { ok: true, userId: data.user?.id, username: data.user?.username };

@@ -13,6 +13,7 @@ import {
   unassignRelationship,
   updateUserProfile,
 } from "./actions";
+import { asSafeProvisionMessage, mapProvisionInvokeError } from "./provision-errors";
 
 const TEACHER_ID = "11111111-1111-4111-8111-111111111111";
 const STUDENT_ID = "22222222-2222-4222-8222-222222222222";
@@ -29,15 +30,19 @@ function asNonAdmin() {
   vi.mocked(requireRole).mockRejectedValue(new Error("REDIRECT:/app"));
 }
 
+const FAKE_TOKEN = "tok-test-access-token-abc123";
+
 function mockClient(overrides: Record<string, unknown> = {}) {
   const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
   const invoke = vi.fn().mockResolvedValue({ data: { ok: true, user: { id: "new-id", username: "new.user" } }, error: null });
+  const getSession = vi.fn().mockResolvedValue({ data: { session: { access_token: FAKE_TOKEN } } });
   vi.mocked(createClient).mockResolvedValue({
+    auth: { getSession },
     rpc,
     functions: { invoke },
     ...overrides,
   } as never);
-  return { rpc, invoke };
+  return { rpc, invoke, getSession };
 }
 
 function provisionForm(overrides: Record<string, string> = {}) {
@@ -82,6 +87,7 @@ describe("provisionAccount authorization", () => {
         gradeLevel: "Class 9",
         subject: null,
       },
+      headers: { Authorization: `Bearer ${FAKE_TOKEN}` },
     });
   });
 
@@ -101,6 +107,107 @@ describe("provisionAccount authorization", () => {
     const result = await provisionAccount(provisionForm());
     expect(result).toEqual({ error: expect.stringMatching(/unreachable|went wrong/i) });
     expect(String((result as { error: string }).error)).not.toMatch(/Failed to fetch/);
+  });
+
+  it("rejects when there is no session to propagate", async () => {
+    asAdmin();
+    const { invoke, getSession } = mockClient();
+    getSession.mockResolvedValueOnce({ data: { session: null } });
+    const result = await provisionAccount(provisionForm());
+    expect(result).toEqual({ error: expect.stringMatching(/session has expired/i) });
+    expect(invoke).not.toHaveBeenCalled();
+  });
+
+  it("maps a 401 from the function to session-expired", async () => {
+    asAdmin();
+    const { invoke } = mockClient();
+    invoke.mockResolvedValueOnce({ data: null, error: { message: "Unauthorized", context: { status: 401 } } });
+    const result = await provisionAccount(provisionForm());
+    expect(result).toEqual({ error: expect.stringMatching(/session has expired/i) });
+  });
+
+  it("maps a 403 from the function to not-authorized", async () => {
+    asAdmin();
+    const { invoke } = mockClient();
+    invoke.mockResolvedValueOnce({ data: null, error: { message: "Forbidden", context: { status: 403 } } });
+    const result = await provisionAccount(provisionForm());
+    expect(result).toEqual({ error: expect.stringMatching(/not authorized/i) });
+  });
+
+  it("surfaces the function duplicate-username message", async () => {
+    asAdmin();
+    const { invoke } = mockClient();
+    invoke.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Conflict", context: { status: 409, error: "That username is already in use." } },
+    });
+    const result = await provisionAccount(provisionForm());
+    expect(result).toEqual({ error: "That username is already in use." });
+  });
+
+  it("surfaces the function rollback message", async () => {
+    asAdmin();
+    const { invoke } = mockClient();
+    invoke.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: "Internal Server Error",
+        context: { status: 500, error: "Account creation was rolled back because its profile could not be provisioned." },
+      },
+    });
+    const result = await provisionAccount(provisionForm());
+    expect(result).toEqual({
+      error: "Account creation was rolled back because its profile could not be provisioned.",
+    });
+  });
+
+  it("never leaks tokens or URLs in any mapped message", async () => {
+    asAdmin();
+    const { invoke } = mockClient();
+    invoke.mockResolvedValueOnce({
+      data: null,
+      error: { message: `boom ${FAKE_TOKEN} https://x.supabase.co`, context: { status: 500 } },
+    });
+    const result = await provisionAccount(provisionForm());
+    const text = String((result as { error: string }).error);
+    expect(text).not.toContain(FAKE_TOKEN);
+    expect(text).not.toMatch(/https?:\/\//);
+  });
+});
+
+describe("asSafeProvisionMessage", () => {
+  it("accepts short curated strings", () => {
+    expect(asSafeProvisionMessage("That username is already in use.")).toBe(
+      "That username is already in use.",
+    );
+  });
+
+  it("rejects non-strings, empty, and overlong values", () => {
+    expect(asSafeProvisionMessage(null)).toBeNull();
+    expect(asSafeProvisionMessage(42)).toBeNull();
+    expect(asSafeProvisionMessage("  ")).toBeNull();
+    expect(asSafeProvisionMessage("x".repeat(301))).toBeNull();
+  });
+
+  it("rejects URLs, tokens, secrets, and passwords", () => {
+    expect(asSafeProvisionMessage("see https://x.supabase.co/auth for details")).toBeNull();
+    expect(asSafeProvisionMessage("Bearer tok-abc")).toBeNull();
+    expect(asSafeProvisionMessage("eyJhbGciOiJIUzI1NiJ9.payload.sig")).toBeNull();
+    expect(asSafeProvisionMessage("service_role key required")).toBeNull();
+    expect(asSafeProvisionMessage("password: hunter2")).toBeNull();
+  });
+});
+
+describe("mapProvisionInvokeError", () => {
+  it("returns null for empty or shapeless errors", async () => {
+    await expect(mapProvisionInvokeError(null)).resolves.toBeNull();
+    await expect(mapProvisionInvokeError(new TypeError("Failed to fetch"))).resolves.toBeNull();
+  });
+
+  it("maps a 404 to the not-deployed message", async () => {
+    await expect(mapProvisionInvokeError({ message: "Not found", context: { status: 404 } })).resolves.toMatch(
+      /not deployed/i,
+    );
   });
 });
 
