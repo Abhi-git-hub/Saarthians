@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "build:cloudflare": "opennextjs-cloudflare build",
+    "build:cloudfare": "opennextjs-cloudflare build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
