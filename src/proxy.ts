@@ -13,7 +13,21 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url, key } = getSupabaseConfig();
 
-  if (!url || !key) return response;
+  const isProtected = protectedPrefixes.some((prefix) =>
+    request.nextUrl.pathname === prefix || request.nextUrl.pathname.startsWith(`${prefix}/`),
+  );
+
+  // Fail closed: without backend config the session cannot be verified, so
+  // protected areas redirect to login instead of rendering unverified.
+  if (!url || !key) {
+    if (isProtected) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = "/login";
+      loginUrl.searchParams.set("next", request.nextUrl.pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    return response;
+  }
 
   const supabase = createServerClient(url, key, {
     cookies: {
@@ -33,9 +47,6 @@ export async function proxy(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getClaims();
-  const isProtected = protectedPrefixes.some((prefix) =>
-    request.nextUrl.pathname === prefix || request.nextUrl.pathname.startsWith(`${prefix}/`),
-  );
 
   if (isProtected && !data?.claims?.sub) {
     const loginUrl = request.nextUrl.clone();

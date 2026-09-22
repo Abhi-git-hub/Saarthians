@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { MAX_PDF_BYTES } from "@/lib/materials/pdf";
 import { processMaterialUpload } from "@/lib/materials/service";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Teacher PDF upload. Multipart form handling lives in a Route Handler
 // because Server Actions cap payload size well below the 15 MB product limit.
@@ -25,6 +26,16 @@ export async function POST(request: Request) {
     user = await requireRole(["teacher", "admin"]);
   } catch {
     return NextResponse.json({ error: "AUTHORIZATION_REQUIRED" }, { status: 403 });
+  }
+
+  // Friction on the most expensive route (full PDF pipeline per call).
+  // Per-instance approximation — documented in lib/rate-limit.ts.
+  const budget = checkRateLimit(`upload:${user.id}`, 5, 60 * 60 * 1000);
+  if (!budget.allowed) {
+    return NextResponse.json(
+      { error: "RATE_LIMITED" },
+      { status: 429, headers: { "Retry-After": String(Math.ceil(budget.retryAfterMs / 1000)) } },
+    );
   }
 
   let form: FormData;
