@@ -1,36 +1,59 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-type UploadResult =
-  | { ok: true; materialId: string }
-  | { ok: false; error: string };
+// Delightful uploader: big drop zone, immediate file chip, then an honest
+// staged display (Validate → Optimize → Extract → Index → Ready) that
+// advances while the server works and resolves to the REAL measured result.
+// Stages are activity indicators, not fake progress percentages.
 
-// Uploads straight to the Route Handler (Server Actions cap payloads far
-// below the 15 MB product limit) and reports the measured pipeline result.
+const STAGES = ["Validate", "Optimize", "Extract", "Index", "Ready"] as const;
+
+type UploadResult = { ok: true; materialId: string } | { ok: false; error: string };
+
 export default function UploadForm() {
   const router = useRouter();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState(0);
   const [result, setResult] = useState<UploadResult | null>(null);
+
+  function pick(files: FileList | null) {
+    const next = files?.[0] ?? null;
+    if (next) {
+      setFile(next);
+      setResult(null);
+    }
+  }
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!file || busy) return;
     setBusy(true);
     setResult(null);
+    setStage(0);
+    // Advance the activity indicator while the server works. Timings are
+    // illustrative of pipeline order only — completion comes from the
+    // response, never from this timer.
+    const ticker = window.setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 2)), 4000);
     try {
-      const response = await fetch("/api/teacher/materials/upload", {
-        method: "POST",
-        body: new FormData(event.currentTarget),
-      });
-      const json = (await response.json()) as { material?: { id: string }; error?: string; materialId?: string };
+      const form = new FormData(event.currentTarget);
+      form.set("file", file);
+      const response = await fetch("/api/teacher/materials/upload", { method: "POST", body: form });
+      const json = (await response.json()) as { material?: { id: string }; error?: string };
+      window.clearInterval(ticker);
       if (response.ok && json.material) {
+        setStage(STAGES.length - 1);
         setResult({ ok: true, materialId: json.material.id });
-        router.push(`/teacher/materials/${json.material.id}`);
+        window.setTimeout(() => router.push(`/teacher/materials/${json.material!.id}`), 900);
         return;
       }
       setResult({ ok: false, error: prettify(json.error ?? "UPLOAD_FAILED") });
     } catch {
+      window.clearInterval(ticker);
       setResult({ ok: false, error: "The upload could not be completed. Check your connection and retry." });
     } finally {
       setBusy(false);
@@ -38,25 +61,55 @@ export default function UploadForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} style={{ display: "grid", gap: 14, maxWidth: 640, marginTop: 28 }}>
-      <label style={labelStyle}>Title<input name="title" required maxLength={200} placeholder="Class 10 Physics — Light" style={inputStyle} /></label>
-      <label style={labelStyle}>Subject<input name="subject" maxLength={100} placeholder="Physics" style={inputStyle} /></label>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <label style={labelStyle}>Class / grade<input name="gradeLevel" maxLength={50} placeholder="Class 10" style={inputStyle} /></label>
-        <label style={labelStyle}>Chapter / topic<input name="chapter" maxLength={200} placeholder="Light — Reflection" style={inputStyle} /></label>
+    <form onSubmit={onSubmit} className="upload-form">
+      <div className="upload-grid">
+        <label className="upload-field">Title<input name="title" required maxLength={200} placeholder="Class 10 Physics — Light" /></label>
+        <label className="upload-field">Subject<input name="subject" maxLength={100} placeholder="Physics" /></label>
+        <label className="upload-field">Class / grade<input name="gradeLevel" maxLength={50} placeholder="Class 10" /></label>
+        <label className="upload-field">Chapter / topic<input name="chapter" maxLength={200} placeholder="Light — Reflection" /></label>
       </div>
-      <label style={labelStyle}>Description<textarea name="description" maxLength={2000} rows={3} placeholder="What should students focus on?" style={inputStyle} /></label>
-      <label style={labelStyle}>PDF file (max 15 MB)<input name="file" type="file" accept="application/pdf,.pdf" required style={inputStyle} /></label>
-      <button type="submit" disabled={busy} style={{ ...buttonStyle, opacity: busy ? 0.6 : 1 }}>
-        {busy ? "Validating, optimizing, indexing…" : "Upload and process →"}
-      </button>
-      {result && !result.ok && (
-        <p role="alert" style={{ color: "#b42318", margin: 0, lineHeight: 1.6 }}>{result.error}</p>
+      <label className="upload-field">Description<textarea name="description" maxLength={2000} rows={2} placeholder="What should students focus on?" /></label>
+      <div
+        className={`dropzone${dragging ? " is-dragging" : ""}${file ? " has-file" : ""}`}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => { e.preventDefault(); setDragging(false); pick(e.dataTransfer.files); }}
+        onClick={() => fileRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        aria-label="Drop a PDF here or choose a file"
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileRef.current?.click(); }}
+      >
+        <input
+          ref={fileRef}
+          name="file"
+          type="file"
+          accept="application/pdf,.pdf"
+          required={!file}
+          hidden
+          onChange={(e) => pick(e.target.files)}
+        />
+        {file ? (
+          <span className="dropzone-file"><b>{file.name}</b><i>{(file.size / 1024 / 1024).toFixed(1)} MB · PDF</i></span>
+        ) : (
+          <span className="dropzone-empty"><b>Drop your PDF here</b><i>or click to choose · max 15 MB · text stays selectable</i></span>
+        )}
+      </div>
+      {(busy || (result?.ok ?? false)) && (
+        <ol className="pipeline-steps" aria-label="Processing stages">
+          {STAGES.map((label, i) => (
+            <li key={label} className={i < stage ? "is-done" : i === stage ? "is-active" : ""} aria-current={i === stage ? "step" : undefined}>
+              <b>{String(i + 1).padStart(2, "0")}</b> {label}
+            </li>
+          ))}
+        </ol>
       )}
+      <button type="submit" disabled={busy || !file} className="primary-button upload-submit">
+        {busy ? "Working through the pipeline…" : result?.ok ? "Ready — opening your material…" : "Upload and process →"}
+      </button>
+      {result && !result.ok && <p role="alert" className="upload-error">{result.error}</p>}
       {busy && (
-        <p style={{ color: "var(--muted)", margin: 0, lineHeight: 1.6 }}>
-          Keep this tab open. Large PDFs take a minute: the file is optimized before it is stored, then read page by page.
-        </p>
+        <p className="upload-note">Keep this tab open. Large PDFs take a minute: the file is optimized before it is stored, then read page by page.</p>
       )}
     </form>
   );
@@ -79,7 +132,3 @@ function prettify(code: string): string {
   const friendly = base[kind] ?? "Processing failed. Retry, or upload a different PDF.";
   return detail ? `${friendly} (${detail})` : friendly;
 }
-
-const labelStyle = { display: "grid", gap: 8, fontSize: 14, fontWeight: 650 };
-const inputStyle = { border: "1px solid var(--line)", borderRadius: 14, padding: "13px 14px", background: "white", color: "var(--ink)", font: "inherit", lineHeight: 1.6 };
-const buttonStyle = { border: 0, borderRadius: 999, padding: "13px 20px", background: "var(--accent)", color: "white", fontWeight: 750, cursor: "pointer" };

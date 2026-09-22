@@ -25,8 +25,26 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
       <span className="eyebrow" style={{ display: "flex", marginTop: 28 }}>Authoring · {test.status}</span>
       <h1 style={{ fontSize: "clamp(42px,6vw,72px)", lineHeight: .95, letterSpacing: "-.06em", margin: "16px 0 10px" }}>{test.title}</h1>
       <p style={{ color: "var(--muted)", lineHeight: 1.65, maxWidth: 720 }}>{test.instructions || "Build a focused assessment. Keep questions clear, answer keys deliberate, and points proportional to difficulty."}</p>
-      <TestEditor testId={test.id} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: q.correct_answer_json as unknown }))} status={test.status} />
-      <LiveSettings testId={test.id} initialStart={test.start_time} initialEnd={test.end_time} initialAssessment={test.assessment_pdf_path} />
+      <ol className="builder-steps" aria-label="Assessment builder steps">
+        <li><a href="#builder-questions"><b>1</b> Questions</a></li>
+        <li><a href="#builder-schedule"><b>2</b> Schedule</a></li>
+        <li><a href="#builder-review"><b>3</b> Review & publish</a></li>
+      </ol>
+      <div id="builder-questions">
+        <TestEditor testId={test.id} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: q.correct_answer_json as unknown }))} status={test.status} />
+      </div>
+      <div id="builder-schedule">
+        <LiveSettings testId={test.id} initialStart={test.start_time} initialEnd={test.end_time} initialAssessment={test.assessment_pdf_path} />
+      </div>
+      <section id="builder-review" className="builder-review">
+        <span className="eyebrow">Review & publish</span>
+        <dl>
+          <div><dt>Status</dt><dd>{test.status}</dd></div>
+          <div><dt>Questions</dt><dd>{questions.length}</dd></div>
+          <div><dt>Window</dt><dd>{test.start_time ? new Date(test.start_time).toLocaleString("en-IN") : "open-ended"} → {test.end_time ? new Date(test.end_time).toLocaleString("en-IN") : "open"}</dd></div>
+        </dl>
+        <p>Publishing happens from the question editor above once at least one question exists. Published tests lock their questions — the window stays editable.</p>
+      </section>
     </main>
   );
 }
