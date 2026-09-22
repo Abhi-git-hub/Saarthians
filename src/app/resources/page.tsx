@@ -6,8 +6,14 @@ import { MAPS_PLACE_URL, whatsAppLink } from "@/lib/site";
 import { ResourcesBrowser, type Resource } from "./resources-browser";
 
 export const metadata: Metadata = {
-  title: "Resources — Study guides & help | Saarthians",
+  title: "Resources | Saarthians",
   description: "Study guides, direct help on WhatsApp, and the tools Saarthians members use every day.",
+  alternates: { canonical: "https://saarthians.online/resources" },
+  openGraph: {
+    title: "Resources | Saarthians",
+    description: "Study guides, direct help on WhatsApp, and the tools Saarthians members use every day.",
+    url: "https://saarthians.online/resources",
+  },
 };
 
 const resources: Resource[] = [

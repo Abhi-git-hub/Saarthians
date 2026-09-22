@@ -7,8 +7,16 @@ import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { BRAND_IMAGES, FOUNDER_NAME, FOUNDER_QUOTE, FOUNDER_TITLE, whatsAppLink } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About Saarthians — Saarthi Classes, Shahdara",
-  description: "The philosophy behind Saarthi Classes: understanding first, personal attention, and visible progress for Classes 9–12, NEET and JEE.",
+  title: "About Saarthians — Our Teaching Philosophy",
+  description:
+    "The philosophy behind Saarthi Classes: understanding first, personal attention, and visible progress for Classes 9-12, NEET and JEE.",
+  alternates: { canonical: "https://saarthians.online/about" },
+  openGraph: {
+    title: "About Saarthians — Our Teaching Philosophy",
+    description:
+      "The philosophy behind Saarthi Classes: understanding first, personal attention, and visible progress.",
+    url: "https://saarthians.online/about",
+  },
 };
 
 const beliefs = [

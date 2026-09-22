@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { Reveal } from "@/components/reveal";
 import { SafeImage } from "@/components/safe-image";
@@ -7,6 +8,19 @@ import { LearningLab } from "@/components/lab/learning-lab";
 import { DailyChallenge } from "@/components/lab/daily-challenge";
 import { SyllabusJourney } from "@/components/lab/syllabus-journey";
 import { LearningStyle } from "@/components/lab/learning-style";
+import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/structured-data";
+
+export const metadata: Metadata = {
+  title: "Saarthians — Learn. Grow. Go Further.",
+  description:
+    "Saarthi Classes, Shahdara: Classes 9–12 all subjects with NEET & JEE coaching. Try the Learning Lab, meet your teachers, and visit the centre.",
+  alternates: { canonical: "https://saarthians.online/" },
+  openGraph: {
+    title: "Saarthians — Learn. Grow. Go Further.",
+    description: "Classes 9–12 all subjects with NEET & JEE coaching in Shahdara, Delhi.",
+    url: "https://saarthians.online/",
+  },
+};
 import {
   ADDRESS_LINES,
   BRAND_IMAGES,
@@ -46,6 +60,8 @@ const signals = [
 export default function Home() {
   return (
     <main className="public-site" id="main-content">
+      <OrganizationJsonLd />
+      <WebSiteJsonLd />
       <PublicHeader />
 
       <section className="public-hero hero-story">

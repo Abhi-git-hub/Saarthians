@@ -6,8 +6,15 @@ import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { COURSES, WHATSAPP_DISPLAY, whatsAppLink } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Programs — Classes 9–12, NEET & JEE | Saarthians",
-  description: "Six focused tracks at Saarthi Classes Shahdara: Classes 9–12 all subjects plus dedicated NEET and JEE preparation. Message us for batch timings.",
+  title: "Programs | Saarthians",
+  description:
+    "Six focused tracks at Saarthi Classes Shahdara: Classes 9-12 all subjects plus dedicated NEET and JEE preparation. Message us for batch timings.",
+  alternates: { canonical: "https://saarthians.online/programs" },
+  openGraph: {
+    title: "Programs | Saarthians",
+    description: "Classes 9-12 all subjects plus dedicated NEET and JEE preparation in Shahdara, Delhi.",
+    url: "https://saarthians.online/programs",
+  },
 };
 
 const rhythm = [

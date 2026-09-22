@@ -14,8 +14,15 @@ import {
 } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact Saarthi Classes — Shahdara, Delhi | Saarthians",
-  description: "Talk to Saarthi Classes about admissions, batches and programs. WhatsApp, email, or visit the centre in Shahdara, Delhi.",
+  title: "Contact Saarthians | Admissions & Enquiries",
+  description:
+    "Talk to Saarthi Classes about admissions, batches and programs. WhatsApp, email, or visit the centre in Shahdara, Delhi.",
+  alternates: { canonical: "https://saarthians.online/contact" },
+  openGraph: {
+    title: "Contact Saarthians | Admissions & Enquiries",
+    description: "Talk to Saarthi Classes about admissions, batches and programs.",
+    url: "https://saarthians.online/contact",
+  },
 };
 
 export default function ContactPage() {

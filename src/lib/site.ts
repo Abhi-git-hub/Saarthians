@@ -87,7 +87,8 @@ export const COURSES: Course[] = [
 // public/images/. SafeImage hides itself gracefully if a file is missing, so
 // pages never render broken-image icons.
 export const BRAND_IMAGES = {
-  logo: "/images/saarthi-logo.png",
+  logo: "/images/saarthians-logo.png",
+  legacyLogo: "/images/saarthi-logo.png",
   signature: "/images/founder-signature.jpg",
   classroom: "/images/classroom.jpg",
 };
