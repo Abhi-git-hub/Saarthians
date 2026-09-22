@@ -35,7 +35,7 @@ export default async function StudentWorkspace() {
           </article>
         </section>
 
-        <section className="assistant-banner"><div><span className="eyebrow">Learning assistant</span><h2>Your reasoning partner is next.</h2><p>The future tutor will work from your authorized learning context, not from unrestricted student data.</p></div><span className="coming-badge">Next milestone</span></section>
+        <section className="assistant-banner"><div><span className="eyebrow">AI Tutor</span><h2>Meet your study tutor.</h2><p>Ask about your mistakes, get a revision plan, or pull answers straight from your own notes. Everything it says comes from your coursework.</p></div><Link href="/app/chat" className="primary-button" style={{ background: "white", color: "var(--ink)" }}>Open tutor →</Link></section>
       </div>
     </main>
   );
