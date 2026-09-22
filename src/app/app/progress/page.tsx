@@ -1,41 +1,79 @@
+import Link from "next/link";
 import { getStudentAttempts, getStudentNotes, getStudentTests } from "@/lib/student";
 import { getStudentProgressSignals } from "@/lib/progress";
+import { EmptyState, PageHeading, ProgressBar } from "@/components/ui";
 
 export default async function ProgressPage() {
-  const [attempts, notes, tests, signals] = await Promise.all([getStudentAttempts(), getStudentNotes(), getStudentTests(), getStudentProgressSignals()]);
+  const [attempts, notes, tests, signals] = await Promise.all([
+    getStudentAttempts(),
+    getStudentNotes(),
+    getStudentTests(),
+    getStudentProgressSignals(),
+  ]);
   const graded = attempts.filter((attempt) => attempt.score !== null && attempt.max_score !== null);
-  const average = graded.length ? Math.round(graded.reduce((sum, attempt) => sum + Number(attempt.score) / Math.max(Number(attempt.max_score), 1) * 100, 0) / graded.length) : 0;
-  const best = graded.length ? Math.round(Math.max(...graded.map((attempt) => Number(attempt.score) / Math.max(Number(attempt.max_score), 1) * 100))) : 0;
+  const average = graded.length
+    ? Math.round(graded.reduce((sum, attempt) => sum + (Number(attempt.score) / Math.max(Number(attempt.max_score), 1)) * 100, 0) / graded.length)
+    : null;
 
   return (
-    <main className="container" style={{ padding: "48px 0 80px" }}>
-      <span className="eyebrow">Progress</span>
-      <h1 style={{ fontSize: "clamp(42px,6vw,70px)", lineHeight: .95, letterSpacing: "-.06em", margin: "18px 0 10px" }}>Make progress visible.</h1>
-      <p style={{ color: "var(--muted)", maxWidth: 650, lineHeight: 1.65 }}>A learning signal built from your own assessment history—not from a generic leaderboard.</p>
+    <main className="workspace-page">
+      <div className="container">
+        <PageHeading
+          eyebrow="Progress · your journey"
+          title={<>Make progress <em>visible.</em></>}
+          lede="A signal built only from your own assessment history — never a leaderboard, never invented trends."
+        />
 
-      <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14, marginTop: 34 }}>
-        {[["Average score", `${average}%`], ["Best score", `${best}%`], ["Graded attempts", String(graded.length)], ["Notes", String(notes.length)], ["Available tests", String(tests.length)]].map(([label, value]) => (
-          <article key={label} style={cardStyle}><span className="eyebrow">{label}</span><strong style={{ display: "block", fontSize: 31, marginTop: 13, letterSpacing: "-.05em" }}>{value}</strong></article>
-        ))}
-      </section>
-
-      <section style={{ marginTop: 48 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 16, marginBottom: 16 }}><div><span className="eyebrow">By assessment</span><h2 style={{ margin: "10px 0 0", fontSize: 27, letterSpacing: "-.04em" }}>Where your practice is landing.</h2></div></div>
-        <div style={{ display: "grid", gap: 12 }}>
-          {signals.map((signal) => (
-            <article key={signal.testId} style={cardStyle}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
-                <div><h3 style={{ margin: 0, fontSize: 19 }}>{signal.title}</h3><p style={{ color: "var(--muted)", margin: "6px 0 0", fontSize: 13 }}>{signal.attempts} attempt{signal.attempts === 1 ? "" : "s"}{signal.missedQuestions ? ` · ${signal.missedQuestions} missed question${signal.missedQuestions === 1 ? "" : "s"} in latest review` : ""}</p></div>
-                <div style={{ textAlign: "right" }}><strong style={{ display: "block", fontSize: 25 }}>{signal.latestPercent === null ? "—" : `${signal.latestPercent}%`}</strong><span style={{ color: "var(--muted)", fontSize: 12 }}>latest · best {signal.bestPercent === null ? "—" : `${signal.bestPercent}%`}</span></div>
-              </div>
-              <div style={{ height: 8, background: "var(--paper)", borderRadius: 999, marginTop: 16, overflow: "hidden" }}><div style={{ height: "100%", width: `${Math.min(Math.max(signal.bestPercent ?? 0, 0), 100)}%`, background: "var(--accent)", borderRadius: 999 }} /></div>
-            </article>
+        <section className="story-strip" aria-label="Totals">
+          {[
+            ["Average", average === null ? "—" : `${average}%`],
+            ["Graded attempts", String(graded.length)],
+            ["Notes", String(notes.length)],
+            ["Live tests", String(tests.length)],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <span>{label}</span>
+              <strong className="display-num">{value}</strong>
+            </div>
           ))}
-          {!signals.length && <div style={{ ...cardStyle, color: "var(--muted)" }}>Complete a graded assessment and this view will begin showing assessment-level signals.</div>}
-        </div>
-      </section>
+        </section>
+
+        <section className="journey">
+          <span className="eyebrow">By assessment</span>
+          <h2>Where your practice is landing.</h2>
+          {signals.length > 0 ? (
+            <div className="data-rows">
+              {signals.map((signal) => (
+                <div key={signal.testId} className="data-row journey-row">
+                  <span className="data-row-main">
+                    <strong>{signal.title}</strong>
+                    <span>
+                      {signal.attempts} attempt{signal.attempts === 1 ? "" : "s"}
+                      {signal.missedQuestions > 0
+                        ? ` · ${signal.missedQuestions} missed in latest review`
+                        : " · latest review clean"}
+                    </span>
+                    <ProgressBar value={signal.bestPercent ?? 0} label={`${signal.title} best score`} />
+                  </span>
+                  <span className="data-row-side journey-scores">
+                    <span><small>latest</small><strong className="display-num">{signal.latestPercent === null ? "—" : `${signal.latestPercent}%`}</strong></span>
+                    <span><small>best</small><strong className="display-num">{signal.bestPercent === null ? "—" : `${signal.bestPercent}%`}</strong></span>
+                    {signal.missedQuestions > 0 && (
+                      <Link href="/app/chat" className="text-link">Fix with tutor →</Link>
+                    )}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="Your journey map is blank."
+              body="Complete a graded assessment and this view will trace every test — latest, best, and exactly what still needs work."
+              action={{ href: "/app/tests", label: "Take your first test →" }}
+            />
+          )}
+        </section>
+      </div>
     </main>
   );
 }
-
-const cardStyle = { border: "1px solid var(--line)", borderRadius: 20, padding: 22, background: "white" };
