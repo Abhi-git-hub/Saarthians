@@ -3,6 +3,10 @@ import { PublicHeader } from "@/components/public-header";
 import { Reveal } from "@/components/reveal";
 import { SafeImage } from "@/components/safe-image";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
+import { LearningLab } from "@/components/lab/learning-lab";
+import { DailyChallenge } from "@/components/lab/daily-challenge";
+import { SyllabusJourney } from "@/components/lab/syllabus-journey";
+import { LearningStyle } from "@/components/lab/learning-style";
 import {
   ADDRESS_LINES,
   BRAND_IMAGES,
@@ -58,6 +62,7 @@ export default function Home() {
               <Stars count={5} />
               <p><strong>Loved by parents on Google.</strong><br />Real 5-star reviews on our Maps listing — read them below.</p>
             </div>
+            <p className="hero-teaser"><strong>Think with us.</strong> Try a 20-second challenge, no sign-up. <a href="#lab">Take the challenge →</a></p>
           </div>
           <div className="hero-visual hero-arch">
             <SafeImage src={BRAND_IMAGES.classroom} alt="Inside a Saarthi Classes classroom" eager />
@@ -72,6 +77,20 @@ export default function Home() {
           {["CONCEPT CLARITY", "DOUBT CLEARING", "PERSONAL ATTENTION", "REGULAR TESTS", "PATIENT TEACHING", "PARENT TRUST"].concat(["CONCEPT CLARITY", "DOUBT CLEARING", "PERSONAL ATTENTION", "REGULAR TESTS", "PATIENT TEACHING", "PARENT TRUST"]).map((item, i) => (
             <span key={i}>{item}<i>✦</i></span>
           ))}
+        </div>
+      </section>
+
+      <section className="public-section lab-section" id="lab">
+        <div className="container">
+          <Reveal>
+            <div className="section-intro">
+              <div><span className="eyebrow">The Learning Lab</span><h2>Think for <em>a minute.</em></h2></div>
+              <p>Try a few questions. No sign-up, no pressure — just see how Saarthians makes learning feel.</p>
+            </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <LearningLab />
+          </Reveal>
         </div>
       </section>
 
@@ -125,6 +144,23 @@ export default function Home() {
             </Reveal>
           ))}
         </dl>
+      </section>
+
+      <section className="public-section container" id="daily">
+        <Reveal>
+          <div className="section-intro">
+            <div><span className="eyebrow">One question, every day</span><h2>Today&apos;s <em>challenge.</em></h2></div>
+            <p>The same question for every visitor today. Tomorrow, a new one.</p>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <DailyChallenge />
+        </Reveal>
+        <div style={{ marginTop: 22 }}>
+          <Reveal delay={140}>
+            <LearningStyle />
+          </Reveal>
+        </div>
       </section>
 
       <section className="public-section reviews-section" id="reviews">
@@ -184,6 +220,18 @@ export default function Home() {
         </div>
         <Reveal>
           <div className="center-cta"><Link href="/programs" className="public-button public-button-secondary">Compare all programs →</Link></div>
+        </Reveal>
+      </section>
+
+      <section className="public-section container" id="journey">
+        <Reveal>
+          <div className="section-intro">
+            <div><span className="eyebrow">Find your stage</span><h2>Where are you <em>right now?</em></h2></div>
+            <p>Pick a stage to see the actual Saarthians tracks for that level — Class 9 through NEET & JEE.</p>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <SyllabusJourney />
         </Reveal>
       </section>
 
