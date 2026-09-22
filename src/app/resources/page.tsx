@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Study guides, direct help on WhatsApp, and the tools Saarthians members use every day.",
   alternates: { canonical: "https://saarthians.online/resources" },
   openGraph: {
-    title: "Resources | Saarthians",
+  title: "Resources",
     description: "Study guides, direct help on WhatsApp, and the tools Saarthians members use every day.",
     url: "https://saarthians.online/resources",
   },

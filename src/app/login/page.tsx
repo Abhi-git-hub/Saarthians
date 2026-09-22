@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Sign in — Saarthians workspace",
+  title: "Sign in",
   description: "Sign in to your Saarthians student, teacher, or admin workspace.",
   robots: { index: false, follow: false },
 };

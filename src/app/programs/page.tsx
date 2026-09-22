@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     "Six focused tracks at Saarthi Classes Shahdara: Classes 9-12 all subjects plus dedicated NEET and JEE preparation. Message us for batch timings.",
   alternates: { canonical: "https://saarthians.online/programs" },
   openGraph: {
-    title: "Programs | Saarthians",
+  title: "Programs",
     description: "Classes 9-12 all subjects plus dedicated NEET and JEE preparation in Shahdara, Delhi.",
     url: "https://saarthians.online/programs",
   },

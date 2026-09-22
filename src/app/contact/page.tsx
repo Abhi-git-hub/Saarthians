@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     "Talk to Saarthi Classes about admissions, batches and programs. WhatsApp, email, or visit the centre in Shahdara, Delhi.",
   alternates: { canonical: "https://saarthians.online/contact" },
   openGraph: {
-    title: "Contact Saarthians | Admissions & Enquiries",
+    title: "Contact Saarthians",
     description: "Talk to Saarthi Classes about admissions, batches and programs.",
     url: "https://saarthians.online/contact",
   },
