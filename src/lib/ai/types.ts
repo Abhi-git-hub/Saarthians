@@ -59,8 +59,21 @@ export type TutorAnswer = {
   suggestions: string[];
 };
 
+export type TutorSource = {
+  title: string;
+  page: number | null;
+};
+
+export type TutorAnswerMode = "gemini_grounded" | "gemini_general" | "fallback";
+
 export type ProviderResult = {
   body: string;
   usedTools: string[];
   suggestions: string[];
+  /** Which engine produced the answer; absent for legacy deterministic answers. */
+  mode?: TutorAnswerMode;
+  /** Whether the provider claims the answer is grounded in retrieved evidence. */
+  grounded?: boolean;
+  /** Source references the provider returned (never fabricated by us). */
+  sources?: TutorSource[];
 };
