@@ -165,9 +165,9 @@ describe("material-scoped tutoring", () => {
     vi.mocked(retrieveMaterialEvidence).mockResolvedValue(evidence);
     vi.mocked(generateWithProvider).mockResolvedValue({
       body: "Grounded answer.",
-      usedTools: ["material_retrieval", "gemini_tutor"],
+      usedTools: ["material_retrieval", "groq_tutor"],
       suggestions: ["More?"],
-      mode: "gemini_grounded",
+      mode: "grounded",
       grounded: true,
       sources: [{ title: "Physics Ch 3", page: 4 }],
     });
@@ -190,7 +190,7 @@ describe("material-scoped tutoring", () => {
   it("falls back honestly when the provider fails", async () => {
     vi.mocked(isProviderConfigured).mockReturnValue(true);
     vi.mocked(retrieveMaterialEvidence).mockRejectedValue(new Error("RETRIEVAL_FAILED"));
-    vi.mocked(generateWithProvider).mockRejectedValue(new Error("GEMINI_UNREACHABLE"));
+    vi.mocked(generateWithProvider).mockRejectedValue(new Error("GROQ_UNREACHABLE"));
     mockDb({
       chat_conversations: [{ data: [], error: null }, { data: { id: "new-convo" }, error: null }],
       chat_messages: [{ count: 0, error: null }, { error: null }, { error: null }, { error: null }],

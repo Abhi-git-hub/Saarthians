@@ -47,24 +47,29 @@ best-effort via stream recompression — documented honestly in the UI numbers.
 
 ## Embeddings & retrieval
 
-- pgvector 0.8.2, `vector(768)`, HNSW cosine index.
-- `text-embedding-004` no longer exists on the Gemini API (absent from
-  `models.list` 2026-09-23); the pinned model is `gemini-embedding-001` with
-  Matryoshka truncation to 768. **One model, one dimension — never mixed.**
-- Retrieval is `match_material_chunks()` (SECURITY DEFINER): authorization
-  (owner teacher / actively-assigned student / admin, READY only) happens
-  **inside SQL before ranking**. No global-fetch-then-filter anywhere.
-- Query path embeds with `RETRIEVAL_QUERY`; top-k (default 5, max 8),
-  threshold 0.45, character budget, per-material scope for “Ask about this PDF”.
+- pgvector 0.8.2 schema (`vector(768)`, HNSW) is in place but **dormant**:
+  the Groq account backing this project exposes chat models only — its
+  `/models` list contains no embedding model and `/embeddings` answers
+  `model_not_found` (verified live 2026-09-23).
+- Retrieval therefore uses `match_material_chunks_lexical()` (pg_trgm
+  similarity, GIN index) with the **same authorization gates** as the vector
+  RPC (owner teacher / actively-assigned student / admin, READY only).
+  Relevance cutoffs live in application code; authorization lives in SQL.
+- If an embedding provider is configured later, re-enable the semantic path
+  against the dormant tables with one consistent model + dimension (never
+  mix).
 
-## Gemini tutor
+## Groq tutor
 
-- Server-only REST client (`src/lib/ai/gemini.ts`), no SDK. Key travels in
-  the `x-goog-api-key` header, read only server-side; never `NEXT_PUBLIC_*`.
-- Chat model: `GEMINI_MODEL`, default `gemini-2.5-flash` (verified live
-  2026-09-23: models.list + generateContent). JSON-mode structured contract
-  `{answer, grounded, sources, followups}`, validated server-side; malformed
-  output is never persisted as a tutor answer.
+- Server-only OpenAI-compatible REST client (`src/lib/ai/groq.ts`), no SDK.
+  Key travels in the `Authorization: Bearer` header, read only server-side;
+  never `NEXT_PUBLIC_*`. gpt-oss models ignore `response_format`, so the
+  JSON contract is instructed in-prompt and validated server-side
+  (fences stripped); malformed output is never persisted.
+- Chat model: `GROQ_CHAT_MODEL`, else `OPENAI_MODEL`, else
+  `openai/gpt-oss-20b` (verified live 2026-09-23 via chat completions).
+  Base URL chain: `GROQ_BASE_URL`, else `OPENAI_BASE_URL`, else
+  `https://api.groq.com/openai/v1`.
 - Knowledge hierarchy in the system prompt: teacher materials → student
   notes → mistakes/progress → general knowledge (labeled, never attributed
   to the teacher).

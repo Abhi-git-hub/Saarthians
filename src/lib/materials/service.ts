@@ -1,7 +1,6 @@
 ﻿import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { chunkExtractedPages, extractPdfPages, optimizePdf, validatePdfUpload } from "./pdf";
-import { embedTexts } from "@/lib/ai/gemini";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -10,7 +9,6 @@ type ServerClient = Awaited<ReturnType<typeof createClient>>;
 // only after validation + optimization + extraction + indexing all succeed.
 
 export const MATERIAL_BUCKET = "study-materials";
-const EMBED_BATCH_SIZE = 50;
 
 export type MaterialMetadata = {
   title: string;
@@ -112,37 +110,16 @@ export async function processMaterialUpload(
     return failMaterial(supabase, materialId, `INDEXING_FAILED: ${chunkError.message}`);
   }
 
-  try {
-    for (let i = 0; i < chunks.length; i += EMBED_BATCH_SIZE) {
-      const batch = chunks.slice(i, i + EMBED_BATCH_SIZE);
-      const vectors = await embedTexts(
-        batch.map((chunk) => chunk.text),
-        "RETRIEVAL_DOCUMENT",
-      );
-      const embeddingRows = batch.map((chunk, j) => ({
-        chunk_id: chunkRows[i + j].id,
-        embedding: `[${vectors[j].join(",")}]`,
-        model: "gemini-embedding-001",
-      }));
-      const { error: embeddingError } = await supabase
-        .from("study_material_embeddings")
-        .insert(embeddingRows);
-      if (embeddingError) throw new Error(embeddingError.message);
-    }
-  } catch (error) {
-    await markMaterial(supabase, materialId, { embedding_status: "failed" });
-    return failMaterial(
-      supabase,
-      materialId,
-      `EMBEDDING_FAILED: ${error instanceof Error ? error.message : "provider error"}`,
-    );
-  }
-
+  // No embedding provider is configured (Groq exposes chat models only), so
+  // semantic vectors cannot be built. The material is still fully usable:
+  // validated, optimized, stored, text-extracted, chunked, downloadable, and
+  // searchable through authorized lexical retrieval. The pgvector tables stay
+  // in schema for the day an embedding provider arrives.
   await markMaterial(supabase, materialId, {
     processing_status: "ready",
     processing_error: null,
-    embedding_status: "complete",
-    embedding_model: "gemini-embedding-001",
+    embedding_status: "skipped",
+    embedding_model: "",
     updated_at: new Date().toISOString(),
   });
   return { materialId };

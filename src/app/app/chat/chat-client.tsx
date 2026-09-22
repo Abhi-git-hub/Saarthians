@@ -9,14 +9,14 @@ export type UIMessage = {
   role: "user" | "assistant";
   content: string;
   suggestions?: string[];
-  mode?: "gemini_grounded" | "gemini_general" | "fallback";
+  mode?: "grounded" | "general" | "fallback";
 };
 
 function modeLabel(mode: NonNullable<UIMessage["mode"]>): string {
   switch (mode) {
-    case "gemini_grounded":
+    case "grounded":
       return "Grounded in your material";
-    case "gemini_general":
+    case "general":
       return "General explanation";
     case "fallback":
       return "Study engine";

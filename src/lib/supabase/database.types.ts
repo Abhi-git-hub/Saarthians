@@ -880,6 +880,17 @@ export type Database = {
           page_number: number
         }[]
       }
+      match_material_chunks_lexical: {
+        Args: { p_limit?: number; p_material_id?: string; p_query: string }
+        Returns: {
+          chunk_id: string
+          chunk_text: string
+          material_id: string
+          material_title: string
+          page_number: number
+          similarity: number
+        }[]
+      }
       schedule_test: {
         Args: { p_end_time?: string; p_start_time?: string; p_test_id: string }
         Returns: boolean

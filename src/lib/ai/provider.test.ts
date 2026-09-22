@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { generateWithProvider, isProviderConfigured } from "./provider";
-import { generateGroundedTutor, isGeminiConfigured } from "./gemini";
+import { generateGroundedTutor, isGroqConfigured } from "./groq";
 import type { TutorContext } from "./types";
 
-vi.mock("./gemini", () => ({
+vi.mock("./groq", () => ({
   generateGroundedTutor: vi.fn(),
-  isGeminiConfigured: vi.fn(),
+  isGroqConfigured: vi.fn(),
 }));
 
 const CONTEXT: TutorContext = {
@@ -17,17 +17,17 @@ const CONTEXT: TutorContext = {
 
 describe("provider", () => {
   it("reports configuration honestly", () => {
-    vi.mocked(isGeminiConfigured).mockReturnValue(false);
+    vi.mocked(isGroqConfigured).mockReturnValue(false);
     expect(isProviderConfigured()).toBe(false);
   });
 
   it("refuses to generate without a key", async () => {
-    vi.mocked(isGeminiConfigured).mockReturnValue(false);
-    await expect(generateWithProvider({ kind: "help" }, CONTEXT)).rejects.toThrow("GEMINI_NOT_CONFIGURED");
+    vi.mocked(isGroqConfigured).mockReturnValue(false);
+    await expect(generateWithProvider({ kind: "help" }, CONTEXT)).rejects.toThrow("GROQ_NOT_CONFIGURED");
   });
 
   it("labels grounded answers and appends real sources", async () => {
-    vi.mocked(isGeminiConfigured).mockReturnValue(true);
+    vi.mocked(isGroqConfigured).mockReturnValue(true);
     vi.mocked(generateGroundedTutor).mockResolvedValue({
       answer: "Mitochondria make energy.",
       grounded: true,
@@ -37,14 +37,14 @@ describe("provider", () => {
     const result = await generateWithProvider({ kind: "explain_topic", topic: "cells" }, CONTEXT, [
       { chunkId: "c", materialId: "m", title: "Biology Ch 5", page: 12, text: "ev", distance: 0.1 },
     ]);
-    expect(result.mode).toBe("gemini_grounded");
+    expect(result.mode).toBe("grounded");
     expect(result.body).toContain("Source: Biology Ch 5 (page 12)");
     expect(result.suggestions).toEqual(["What is ATP?"]);
     expect(result.usedTools).toContain("material_retrieval");
   });
 
   it("marks general answers when no evidence was retrieved", async () => {
-    vi.mocked(isGeminiConfigured).mockReturnValue(true);
+    vi.mocked(isGroqConfigured).mockReturnValue(true);
     vi.mocked(generateGroundedTutor).mockResolvedValue({
       answer: "General answer.",
       grounded: false,
@@ -52,7 +52,7 @@ describe("provider", () => {
       followups: [],
     });
     const result = await generateWithProvider({ kind: "help" }, CONTEXT, []);
-    expect(result.mode).toBe("gemini_general");
-    expect(result.usedTools).toEqual(["gemini_tutor"]);
+    expect(result.mode).toBe("general");
+    expect(result.usedTools).toEqual(["groq_tutor"]);
   });
 });

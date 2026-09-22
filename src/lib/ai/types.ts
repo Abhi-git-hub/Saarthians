@@ -64,7 +64,7 @@ export type TutorSource = {
   page: number | null;
 };
 
-export type TutorAnswerMode = "gemini_grounded" | "gemini_general" | "fallback";
+export type TutorAnswerMode = "grounded" | "general" | "fallback";
 
 export type ProviderResult = {
   body: string;

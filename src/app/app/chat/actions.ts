@@ -146,7 +146,7 @@ export async function sendChatMessage(input: unknown): Promise<{ conversationId:
 
   if (userMessageError) throw new Error("CHAT_SEND_FAILED");
 
-  // Intent → context → tools → validated answer. When Gemini is configured,
+  // Intent → context → tools → validated answer. When Groq is configured,
   // retrieval runs first (scoped to authorized materials, optionally to one
   // material via "Ask tutor about this PDF"), then generation. Any provider
   // or retrieval failure falls back to the local grounded engine with an
@@ -178,7 +178,7 @@ export async function sendChatMessage(input: unknown): Promise<{ conversationId:
     try {
       const provided = await generateWithProvider(intent, context, evidence);
       answer = { body: provided.body, usedTools: provided.usedTools, suggestions: provided.suggestions };
-      mode = provided.mode ?? "gemini_general";
+      mode = provided.mode ?? "general";
       sources = provided.sources ?? [];
     } catch {
       answer = respondToIntent(intent, context);

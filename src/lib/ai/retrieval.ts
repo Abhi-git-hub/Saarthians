@@ -1,14 +1,20 @@
 import { createClient } from "@/lib/supabase/server";
-import { embedTexts } from "./gemini";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
-// Authorized semantic retrieval over study-material chunks.
+// Authorized retrieval over study-material chunks.
 //
-// Security: this module never filters in JavaScript. The query embedding is
-// passed to the `match_material_chunks` RPC, which enforces authorization
-// inside SQL (owner teacher / actively-assigned student / admin) and only
-// ranks chunks of READY materials the caller may see.
+// Security: this module never filters in JavaScript. Queries go to the
+// `match_material_chunks_lexical` RPC, which enforces authorization inside
+// SQL (owner teacher / actively-assigned student / admin) and only ranks
+// chunks of READY materials the caller may see.
+//
+// Why lexical: the Groq account backing this project exposes chat models
+// only (its /embeddings endpoint answers model_not_found), so no embedding
+// provider is available. pg_trgm similarity gives honest keyword recall with
+// zero new dependencies and identical authorization gates. The pgvector
+// tables and match_material_chunks RPC stay in schema for the day an
+// embedding provider is configured.
 
 export interface MaterialEvidence {
   chunkId: string;
@@ -24,30 +30,28 @@ export interface RetrievalOptions {
   /** "Ask tutor about this PDF": restrict ranking to one material. */
   materialId?: string | null;
   limit?: number;
+  /** Minimum trigram similarity (0..1) to keep a row. */
   threshold?: number;
 }
 
 const DEFAULT_LIMIT = 5;
 const MAX_LIMIT = 8;
-const DEFAULT_THRESHOLD = 0.45;
+const DEFAULT_THRESHOLD = 0.08;
 const MAX_EVIDENCE_CHARS = 6000;
 
 export async function retrieveMaterialEvidence(
   supabase: ServerClient,
   options: RetrievalOptions,
 ): Promise<MaterialEvidence[]> {
-  const query = options.query.trim();
-  if (!query) return [];
+  const query = options.query.trim().slice(0, 500);
+  if (query.length < 2) return [];
   const limit = Math.min(Math.max(options.limit ?? DEFAULT_LIMIT, 1), MAX_LIMIT);
   const threshold = options.threshold ?? DEFAULT_THRESHOLD;
 
-  const [embedding] = await embedTexts([query], "RETRIEVAL_QUERY");
-  const vectorLiteral = `[${embedding.join(",")}]`;
-  const { data, error } = await supabase.rpc("match_material_chunks", {
-    p_query: vectorLiteral,
+  const { data, error } = await supabase.rpc("match_material_chunks_lexical", {
+    p_query: query,
     p_material_id: options.materialId ?? null,
     p_limit: limit,
-    p_threshold: threshold,
   });
   if (error) throw new Error(`RETRIEVAL_FAILED: ${error.message}`);
   if (!Array.isArray(data)) return [];
@@ -57,6 +61,8 @@ export async function retrieveMaterialEvidence(
   for (const row of data) {
     const record = row as Record<string, unknown>;
     if (typeof record.chunk_id !== "string" || typeof record.chunk_text !== "string") continue;
+    const similarity = typeof record.similarity === "number" ? record.similarity : 0;
+    if (similarity < threshold) continue;
     const text = record.chunk_text.slice(0, Math.max(budget, 0));
     if (!text) break;
     budget -= text.length;
@@ -66,7 +72,7 @@ export async function retrieveMaterialEvidence(
       title: typeof record.material_title === "string" ? record.material_title : "Study material",
       page: typeof record.page_number === "number" ? record.page_number : 1,
       text,
-      distance: typeof record.distance === "number" ? record.distance : 1,
+      distance: 1 - similarity,
     });
   }
   return evidence;

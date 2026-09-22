@@ -1,11 +1,12 @@
 import type { MaterialEvidence } from "./retrieval";
 import { formatEvidenceForPrompt } from "./retrieval";
-import { generateGroundedTutor, isGeminiConfigured } from "./gemini";
+import { generateGroundedTutor, isGroqConfigured } from "./groq";
 import type { ProviderResult, TutorContext, TutorIntent } from "./types";
 
-// Gemini-backed provider. The chat UI never imports this module directly —
-// actions.ts routes through `resolveTutorAnswer`, so authorization, context
-// selection, persistence, and budgeting are unchanged by the provider.
+// Groq-backed provider (OpenAI-compatible chat). The chat UI never imports
+// this module directly — actions.ts routes through the pipeline, so
+// authorization, context selection, persistence, and budgeting are unchanged
+// by the provider.
 //
 // Knowledge hierarchy (explicit in the system prompt):
 //   1. teacher's authorized study materials (retrieved chunks)
@@ -79,7 +80,7 @@ function describeIntent(intent: TutorIntent): string {
 }
 
 export function isProviderConfigured(): boolean {
-  return isGeminiConfigured();
+  return isGroqConfigured();
 }
 
 export async function generateWithProvider(
@@ -87,12 +88,12 @@ export async function generateWithProvider(
   context: TutorContext,
   evidence: MaterialEvidence[] = [],
 ): Promise<ProviderResult> {
-  if (!isGeminiConfigured()) throw new Error("GEMINI_NOT_CONFIGURED");
+  if (!isGroqConfigured()) throw new Error("GROQ_NOT_CONFIGURED");
   const result = await generateGroundedTutor({
     systemPrompt: SYSTEM_PROMPT,
     userPrompt: buildUserPrompt(intent, context, evidence),
   });
-  const usedTools = evidence.length > 0 ? ["material_retrieval", "gemini_tutor"] : ["gemini_tutor"];
+  const usedTools = evidence.length > 0 ? ["material_retrieval", "groq_tutor"] : ["groq_tutor"];
   const sourceLines = result.sources.map((s) =>
     s.page !== null ? `Source: ${s.title} (page ${s.page})` : `Source: ${s.title}`,
   );
@@ -101,7 +102,7 @@ export async function generateWithProvider(
     body,
     usedTools,
     suggestions: result.followups,
-    mode: result.grounded && evidence.length > 0 ? "gemini_grounded" : "gemini_general",
+    mode: result.grounded && evidence.length > 0 ? "grounded" : "general",
     grounded: result.grounded,
     sources: result.sources,
   };

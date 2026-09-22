@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
 import { processMaterialUpload, retryMaterialProcessing } from "./service";
-import { embedTexts } from "@/lib/ai/gemini";
 import { extractPdfPages, optimizePdf, validatePdfUpload } from "./pdf";
 
 vi.mock("./pdf", () => ({
@@ -8,10 +7,6 @@ vi.mock("./pdf", () => ({
   optimizePdf: vi.fn(),
   extractPdfPages: vi.fn(),
   chunkExtractedPages: vi.fn(),
-}));
-
-vi.mock("@/lib/ai/gemini", () => ({
-  embedTexts: vi.fn(),
 }));
 
 import { chunkExtractedPages } from "./pdf";
@@ -82,10 +77,6 @@ function mockHappyPipeline() {
     { pageNumber: 1, chunkIndex: 0, text: "alpha beta" },
     { pageNumber: 3, chunkIndex: 1, text: "gamma delta" },
   ]);
-  vi.mocked(embedTexts).mockResolvedValue([
-    Array.from({ length: 768 }, () => 0.1),
-    Array.from({ length: 768 }, () => 0.2),
-  ]);
 }
 
 describe("processMaterialUpload", () => {
@@ -103,18 +94,13 @@ describe("processMaterialUpload", () => {
     expect(storage.uploaded[0].bytes).toEqual(new Uint8Array([9, 9]));
     const chunkInsert = inserts.find((i) => i.table === "study_material_chunks");
     expect(chunkInsert?.rows).toHaveLength(2);
-    const embeddingInsert = inserts.find((i) => i.table === "study_material_embeddings");
-    expect(embeddingInsert?.rows).toHaveLength(2);
-    const chunkIds = new Set((chunkInsert?.rows as { id: string }[]).map((r) => r.id));
-    for (const row of embeddingInsert?.rows as { chunk_id: string }[]) {
-      expect(chunkIds.has(row.chunk_id)).toBe(true);
-    }
-    expect(vi.mocked(embedTexts)).toHaveBeenCalledWith(["alpha beta", "gamma delta"], "RETRIEVAL_DOCUMENT");
+    // No embedding provider is configured: nothing is written to the vector
+    // table, and the material still goes ready with an honest skipped status.
+    expect(inserts.some((i) => i.table === "study_material_embeddings")).toBe(false);
     const final = updates[updates.length - 1];
     expect(final.patch).toMatchObject({
       processing_status: "ready",
-      embedding_status: "complete",
-      embedding_model: "gemini-embedding-001",
+      embedding_status: "skipped",
     });
     const sized = updates.find((u) => u.patch.original_size_bytes === 100);
     expect(sized?.patch).toMatchObject({
@@ -145,15 +131,19 @@ describe("processMaterialUpload", () => {
     expect(second.updates.some((u) => u.patch.extraction_status === "no_text")).toBe(true);
   });
 
-  it("marks embedding failures instead of fake-ready", async () => {
+  it("records chunk ids for future embedding backfill", async () => {
     mockHappyPipeline();
-    vi.mocked(embedTexts).mockRejectedValue(new Error("GEMINI_RATE_LIMITED"));
-    const { supabase, updates, inserts } = mockDb();
-    await expect(
-      processMaterialUpload(supabase as never, { materialId: "m4", teacherId: "t1", bytes: BYTES, filename: "x.pdf" }),
-    ).rejects.toThrow("EMBEDDING_FAILED");
-    expect(inserts.some((i) => i.table === "study_material_embeddings")).toBe(false);
-    expect(updates[updates.length - 1].patch.processing_status).toBe("failed");
+    const { supabase, inserts } = mockDb();
+    await processMaterialUpload(supabase as never, {
+      materialId: "m4",
+      teacherId: "t1",
+      bytes: BYTES,
+      filename: "x.pdf",
+    });
+    const chunkInsert = inserts.find((i) => i.table === "study_material_chunks");
+    const ids = (chunkInsert?.rows as { id: string }[]).map((r) => r.id);
+    expect(ids).toHaveLength(2);
+    expect(new Set(ids).size).toBe(2);
   });
 });
 

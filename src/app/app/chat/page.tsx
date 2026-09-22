@@ -13,7 +13,7 @@ function toUIMessages(messages: Array<{ id: string; role: string; content: strin
       ? metadata.suggestions.filter((suggestion): suggestion is string => typeof suggestion === "string").slice(0, 4)
       : undefined;
     const mode =
-      metadata?.mode === "gemini_grounded" || metadata?.mode === "gemini_general" || metadata?.mode === "fallback"
+      metadata?.mode === "grounded" || metadata?.mode === "general" || metadata?.mode === "fallback"
         ? metadata.mode
         : undefined;
     return {
