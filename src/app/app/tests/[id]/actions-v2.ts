@@ -13,6 +13,10 @@ export async function startTestV2(testId: string) {
   if (!parsed.success) return { error: "Invalid test." };
 
   const supabase = await createClient();
+  // Commit any expired attempts first (separate transaction: an RPC that
+  // raises rolls its whole transaction back, so an in-RPC sweep alone could
+  // never persist a finalization on these paths).
+  await supabase.rpc("finalize_expired_attempts");
   const { data, error } = await supabase.rpc("start_test_attempt", { p_test_id: parsed.data });
   if (error || !data) return { error: "This test is not available." };
 
@@ -31,12 +35,18 @@ export async function saveAnswerV2(input: { attemptId: string; questionId: strin
   if (!attempt.success || !question.success) return { error: "Invalid answer." };
 
   const supabase = await createClient();
+  await supabase.rpc("finalize_expired_attempts");
   const { error } = await supabase.rpc("save_test_answer", {
     p_attempt_id: attempt.data,
     p_question_id: question.data,
     p_answer: input.answer,
   });
-  return error ? { error: "We couldn't save that answer." } : { ok: true };
+  if (!error) return { ok: true as const };
+  const code = `${error.message ?? ""} ${(error as { code?: string }).code ?? ""}`;
+  if (code.includes("ATTEMPT_NOT_SAVABLE") || code.includes("ATTEMPT_TIME_EXPIRED")) {
+    return { finalized: true as const };
+  }
+  return { error: "We couldn't save that answer." };
 }
 
 export async function submitTestV2(attemptId: string, testId: string, reason: "manual" | "auto_deadline" | "auto_leave" = "manual") {
@@ -46,8 +56,13 @@ export async function submitTestV2(attemptId: string, testId: string, reason: "m
   if (!attempt.success || !test.success) return { error: "Invalid attempt." };
 
   const supabase = await createClient();
+  await supabase.rpc("finalize_expired_attempts");
   const { data, error } = await supabase.rpc("submit_test_attempt", { p_attempt_id: attempt.data, p_reason: reason });
-  if (error || !data?.[0]) return { error: "We couldn't submit this attempt." };
+  if (error || !data?.[0]) {
+    const code = `${error?.message ?? ""} ${(error as { code?: string } | null)?.code ?? ""}`;
+    if (code.includes("ATTEMPT_NOT_SUBMITTABLE")) return { finalized: true as const };
+    return { error: "We couldn't submit this attempt." };
+  }
 
   revalidatePath("/app/tests");
   revalidatePath(`/app/tests/${test.data}`);

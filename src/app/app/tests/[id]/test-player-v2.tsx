@@ -60,6 +60,7 @@ export function TestPlayerV2({ testId, durationSeconds, deadlineAt, questions, i
   const [current, setCurrent] = useState(0);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [result, setResult] = useState<{ score: number; max_score: number } | null>(null);
+  const [finalized, setFinalized] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const lastSaveAt = useRef<Record<string, number>>({});
@@ -118,18 +119,29 @@ export function TestPlayerV2({ testId, durationSeconds, deadlineAt, questions, i
     void logSecurityEventV2({ attemptId, event, metadata });
   }
 
+  function showFinalized() {
+    finalizedRef.current = true;
+    setFinalized(true);
+    try {
+      window.sessionStorage.removeItem("saarthians-active-attempt");
+    } catch {
+      // Ignore.
+    }
+  }
+
   // Deadline auto-submit: the RPC stamps submitted_at at the deadline and
   // records auto_deadline even if this request arrives late.
   useEffect(() => {
-    if (remaining !== 0 || !attemptId || result || finalizedRef.current) return;
+    if (remaining !== 0 || !attemptId || result || finalized || finalizedRef.current) return;
     finalizedRef.current = true;
     void logSecurityEventV2({ attemptId, event: "deadline_finalize" });
     startTransition(async () => {
       const response = await submitTestV2(attemptId, testId, "auto_deadline");
-      if (response.result) setResult({ score: Number(response.result.score), max_score: Number(response.result.max_score) });
-      else setMessage(response.error ?? "Time expired. The server is finalizing your attempt.");
+      if ("result" in response && response.result) setResult({ score: Number(response.result.score), max_score: Number(response.result.max_score) });
+      else if ("finalized" in response) showFinalized();
+      else setMessage("error" in response && typeof response.error === "string" ? response.error : "Time expired. The server is finalizing your attempt.");
     });
-  }, [remaining, attemptId, result, testId]);
+  }, [remaining, attemptId, result, finalized, testId]);
 
   // Telemetry: heartbeats prove presence; visibility/focus/fullscreen events
   // are evidence rows, never gates. Refresh resumes (answers are server-side);
@@ -210,15 +222,17 @@ export function TestPlayerV2({ testId, durationSeconds, deadlineAt, questions, i
     lastSaveAt.current[questionId] = now;
     startTransition(async () => {
       const response = await saveAnswerV2({ attemptId: attemptId!, questionId, answer });
-      if (response.error) setMessage(response.error);
+      if ("finalized" in response) showFinalized();
+      else if ("error" in response && response.error) setMessage(response.error);
     });
   };
 
   const submit = (reason: SubmitReason = "manual") => startTransition(async () => {
     finalizedRef.current = true;
     const response = await submitTestV2(attemptId!, testId, reason);
-    if (response.result) setResult({ score: Number(response.result.score), max_score: Number(response.result.max_score) });
-    else setMessage(response.error ?? "Unable to submit assessment.");
+    if ("result" in response && response.result) setResult({ score: Number(response.result.score), max_score: Number(response.result.max_score) });
+    else if ("finalized" in response) showFinalized();
+    else setMessage("error" in response && typeof response.error === "string" ? response.error : "Unable to submit assessment.");
   });
 
   const enterFocusMode = () => {
@@ -230,6 +244,7 @@ export function TestPlayerV2({ testId, durationSeconds, deadlineAt, questions, i
   };
 
   if (!orderedQuestions.length) return <div style={card}><h2>No questions yet.</h2><p style={muted}>Ask your teacher to add questions before publishing.</p></div>;
+  if (finalized) return <div style={card}><span className="eyebrow">Auto-submitted</span><h2 style={{ margin: "12px 0 8px" }}>Time ran out — your answers were submitted.</h2><p style={muted}>Everything saved before the deadline counts. The server stamped your submission at the deadline, not when you saw this screen.</p><Link href="/app/results" style={{ display: "inline-flex", marginTop: 14, borderRadius: 999, padding: "10px 15px", background: "var(--accent)", color: "white", fontWeight: 700 }}>View results →</Link></div>;
   if (!attemptId) return <div style={card}><span className="eyebrow">Ready</span><h2 style={{ margin: "12px 0 8px" }}>A focused assessment, one question at a time.</h2><p style={muted}>{attemptDeadline ? `Submit before ${new Date(attemptDeadline).toLocaleString()} — the server clock decides.` : durationSeconds ? `You have ${Math.ceil(durationSeconds / 60)} minutes once you start.` : "There is no time limit."} Your answers are saved as you work. Leaving refreshes safely; signing out submits.</p><button type="button" onClick={begin} disabled={pending} style={button}>{pending ? "Starting…" : "Start assessment →"}</button>{message && <p role="alert" style={error}>{message}</p>}</div>;
   if (result) return <div style={{ ...card, background: "var(--accent)", color: "white" }}><span className="eyebrow" style={{ color: "#dff4c0" }}>Assessment complete</span><h2 style={{ fontSize: 52, margin: "12px 0 6px" }}>{Math.round(result.score / Math.max(result.max_score, 1) * 100)}%</h2><p style={{ color: "#d5dfdb" }}>Score: {result.score} / {result.max_score}.</p><Link href="/app/results" style={{ display: "inline-flex", marginTop: 14, borderRadius: 999, padding: "10px 15px", background: "white", color: "var(--ink)", fontWeight: 700 }}>View results →</Link></div>;
 
