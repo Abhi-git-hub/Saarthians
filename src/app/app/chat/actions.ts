@@ -9,7 +9,12 @@ import { selectTutorContext } from "@/lib/ai/context";
 import { classifyIntent, topicKeywords } from "@/lib/ai/intent";
 import { respondToIntent } from "@/lib/ai/engine";
 import { generateWithProvider, isProviderConfigured } from "@/lib/ai/provider";
-import type { TutorAnswer, TutorContext } from "@/lib/ai/types";
+import { retrieveMaterialEvidence, type MaterialEvidence } from "@/lib/ai/retrieval";
+import type { TutorAnswer, TutorAnswerMode, TutorContext, TutorSource } from "@/lib/ai/types";
+
+const chatRequestSchema = chatMessageSchema.extend({
+  materialId: z.string().uuid().nullish(),
+});
 
 export type ChatConversation = {
   id: string;
@@ -93,11 +98,22 @@ async function assertDailyBudget(supabase: Awaited<ReturnType<typeof createClien
 
 export async function sendChatMessage(input: unknown): Promise<{ conversationId: string }> {
   const user = await requireRole(["student"]);
-  const parsed = chatMessageSchema.safeParse(input);
+  const parsed = chatRequestSchema.safeParse(input);
   if (!parsed.success) throw new Error("INVALID_MESSAGE");
 
   const supabase = await createClient();
   await assertDailyBudget(supabase, user.id);
+
+  const materialId = parsed.data.materialId ?? null;
+  if (materialId) {
+    const { data: scoped, error: scopeError } = await supabase
+      .from("study_materials")
+      .select("id")
+      .eq("id", materialId)
+      .eq("processing_status", "ready")
+      .single();
+    if (scopeError || !scoped) throw new Error("MATERIAL_NOT_FOUND");
+  }
 
   let conversationId = parsed.data.conversationId;
   if (conversationId) {
@@ -130,11 +146,11 @@ export async function sendChatMessage(input: unknown): Promise<{ conversationId:
 
   if (userMessageError) throw new Error("CHAT_SEND_FAILED");
 
-  // Intent → context → tools → validated answer. The provider seam is live:
-  // when a hosted model is configured, generation routes through it with the
-  // same authorized context; any provider failure falls back to the local
-  // grounded engine so the student still gets a useful, truthful answer.
-  // Today no provider is configured, so the local engine always answers.
+  // Intent → context → tools → validated answer. When Gemini is configured,
+  // retrieval runs first (scoped to authorized materials, optionally to one
+  // material via "Ask tutor about this PDF"), then generation. Any provider
+  // or retrieval failure falls back to the local grounded engine with an
+  // honest `fallback` mode — never labeled as generative AI.
   const intent = classifyIntent(parsed.data.content);
   let context: TutorContext;
   try {
@@ -147,9 +163,23 @@ export async function sendChatMessage(input: unknown): Promise<{ conversationId:
   }
 
   let answer: TutorAnswer;
+  let mode: TutorAnswerMode = "fallback";
+  let sources: TutorSource[] = [];
+  let evidence: MaterialEvidence[] = [];
   if (isProviderConfigured()) {
     try {
-      answer = await generateWithProvider(intent, context);
+      evidence = await retrieveMaterialEvidence(supabase, {
+        query: parsed.data.content,
+        materialId,
+      });
+    } catch {
+      evidence = [];
+    }
+    try {
+      const provided = await generateWithProvider(intent, context, evidence);
+      answer = { body: provided.body, usedTools: provided.usedTools, suggestions: provided.suggestions };
+      mode = provided.mode ?? "gemini_general";
+      sources = provided.sources ?? [];
     } catch {
       answer = respondToIntent(intent, context);
     }
@@ -162,7 +192,16 @@ export async function sendChatMessage(input: unknown): Promise<{ conversationId:
     conversation_id: conversationId,
     role: "assistant",
     content: body,
-    context_metadata_json: { intent: intent.kind, usedTools: answer.usedTools, suggestions: answer.suggestions },
+    context_metadata_json: {
+      intent: intent.kind,
+      usedTools: evidence.length > 0 && !answer.usedTools.includes("material_retrieval")
+        ? [...answer.usedTools, "material_retrieval"]
+        : answer.usedTools,
+      suggestions: answer.suggestions,
+      mode,
+      sources,
+      materialId,
+    },
   });
 
   if (assistantMessageError) throw new Error("CHAT_SEND_FAILED");

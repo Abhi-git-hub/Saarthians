@@ -1,21 +1,27 @@
 import Link from "next/link";
 import { getConversation, listConversations } from "./actions";
+import { createClient } from "@/lib/supabase/server";
 import { ChatClient, type UIMessage } from "./chat-client";
 
 function toUIMessages(messages: Array<{ id: string; role: string; content: string; context_metadata_json?: unknown }>): UIMessage[] {
   return messages.map((message) => {
     const metadata =
       message.context_metadata_json && typeof message.context_metadata_json === "object"
-        ? (message.context_metadata_json as { suggestions?: unknown })
+        ? (message.context_metadata_json as { suggestions?: unknown; mode?: unknown })
         : null;
     const suggestions = Array.isArray(metadata?.suggestions)
       ? metadata.suggestions.filter((suggestion): suggestion is string => typeof suggestion === "string").slice(0, 4)
       : undefined;
+    const mode =
+      metadata?.mode === "gemini_grounded" || metadata?.mode === "gemini_general" || metadata?.mode === "fallback"
+        ? metadata.mode
+        : undefined;
     return {
       id: message.id,
       role: message.role === "assistant" ? "assistant" : "user",
       content: message.content,
       suggestions,
+      mode,
     };
   });
 }
@@ -27,10 +33,25 @@ export default async function ChatPage({
 }) {
   const params = await searchParams;
   const requestedId = typeof params.c === "string" ? params.c : null;
+  const requestedMaterial = typeof params.m === "string" ? params.m : null;
 
   const conversations = await listConversations();
   const activeId = requestedId ?? conversations[0]?.id ?? null;
   const active = activeId ? await getConversation(activeId).catch(() => null) : null;
+
+  // "Ask tutor about this PDF": resolve the scope title through RLS so an
+  // unauthorized id simply shows no scope instead of leaking existence.
+  let materialScope: { id: string; title: string } | null = null;
+  if (requestedMaterial && /^[0-9a-f-]{36}$/i.test(requestedMaterial)) {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("study_materials")
+      .select("id,title")
+      .eq("id", requestedMaterial)
+      .eq("processing_status", "ready")
+      .single();
+    if (data) materialScope = { id: data.id, title: data.title };
+  }
 
   return (
     <main className="container" style={{ padding: "48px 0 80px", maxWidth: 920 }}>
@@ -71,6 +92,7 @@ export default async function ChatPage({
         conversationId={active?.conversation.id ?? null}
         initialMessages={active ? toUIMessages(active.messages as Array<{ id: string; role: string; content: string; context_metadata_json?: unknown }>) : []}
         hasConversations={conversations.length > 0}
+        materialScope={materialScope}
       />
     </main>
   );

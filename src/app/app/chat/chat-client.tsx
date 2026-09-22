@@ -9,7 +9,19 @@ export type UIMessage = {
   role: "user" | "assistant";
   content: string;
   suggestions?: string[];
+  mode?: "gemini_grounded" | "gemini_general" | "fallback";
 };
+
+function modeLabel(mode: NonNullable<UIMessage["mode"]>): string {
+  switch (mode) {
+    case "gemini_grounded":
+      return "Grounded in your material";
+    case "gemini_general":
+      return "General explanation";
+    case "fallback":
+      return "Study engine";
+  }
+}
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -32,10 +44,12 @@ export function ChatClient({
   conversationId,
   initialMessages,
   hasConversations,
+  materialScope,
 }: {
   conversationId: string | null;
   initialMessages: UIMessage[];
   hasConversations: boolean;
+  materialScope: { id: string; title: string } | null;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -54,8 +68,10 @@ export function ChatClient({
     setDraft("");
     startTransition(async () => {
       try {
-        const result = await sendChatMessage({ conversationId, content: text });
-        router.replace(`/app/chat?c=${result.conversationId}`);
+        const result = await sendChatMessage({ conversationId, content: text, materialId: materialScope?.id ?? null });
+        router.replace(
+          materialScope ? `/app/chat?c=${result.conversationId}&m=${materialScope.id}` : `/app/chat?c=${result.conversationId}`,
+        );
         router.refresh();
       } catch {
         setError("Couldn't send that. Check your connection and try again.");
@@ -80,6 +96,14 @@ export function ChatClient({
 
   return (
     <div style={{ display: "grid", gap: 16, marginTop: 28 }}>
+      {materialScope && (
+        <div style={{ border: "1px solid var(--line)", borderRadius: 999, padding: "10px 18px", background: "var(--paper)", color: "var(--muted)", fontSize: 13, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span>Asking about <strong style={{ color: "var(--ink)" }}>{materialScope.title}</strong></span>
+          <button type="button" onClick={() => router.replace(conversationId ? `/app/chat?c=${conversationId}` : "/app/chat")} style={{ border: 0, background: "transparent", color: "var(--muted)", cursor: "pointer", textDecoration: "underline" }}>
+            Ask generally instead
+          </button>
+        </div>
+      )}
       <div style={{ display: "grid", gap: 12 }} aria-live="polite">
         {initialMessages.map((message) => (
           <article
@@ -100,7 +124,14 @@ export function ChatClient({
             {message.role === "user" ? (
               <span style={{ whiteSpace: "pre-wrap" }}>{message.content}</span>
             ) : (
-              <span dangerouslySetInnerHTML={{ __html: renderBody(message.content) }} />
+              <span>
+                {message.mode && (
+                  <span style={{ display: "inline-block", fontSize: 11, textTransform: "uppercase", letterSpacing: ".08em", color: "var(--muted)", border: "1px solid var(--line)", borderRadius: 999, padding: "3px 10px", marginBottom: 8 }}>
+                    {modeLabel(message.mode)}
+                  </span>
+                )}
+                <span dangerouslySetInnerHTML={{ __html: renderBody(message.content) }} style={{ display: "block" }} />
+              </span>
             )}
           </article>
         ))}
