@@ -27,7 +27,7 @@ describe("retrieveMaterialEvidence", () => {
         distance: 0.2,
       },
     ]);
-    const evidence = await retrieveMaterialEvidence(supabase, { query: "newton laws" });
+    const evidence = await retrieveMaterialEvidence(supabase as never, { query: "newton laws" });
     expect(vi.mocked(embedTexts)).toHaveBeenCalledWith(["newton laws"], "RETRIEVAL_QUERY");
     expect(supabase.rpc).toHaveBeenCalledWith(
       "match_material_chunks",
@@ -48,7 +48,7 @@ describe("retrieveMaterialEvidence", () => {
   it("scopes retrieval to one material and clamps limits", async () => {
     vi.mocked(embedTexts).mockResolvedValue([VECTOR]);
     const supabase = mockSupabase([]);
-    await retrieveMaterialEvidence(supabase, { query: "q", materialId: "m9", limit: 99 });
+    await retrieveMaterialEvidence(supabase as never, { query: "q", materialId: "m9", limit: 99 });
     expect(supabase.rpc).toHaveBeenCalledWith(
       "match_material_chunks",
       expect.objectContaining({ p_material_id: "m9", p_limit: 8 }),
@@ -57,8 +57,8 @@ describe("retrieveMaterialEvidence", () => {
 
   it("returns empty for blank queries and surfaces RPC failures", async () => {
     const supabase = mockSupabase(null, { message: "denied" });
-    expect(await retrieveMaterialEvidence(supabase, { query: "   " })).toEqual([]);
-    await expect(retrieveMaterialEvidence(supabase, { query: "q" })).rejects.toThrow("RETRIEVAL_FAILED");
+    expect(await retrieveMaterialEvidence(supabase as never, { query: "   " })).toEqual([]);
+    await expect(retrieveMaterialEvidence(supabase as never, { query: "q" })).rejects.toThrow("RETRIEVAL_FAILED");
   });
 });
 

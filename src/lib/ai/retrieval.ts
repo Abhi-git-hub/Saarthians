@@ -1,4 +1,7 @@
+import { createClient } from "@/lib/supabase/server";
 import { embedTexts } from "./gemini";
+
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
 // Authorized semantic retrieval over study-material chunks.
 //
@@ -30,12 +33,7 @@ const DEFAULT_THRESHOLD = 0.45;
 const MAX_EVIDENCE_CHARS = 6000;
 
 export async function retrieveMaterialEvidence(
-  supabase: {
-    rpc: (
-      fn: string,
-      args: Record<string, unknown>,
-    ) => Promise<{ data: unknown; error: { message: string } | null }>;
-  },
+  supabase: ServerClient,
   options: RetrievalOptions,
 ): Promise<MaterialEvidence[]> {
   const query = options.query.trim();

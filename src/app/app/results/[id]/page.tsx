@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
+import { attemptStateLabel, resolveAttemptState } from "@/lib/assessment";
 
 export default async function ResultDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -10,7 +11,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
 
   const { data: attempt, error } = await supabase
     .from("test_attempts")
-    .select("id,test_id,status,score,max_score,submitted_at,tests(title,instructions),test_answers(id,question_id,answer_json,awarded_points,feedback,test_questions(id,prompt,points,correct_answer_json,type,options_json))")
+    .select("id,test_id,status,submission_reason,score,max_score,submitted_at,tests(title,instructions),test_answers(id,question_id,answer_json,awarded_points,feedback,test_questions(id,prompt,points,correct_answer_json,type,options_json))")
     .eq("id", id)
     .eq("student_id", user.id)
     .single();
@@ -32,7 +33,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "end", gap: 20, flexWrap: "wrap", marginTop: 16 }}>
         <div>
           <h1 style={{ fontSize: "clamp(42px,6vw,70px)", lineHeight: .95, letterSpacing: "-.06em", margin: 0 }}>{test?.title ?? "Assessment"}</h1>
-          <p style={{ color: "var(--muted)", margin: "12px 0 0" }}>{attempt.submitted_at ? `Submitted ${new Date(attempt.submitted_at).toLocaleString()}` : "Not submitted"}</p>
+          <p style={{ color: "var(--muted)", margin: "12px 0 0" }}>{attempt.submitted_at ? `${attemptStateLabel(resolveAttemptState(attempt.status, attempt.submission_reason))} ${new Date(attempt.submitted_at).toLocaleString()}` : "Not submitted"}</p>
         </div>
         <div style={{ textAlign: "right" }}><strong style={{ display: "block", fontSize: 48, letterSpacing: "-.06em" }}>{percent === null ? "—" : `${percent}%`}</strong><span style={{ color: "var(--muted)", fontSize: 13 }}>{attempt.score ?? 0} / {attempt.max_score ?? 0} points</span></div>
       </div>

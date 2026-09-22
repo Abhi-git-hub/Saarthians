@@ -29,6 +29,10 @@ export async function POST(request: Request) {
 
   try {
     const supabase = await createClient();
+    // Separate committed sweep first: a raising RPC rolls back its whole
+    // transaction, so the sweep inside submit_test_attempt could never
+    // persist on paths that end in an error.
+    await supabase.rpc("finalize_expired_attempts");
     if (parsed.data.reason === "signout_finalize") {
       await supabase.rpc("log_test_security_event", {
         p_attempt_id: parsed.data.attemptId,
