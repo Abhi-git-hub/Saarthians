@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Role } from "@/lib/security";
@@ -16,6 +17,14 @@ const labels: Record<Role, string> = { student: "Student", teacher: "Teacher", a
 export function WorkspaceNav({ role, displayName, username }: { role: Role; displayName: string; username?: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   async function signOut() {
     // If a test attempt is active, warn and finalize it first: signing out
@@ -59,7 +68,7 @@ export function WorkspaceNav({ role, displayName, username }: { role: Role; disp
   }
 
   return (
-    <header className="workspace-nav">
+    <header className="workspace-nav" data-scrolled={scrolled}>
       <div className="container workspace-nav-inner">
         <Link href={role === "student" ? "/app" : role === "teacher" ? "/teacher" : "/admin"} className="workspace-brand">
           saarthians<span>.online</span>

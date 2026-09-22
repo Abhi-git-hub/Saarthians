@@ -32,6 +32,15 @@ export function PublicHeader() {
     setOpen(false);
   }
 
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -49,7 +58,7 @@ export function PublicHeader() {
   }, [open ]);
 
   return (
-    <header className="public-header">
+    <header className="public-header" data-scrolled={scrolled}>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <div className="public-header-inner container">
         <Link href="/" className="public-brand" aria-label="Saarthians home">
