@@ -78,8 +78,33 @@ export function StatusPill({ tone, children }: { tone: "live" | "idle" | "warn" 
   return <span className={`status-pill is-${tone}`}>{children}</span>;
 }
 
-export function ProgressBar({ value, max = 100, label }: { value: number; max?: number; label?: string }) {
-  const pct = Math.max(0, Math.min(100, (value / Math.max(max, 1)) * 100));
+export function LoadingState({ label, lines = 3 }: { label: string; lines?: number }) {
+  return (
+    <div className="loading-state" role="status" aria-label={label} aria-busy="true">
+      <span className="loading-line title" aria-hidden="true" />
+      {Array.from({ length: lines }, (_, i) => (
+        <span key={i} className="loading-line" aria-hidden="true" />
+      ))}
+      <span className="loading-label">{label}</span>
+    </div>
+  );
+}
+
+export function ErrorState({ title, body, retryHref }: { title: string; body: string; retryHref?: string }) {
+  return (
+    <div className="error-state-block" role="alert">
+      <strong>{title}</strong>
+      <p>{body}</p>
+      {retryHref && (
+        <Link href={retryHref} className="text-link">
+          Try again →
+        </Link>
+      )}
+    </div>
+  );
+}
+
+export function ProgressBar({ value, max = 100, label }: { value: number; max?: number; label?: string }) {  const pct = Math.max(0, Math.min(100, (value / Math.max(max, 1)) * 100));
   return (
     <span
       className="progress-meter"

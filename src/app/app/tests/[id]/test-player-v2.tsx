@@ -247,16 +247,19 @@ export function TestPlayerV2({ testId, durationSeconds, deadlineAt, questions, i
 
   if (!orderedQuestions.length) return <div style={card}><h2>No questions yet.</h2><p style={muted}>Ask your teacher to add questions before publishing.</p></div>;
   if (finalized) return <div style={card}><span className="eyebrow">Auto-submitted</span><h2 style={{ margin: "12px 0 8px" }}>Time ran out — your answers were submitted.</h2><p style={muted}>Everything saved before the deadline counts. The server stamped your submission at the deadline, not when you saw this screen.</p><Link href="/app/results" style={{ display: "inline-flex", marginTop: 14, borderRadius: 999, padding: "10px 15px", background: "var(--accent)", color: "white", fontWeight: 700 }}>View results →</Link></div>;
-  if (!attemptId) return <div style={card}><span className="eyebrow">Ready</span><h2 style={{ margin: "12px 0 8px" }}>A focused assessment, one question at a time.</h2><p style={muted}>{attemptDeadline ? `Submit before ${new Date(attemptDeadline).toLocaleString()} — the server clock decides.` : durationSeconds ? `You have ${Math.ceil(durationSeconds / 60)} minutes once you start.` : "There is no time limit."} Your answers are saved as you work. Leaving refreshes safely; signing out submits.</p><button type="button" onClick={begin} disabled={pending} className="primary-button">{pending ? "Starting…" : "Start assessment →"}</button>{message && <p role="alert" style={error}>{message}</p>}</div>;
+  if (!attemptId) return <div style={card}><span className="eyebrow">Ready</span><h2 style={{ margin: "12px 0 8px" }}>A focused assessment, one question at a time.</h2><p style={muted}>{attemptDeadline ? `Submit before ${new Date(attemptDeadline).toLocaleString()} — the server clock decides.` : durationSeconds ? `You have ${Math.ceil(durationSeconds / 60)} minutes once you start.` : "There is no time limit."} Your answers are saved as you work.</p><p style={muted}>Leaving the test may submit your attempt — refreshing is safe and resumes where you left off, but signing out hands everything in. When time runs out, the server submits automatically.</p><button type="button" onClick={begin} disabled={pending} className="primary-button">{pending ? "Starting…" : "Start assessment →"}</button>{message && <p role="alert" style={error}>{message}</p>}</div>;
   if (result) return <div style={{ ...card, background: "var(--accent)", color: "white" }}><span className="eyebrow" style={{ color: "#dff4c0" }}>Assessment complete</span><h2 style={{ fontSize: 52, margin: "12px 0 6px" }}>{Math.round(result.score / Math.max(result.max_score, 1) * 100)}%</h2><p style={{ color: "#d5dfdb" }}>Score: {result.score} / {result.max_score}.</p><Link href="/app/results" style={{ display: "inline-flex", marginTop: 14, borderRadius: 999, padding: "10px 15px", background: "white", color: "var(--ink)", fontWeight: 700 }}>View results →</Link></div>;
 
   const options = orderedOptions[question.id] ?? [];
   const value = typeof answers[question.id] === "string" ? String(answers[question.id]) : "";
   const clock = remaining === null ? "No timer" : `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`;
+  // Calm by default; warning under five minutes, critical under one. The
+  // server stays authoritative — this only changes the timer's dress.
+  const urgency = remaining === null ? "calm" : remaining < 60 ? "critical" : remaining < 300 ? "warn" : "calm";
   const unanswered = orderedQuestions.length - answered;
   return (
     <div className="exam-stage">
-      <div className="exam-timerbar" role="status" aria-label="Assessment progress">
+      <div className="exam-timerbar" role="status" aria-label="Assessment progress" data-urgency={urgency}>
         <span>Question {current + 1} of {orderedQuestions.length} · {answered} answered</span>
         <span className="exam-progress" aria-hidden="true"><span style={{ width: `${(answered / Math.max(orderedQuestions.length, 1)) * 100}%` }} /></span>
         <span style={{ display: "flex", gap: 10, alignItems: "center" }}>

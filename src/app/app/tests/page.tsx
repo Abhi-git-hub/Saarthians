@@ -28,7 +28,12 @@ export default async function TestsPage() {
             </article>
           );
         })}
-        {!tests.length && <div style={{ borderTop: "1px solid var(--line)", padding: "28px 0", color: "var(--muted)" }}>No published tests are available yet.</div>}
+        {!tests.length && (
+          <div style={{ borderTop: "1px solid var(--line)", padding: "28px 0" }}>
+            <strong style={{ fontSize: 17 }}>Your teacher hasn&apos;t published a test yet.</strong>
+            <p style={{ color: "var(--muted)", margin: "8px 0 0", lineHeight: 1.6 }}>When one is published, it will appear here with its live window. Meanwhile, your notes and study material are fair game for the tutor.</p>
+          </div>
+        )}
       </div>
     </main>
   );

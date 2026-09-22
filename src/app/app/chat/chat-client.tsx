@@ -28,17 +28,53 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-// Minimal safe renderer for the tutor's markdown-lite (bold + line breaks).
-// User and assistant content is HTML-escaped first, so stored content can
-// never inject markup.
-function renderBody(content: string): string {
-  return escapeHtml(content)
-    .split("\n")
-    .map((line) => {
-      const bolded = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-      return bolded === "" ? "<br />" : `<p>${bolded}</p>`;
-    })
-    .join("");
+// Slightly richer renderer for the tutor's markdown-lite: headings, lists,
+// inline code, bold, line breaks. User and assistant content is HTML-escaped
+// first, so stored content can never inject markup.
+function renderInline(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`]+?)`/g, "<code>$1</code>");
+}
+
+// Exported for unit tests (pure function — no DOM, no secrets).
+export function renderBody(content: string): string {
+  const out: string[] = [];
+  let list: "ul" | "ol" | null = null;
+  const closeList = () => {
+    if (list) {
+      out.push(`</${list}>`);
+      list = null;
+    }
+  };
+  for (const line of escapeHtml(content).split("\n")) {
+    const heading = line.match(/^#{2,3}\s+(.*)/);
+    const bullet = line.match(/^[-•]\s+(.*)/);
+    const ordered = line.match(/^\d+[.)]\s+(.*)/);
+    if (heading) {
+      closeList();
+      out.push(`<h4>${renderInline(heading[1])}</h4>`);
+    } else if (bullet) {
+      if (list !== "ul") {
+        closeList();
+        out.push("<ul>");
+        list = "ul";
+      }
+      out.push(`<li>${renderInline(bullet[1])}</li>`);
+    } else if (ordered) {
+      if (list !== "ol") {
+        closeList();
+        out.push("<ol>");
+        list = "ol";
+      }
+      out.push(`<li>${renderInline(ordered[1])}</li>`);
+    } else {
+      closeList();
+      out.push(line === "" ? "<br />" : `<p>${renderInline(line)}</p>`);
+    }
+  }
+  closeList();
+  return out.join("");
 }
 
 const QUICK_ACTIONS = [
