@@ -68,6 +68,7 @@ export default function Home() {
             <SafeImage src={BRAND_IMAGES.classroom} alt="Inside a Saarthi Classes classroom" eager />
             <div className="hero-seal"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthi Classes seal" eager /><span>Guiding towards success</span></div>
             <div className="hero-float-card float"><strong>Doubts cleared daily.</strong><span>Ask anything · No hesitation</span></div>
+            <div className="hero-annotation float-slow" aria-hidden="true"><span>Today&apos;s focus</span><strong>Quadratic equations</strong><em>Class 10 · Mathematics</em></div>
           </div>
         </div>
       </section>
@@ -84,7 +85,7 @@ export default function Home() {
         <div className="container">
           <Reveal>
             <div className="section-intro">
-              <div><span className="eyebrow">The Learning Lab</span><h2>Think for <em>a minute.</em></h2></div>
+              <div><span className="chapter-mark"><i>02</i>Think</span><span className="eyebrow">The Learning Lab</span><h2>Think for <em>a minute.</em></h2></div>
               <p>Try a few questions. No sign-up, no pressure — just see how Saarthians makes learning feel.</p>
             </div>
           </Reveal>
@@ -97,7 +98,7 @@ export default function Home() {
       <section className="public-section container" id="why">
         <Reveal>
           <div className="section-intro">
-            <div><span className="eyebrow">Why Saarthians</span><h2>Teaching that treats every child <em>as capable.</em></h2></div>
+            <div><span className="chapter-mark"><i>03</i>Learn</span><span className="eyebrow">Why Saarthians</span><h2>Teaching that treats every child <em>as capable.</em></h2></div>
             <p>Parents keep describing the same three things. So we built the whole experience around them.</p>
           </div>
         </Reveal>
@@ -149,7 +150,7 @@ export default function Home() {
       <section className="public-section container" id="daily">
         <Reveal>
           <div className="section-intro">
-            <div><span className="eyebrow">One question, every day</span><h2>Today&apos;s <em>challenge.</em></h2></div>
+            <div><span className="chapter-mark"><i>04</i>Practice</span><span className="eyebrow">One question, every day</span><h2>Today&apos;s <em>challenge.</em></h2></div>
             <p>The same question for every visitor today. Tomorrow, a new one.</p>
           </div>
         </Reveal>
@@ -167,7 +168,7 @@ export default function Home() {
         <div className="container">
           <Reveal>
             <div className="section-intro">
-              <div><span className="eyebrow">Wall of love</span><h2>Parents notice.<br /><em>Students feel it.</em></h2></div>
+              <div><span className="chapter-mark"><i>05</i>Trust</span><span className="eyebrow">Wall of love</span><h2>Parents notice.<br /><em>Students feel it.</em></h2></div>
               <p>Unedited excerpts from our Google Maps listing — with a link to read every word in context.</p>
             </div>
           </Reveal>
@@ -226,7 +227,7 @@ export default function Home() {
       <section className="public-section container" id="journey">
         <Reveal>
           <div className="section-intro">
-            <div><span className="eyebrow">Find your stage</span><h2>Where are you <em>right now?</em></h2></div>
+            <div><span className="chapter-mark"><i>06</i>Choose your path</span><span className="eyebrow">Find your stage</span><h2>Where are you <em>right now?</em></h2></div>
             <p>Pick a stage to see the actual Saarthians tracks for that level — Class 9 through NEET & JEE.</p>
           </div>
         </Reveal>
@@ -272,7 +273,7 @@ export default function Home() {
 
       <section className="public-cta container">
         <Reveal>
-          <div><span className="eyebrow">Begin</span><h2>Your rank journey<br /><em>starts with a message.</em></h2></div>
+          <div><span className="chapter-mark"><i>07</i>Begin</span><span className="eyebrow">Begin</span><h2>Your rank journey<br /><em>starts with a message.</em></h2></div>
         </Reveal>
         <div className="hero-actions">
           <a href={whatsAppLink("Hi Saarthi Classes, I want to join.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Join Saarthians →</a>
