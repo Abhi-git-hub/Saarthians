@@ -26,7 +26,7 @@ export default async function TeacherStudentsPage() {
             return (
               <article key={row.student_id} style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 20, alignItems: "center", border: "1px solid var(--line)", borderRadius: 18, padding: 22, background: "white" }}>
                 <div>
-                  <strong style={{ fontSize: 18 }}>{profile?.display_name || "Unnamed student"}</strong>
+                  <Link href={`/teacher/students/${row.student_id}`} style={{ fontSize: 18, fontWeight: 750 }}>{profile?.display_name || "Unnamed student"}</Link>
                   <div style={{ color: "var(--muted)", fontSize: 13, marginTop: 5 }}>{profile?.status || "active"}</div>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 750, textTransform: "uppercase", letterSpacing: ".08em" }}>Active</span>

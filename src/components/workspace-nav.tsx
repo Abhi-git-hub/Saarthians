@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 import type { Role } from "@/lib/security";
 
 const navigation: Record<Role, Array<[string, string]>> = {
-  student: [["Overview", "/app"], ["Notes", "/app/notes"], ["Tests", "/app/tests"], ["Results", "/app/results"], ["Progress", "/app/progress"], ["Profile", "/app/profile"]],
-  teacher: [["Overview", "/teacher"], ["Students", "/teacher/students"], ["Tests", "/teacher/tests"], ["Results", "/teacher/results"], ["Profile", "/teacher/profile"]],
-  admin: [["Overview", "/admin"], ["Users", "/admin/users"], ["Relationships", "/admin/relationships"], ["Tests", "/admin/tests"], ["Audit", "/admin/audit"], ["Security", "/admin/security"], ["System", "/admin/system"]],
+  student: [["Overview", "/app"], ["Notes", "/app/notes"], ["Tests", "/app/tests"], ["Results", "/app/results"], ["Progress", "/app/progress"], ["AI Tutor", "/app/chat"], ["Profile", "/app/profile"], ["Settings", "/app/settings"]],
+  teacher: [["Overview", "/teacher"], ["Students", "/teacher/students"], ["Notes", "/teacher/notes"], ["Tests", "/teacher/tests"], ["Results", "/teacher/results"], ["Progress", "/teacher/progress"], ["Profile", "/teacher/profile"], ["Settings", "/teacher/settings"]],
+  admin: [["Overview", "/admin"], ["Users", "/admin/users"], ["Relationships", "/admin/relationships"], ["Tests", "/admin/tests"], ["Audit", "/admin/audit"], ["Security", "/admin/security"], ["System", "/admin/system"], ["Settings", "/admin/settings"]],
 };
 
 const labels: Record<Role, string> = { student: "Student", teacher: "Teacher", admin: "Admin" };
