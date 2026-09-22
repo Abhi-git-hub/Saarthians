@@ -30,6 +30,9 @@ describe("robots", () => {
 
 describe("production headers", () => {
   it("declares CSP without eval and with framing denied", async () => {
+    // next.config.mjs is untyped by design (it uses import.meta.dirname);
+    // the shape assertion below is the contract under test.
+    // @ts-expect-error untyped config module
     const config = (await import("../../next.config.mjs")) as {
       default: { headers: () => Promise<{ headers: { key: string; value: string }[] }[]> };
     };
