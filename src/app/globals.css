@@ -497,6 +497,18 @@ a.data-row:hover .row-arrow { transform:translateX(4px); color:var(--ink); }
 @media (prefers-reduced-motion: reduce) { .pipe.is-active { animation:none; } }
 @media (max-width: 860px) { .command-strip { grid-template-columns:1fr; } }
 @media (max-width: 640px) { .upload-grid { grid-template-columns:1fr; } .pipeline-steps { flex-wrap:wrap; } .pipeline-steps li { flex:1 1 40%; border-top:1px solid var(--line); } }
+/* ---- Admin clarity ---- */
+.admin-filterbar { margin-top:28px; display:grid; grid-template-columns:2fr 1fr 1fr auto; gap:12px; align-items:end; }
+.admin-filterbar label { display:grid; gap:8px; font-size:12px; font-weight:800; color:var(--muted); }
+.admin-filterbar input, .admin-filterbar select { border:1px solid var(--line); border-radius:13px; padding:12px 13px; color:var(--ink); background:var(--surface); font-size:14px; outline:none; }
+.admin-filterbar input:focus, .admin-filterbar select:focus { border-color:var(--accent); box-shadow:0 0 0 4px rgba(33,78,69,.08); }
+.admin-filter-actions { display:flex; gap:12px; align-items:center; }
+.admin-count { color:var(--muted); font-size:12.5px; margin:18px 0 4px; }
+.admin-rows .data-row { padding-top:13px; padding-bottom:13px; }
+.admin-error { margin-top:16px; border:1px solid #e5b4b4; background:#fdf3f3; border-radius:16px; padding:18px; }
+.admin-error p { margin:8px 0 0; color:var(--muted); }
+@media (max-width: 860px) { .admin-filterbar { grid-template-columns:1fr 1fr; } }
+@media (max-width: 640px) { .admin-filterbar { grid-template-columns:1fr; } }
 /* Saarthi Classes brand integration */
 .public-brand { display:inline-flex; align-items:center; gap:10px; }
 .public-brand-logo { width:42px; height:42px; border-radius:50%; object-fit:cover; background:#0b0b0c; box-shadow:0 0 0 1px var(--line); }

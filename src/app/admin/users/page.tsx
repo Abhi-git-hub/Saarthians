@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listAdminProfiles } from "@/lib/admin";
 import { adminErrorMessage } from "@/lib/admin-validation";
-import { EmptyState, FilteredPagination, PageHeader, StatusBadge, cardStyle, fieldStyle } from "@/components/admin/ui";
+import { EmptyState, FilteredPagination, PageHeader, StatusBadge } from "@/components/admin/ui";
 import { PAGE_SIZE } from "@/lib/admin-validation";
 
 const roles = ["student", "teacher", "admin"];
@@ -47,66 +47,67 @@ export default async function AdminUsersPage({
       <div style={{ display: "flex", justifyContent: "space-between", gap: 18, alignItems: "end", flexWrap: "wrap" }}>
         <PageHeader eyebrow="Users" title="Everyone." lede="Search, filter, and manage student, teacher, and admin accounts." />
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Link href="/admin/users/new?role=student" style={primaryButton}>+ Add Student</Link>
-          <Link href="/admin/users/new?role=teacher" style={secondaryButton}>+ Add Teacher</Link>
+          <Link href="/admin/users/new?role=student" className="primary-button">+ Add Student</Link>
+          <Link href="/admin/users/new?role=teacher" className="primary-button" style={{ background: "var(--paper)", color: "var(--ink)", border: "1px solid var(--line)" }}>+ Add Teacher</Link>
         </div>
       </div>
 
-      <form method="get" style={{ ...cardStyle, marginTop: 28, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12 }}>
-        <label style={labelStyle}>
+      <form method="get" className="admin-filterbar">
+        <label>
           Search
-          <input name="search" defaultValue={search} placeholder="Display name…" maxLength={120} style={fieldStyle} />
+          <input name="search" defaultValue={search} placeholder="Display name…" maxLength={120} />
         </label>
-        <label style={labelStyle}>
+        <label>
           Role
-          <select name="role" defaultValue={role} style={fieldStyle}>
+          <select name="role" defaultValue={role}>
             <option value="">All roles</option>
             {roles.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
         </label>
-        <label style={labelStyle}>
+        <label>
           Status
-          <select name="status" defaultValue={status} style={fieldStyle}>
+          <select name="status" defaultValue={status}>
             <option value="">All statuses</option>
             {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </label>
-        <div style={{ alignSelf: "end", display: "flex", gap: 10 }}>
-          <button type="submit" style={primaryButton}>Apply</button>
-          <Link href="/admin/users" style={{ ...secondaryButton, textDecoration: "none" }}>Clear</Link>
+        <div className="admin-filter-actions">
+          <button type="submit" className="primary-button">Apply</button>
+          <Link href="/admin/users" className="text-link">Clear</Link>
         </div>
       </form>
 
       {loadError ? (
-        <div role="alert" style={{ ...cardStyle, marginTop: 16, borderColor: "#e5b4b4", background: "#fdf3f3" }}>
+        <div role="alert" className="admin-error">
           <strong>Could not load users.</strong>
-          <p style={{ margin: "8px 0 0", color: "var(--muted)" }}>{loadError}</p>
+          <p>{loadError}</p>
         </div>
       ) : rows.length === 0 ? (
         <div style={{ marginTop: 16 }}>
           <EmptyState title="No users match." body="Adjust the search or filters, or provision a new account." />
         </div>
       ) : (
-        <section style={{ marginTop: 16, display: "grid", gap: 10 }}>
-          {rows.map((profile) => (
-            <article key={profile.id} style={{ ...cardStyle, display: "grid", gridTemplateColumns: "1fr auto", gap: 16, alignItems: "center" }}>
-              <div>
-                <Link href={`/admin/users/${profile.id}`} style={{ fontSize: 17, fontWeight: 750 }}>
-                  {profile.display_name || "Unnamed"}
-                </Link>
-                <div style={{ color: "var(--muted)", fontSize: 13, marginTop: 4 }}>
-                  {profile.role}{profile.username ? ` · @${profile.username}` : ""}
-                  {profile.role === "student" && profile.grade_level ? ` · ${profile.grade_level}` : ""}
-                  {profile.role === "teacher" && profile.subject ? ` · ${profile.subject}` : ""}
-                  {" "}· joined {new Date(profile.created_at).toLocaleDateString()}
-                </div>
+        <section style={{ marginTop: 8 }}>
+          <p className="admin-count" aria-live="polite">{total} account{total === 1 ? "" : "s"} · page {currentPage}</p>
+          <div className="data-rows admin-rows">
+            {rows.map((profile) => (
+              <div key={profile.id} className="data-row">
+                <span className="data-row-main">
+                  <Link href={`/admin/users/${profile.id}`}><strong>{profile.display_name || "Unnamed"}</strong></Link>
+                  <span>
+                    {profile.role}{profile.username ? ` · @${profile.username}` : ""}
+                    {profile.role === "student" && profile.grade_level ? ` · ${profile.grade_level}` : ""}
+                    {profile.role === "teacher" && profile.subject ? ` · ${profile.subject}` : ""}
+                    {" "}· joined {new Date(profile.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </span>
+                <span className="data-row-side">
+                  <StatusBadge status={profile.status} />
+                  <Link href={`/admin/users/${profile.id}`} className="text-link">Open →</Link>
+                </span>
               </div>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <StatusBadge status={profile.status} />
-                <Link href={`/admin/users/${profile.id}`} style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>Open →</Link>
-              </div>
-            </article>
-          ))}
+            ))}
+          </div>
         </section>
       )}
 
@@ -114,7 +115,3 @@ export default async function AdminUsersPage({
     </main>
   );
 }
-
-const labelStyle = { display: "grid", gap: 8, fontSize: 13, fontWeight: 700 };
-const primaryButton = { border: 0, borderRadius: 999, padding: "12px 18px", background: "var(--accent)", color: "white", fontWeight: 750, cursor: "pointer", fontSize: 14 } as const;
-const secondaryButton = { border: "1px solid var(--line)", borderRadius: 999, padding: "12px 18px", background: "white", color: "var(--ink)", fontWeight: 700, cursor: "pointer", fontSize: 14 } as const;
