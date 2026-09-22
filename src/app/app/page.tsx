@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getStudentAttempts, getStudentMaterials, getStudentNotes, getStudentTests } from "@/lib/student";
-import { getStudentProgressSignals } from "@/lib/progress";
+import { getStudentAttempts, getStudentNotes, getStudentTests } from "@/lib/student";
+import { getStudentMaterials } from "@/lib/materials/service";
+import { getStudentProgressSignals, type ProgressSignal } from "@/lib/progress";
 import { requireRole } from "@/lib/auth";
 import { resolveTestLifecycle } from "@/lib/assessment";
 import { EmptyState, PageHeading, ProgressBar, SectionHeader } from "@/components/ui";
@@ -10,13 +11,14 @@ type Focus = { kind: string; title: string; reason: string; href: string; cta: s
 export default async function StudentWorkspace() {
   const user = await requireRole(["student"]);
   const firstName = user.displayName.split(" ")[0] || "learner";
-  const [notes, tests, attempts, signals, materials] = await Promise.all([
+  const [notes, tests, attempts, signals] = await Promise.all([
     getStudentNotes(),
     getStudentTests(),
     getStudentAttempts(),
     getStudentProgressSignals(),
-    getStudentMaterials().catch(() => []),
   ]);
+  const materials: Array<{ id: string; title: string }> =
+    (await getStudentMaterials().catch(() => null)) ?? [];
 
   const now = Date.now();
   const activeAttempt = attempts.find((a) => a.status === "in_progress" || a.status === "created");
@@ -32,7 +34,7 @@ export default async function StudentWorkspace() {
 
   let focus: Focus;
   if (activeAttempt) {
-    const title = Array.isArray(activeAttempt.tests) ? activeAttempt.tests[0]?.title : activeAttempt.tests?.title;
+    const title = tests.find((t) => t.id === activeAttempt.test_id)?.title;
     focus = {
       kind: "Resume",
       title: title ?? "Your assessment",
