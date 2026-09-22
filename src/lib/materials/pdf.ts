@@ -128,8 +128,9 @@ export async function extractPdfPages(bytes: Uint8Array): Promise<ExtractedPage[
     pages.push({ pageNumber, text });
     if (typeof page.cleanup === "function") page.cleanup();
   }
-  if (typeof (proxy as { destroy?: unknown }).destroy === "function") {
-    await proxy.destroy();
+  const maybeDestroyable = proxy as unknown as { destroy?: () => Promise<unknown> };
+  if (typeof maybeDestroyable.destroy === "function") {
+    await maybeDestroyable.destroy();
   }
   return pages;
 }
