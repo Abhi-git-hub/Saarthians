@@ -534,7 +534,6 @@ export type Database = {
       }
       test_questions: {
         Row: {
-          correct_answer_json: Json
           id: string
           options_json: Json | null
           points: number
@@ -544,7 +543,6 @@ export type Database = {
           type: string
         }
         Insert: {
-          correct_answer_json: Json
           id?: string
           options_json?: Json | null
           points: number
@@ -554,7 +552,6 @@ export type Database = {
           type: string
         }
         Update: {
-          correct_answer_json?: Json
           id?: string
           options_json?: Json | null
           points?: number
@@ -569,6 +566,29 @@ export type Database = {
             columns: ["test_id"]
             isOneToOne: false
             referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_question_keys: {
+        Row: {
+          question_id: string
+          correct_answer_json: Json
+        }
+        Insert: {
+          question_id: string
+          correct_answer_json?: Json
+        }
+        Update: {
+          question_id?: string
+          correct_answer_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_question_keys_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "test_questions"
             referencedColumns: ["id"]
           },
         ]

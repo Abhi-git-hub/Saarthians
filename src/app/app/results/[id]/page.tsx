@@ -11,7 +11,7 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
 
   const { data: attempt, error } = await supabase
     .from("test_attempts")
-    .select("id,test_id,status,submission_reason,score,max_score,submitted_at,tests(title,instructions),test_answers(id,question_id,answer_json,awarded_points,feedback,test_questions(id,prompt,points,correct_answer_json,type,options_json))")
+    .select("id,test_id,status,submission_reason,score,max_score,submitted_at,tests(title,instructions),test_answers(id,question_id,answer_json,awarded_points,feedback,test_questions(id,prompt,points,type,options_json,test_question_keys(correct_answer_json)))")
     .eq("id", id)
     .eq("student_id", user.id)
     .single();
@@ -43,7 +43,13 @@ export default async function ResultDetailPage({ params }: { params: Promise<{ i
           const question = Array.isArray(answer.test_questions) ? answer.test_questions[0] : answer.test_questions;
           const isCorrect = answer.awarded_points !== null && Number(answer.awarded_points) === Number(question?.points ?? -1);
           const answerValue = typeof answer.answer_json === "string" ? answer.answer_json : JSON.stringify(answer.answer_json ?? "");
-          const correctValue = typeof question?.correct_answer_json === "string" ? question.correct_answer_json : JSON.stringify(question?.correct_answer_json ?? "");
+          const keys = question?.test_question_keys as
+            | { correct_answer_json?: unknown }
+            | Array<{ correct_answer_json?: unknown }>
+            | null
+            | undefined;
+          const correctRaw = (Array.isArray(keys) ? keys[0] : keys)?.correct_answer_json;
+          const correctValue = typeof correctRaw === "string" ? correctRaw : JSON.stringify(correctRaw ?? "");
           return (
             <article key={answer.id} style={{ border: "1px solid var(--line)", borderRadius: 20, padding: 24, background: "white" }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "start" }}>

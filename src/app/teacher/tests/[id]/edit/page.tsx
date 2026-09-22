@@ -5,13 +5,21 @@ import { requireRole } from "@/lib/auth";
 import { TestEditor } from "@/components/teacher/test-editor";
 import { LiveSettings } from "@/components/teacher/live-settings";
 
+// Answer keys live in test_question_keys (teacher/admin/review-only RLS).
+// This join resolves to null for anyone else, never to a key leak.
+function keyOf(q: { test_question_keys?: unknown }): unknown {
+  const nested = q.test_question_keys as { correct_answer_json?: unknown } | Array<{ correct_answer_json?: unknown }> | null | undefined;
+  const row = Array.isArray(nested) ? nested[0] : nested;
+  return row?.correct_answer_json ?? null;
+}
+
 export default async function TeacherTestEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireRole(["teacher", "admin"]);
   const supabase = await createClient();
   const { data: test } = await supabase
     .from("tests")
-    .select("id,title,instructions,duration_seconds,status,start_time,end_time,assessment_pdf_path,teacher_id,test_questions(id,type,prompt,options_json,correct_answer_json,points,position)")
+    .select("id,title,instructions,duration_seconds,status,start_time,end_time,assessment_pdf_path,teacher_id,test_questions(id,type,prompt,options_json,points,position,test_question_keys(correct_answer_json))")
     .eq("id", id)
     .single();
 
@@ -31,7 +39,7 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
         <li><a href="#builder-review"><b>3</b> Review & publish</a></li>
       </ol>
       <div id="builder-questions">
-        <TestEditor testId={test.id} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: q.correct_answer_json as unknown }))} status={test.status} />
+        <TestEditor testId={test.id} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: keyOf(q) }))} status={test.status} />
       </div>
       <div id="builder-schedule">
         <LiveSettings testId={test.id} initialStart={test.start_time} initialEnd={test.end_time} initialAssessment={test.assessment_pdf_path} />

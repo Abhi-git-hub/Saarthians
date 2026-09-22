@@ -9,7 +9,7 @@ export async function selectTutorContext(userId: string, topicKeywords: string[]
 
   const { data: attempts, error: attemptsError } = await supabase
     .from("test_attempts")
-    .select("id,test_id,status,score,max_score,submitted_at,tests(title),test_answers(question_id,answer_json,awarded_points,feedback,test_questions(id,prompt,points,correct_answer_json))")
+    .select("id,test_id,status,score,max_score,submitted_at,tests(title),test_answers(question_id,answer_json,awarded_points,feedback,test_questions(id,prompt,points,test_question_keys(correct_answer_json)))")
     .eq("student_id", userId)
     .in("status", ["graded", "reviewed"])
     .order("submitted_at", { ascending: false, nullsFirst: false })
@@ -24,6 +24,13 @@ export async function selectTutorContext(userId: string, topicKeywords: string[]
       if (answer.awarded_points === null || Number(answer.awarded_points) > 0) continue;
       const question = Array.isArray(answer.test_questions) ? answer.test_questions[0] : answer.test_questions;
       if (!question) continue;
+      const keys = question.test_question_keys as
+        | { correct_answer_json?: unknown }
+        | Array<{ correct_answer_json?: unknown }>
+        | null
+        | undefined;
+      const keyRow = Array.isArray(keys) ? keys[0] : keys;
+      const correctRaw = keyRow?.correct_answer_json;
       mistakes.push({
         testId: attempt.test_id,
         testTitle: test?.title ?? "Assessment",
@@ -31,10 +38,7 @@ export async function selectTutorContext(userId: string, topicKeywords: string[]
         prompt: question.prompt,
         points: Number(question.points ?? 0),
         studentAnswer: typeof answer.answer_json === "string" ? answer.answer_json : JSON.stringify(answer.answer_json ?? ""),
-        correctAnswer:
-          typeof question.correct_answer_json === "string"
-            ? question.correct_answer_json
-            : JSON.stringify(question.correct_answer_json ?? ""),
+        correctAnswer: typeof correctRaw === "string" ? correctRaw : JSON.stringify(correctRaw ?? ""),
         feedback: answer.feedback,
         submittedAt: attempt.submitted_at,
       });
