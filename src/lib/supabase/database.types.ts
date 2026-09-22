@@ -1,472 +1,1074 @@
-// Supabase Database types reconstructed from supabase/migrations/*.sql
-// (0001_core through 20260910130000_teacher_question_workflow).
-//
-// No live database access was available when these were written, so the
-// migrations are the source of truth. If drift is suspected, regenerate with:
-//   supabase gen types typescript --project-id <ref> > src/lib/supabase/database.types.ts
-// and diff against this file.
-//
-// Deliberate omissions (not inventions):
-// - Relationships[] is empty everywhere: foreign-key constraint names are
-//   Postgres-generated (not named in migrations) and cannot be known here.
-// - updated_at on test_answers comes from 20260909140000_admin_control_plane.
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+// Supabase Database types generated from the live project.
+// Regenerate with the Supabase MCP `generate_typescript_types` tool
+// (or: supabase gen types typescript --project-id <ref>)
+// and overwrite this file. Last sync: learning-engine upgrade
+// (study materials, test scheduling, security events, pgvector RPCs).
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
-      profiles: {
-        Row: {
-          id: string;
-          display_name: string;
-          username: string | null;
-          role: Database["public"]["Enums"]["app_role"];
-          status: Database["public"]["Enums"]["user_status"];
-          phone: string | null;
-          grade_level: string | null;
-          subject: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id: string;
-          display_name?: string;
-          username?: string | null;
-          role?: Database["public"]["Enums"]["app_role"];
-          status?: Database["public"]["Enums"]["user_status"];
-          phone?: string | null;
-          grade_level?: string | null;
-          subject?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          display_name?: string;
-          username?: string | null;
-          role?: Database["public"]["Enums"]["app_role"];
-          status?: Database["public"]["Enums"]["user_status"];
-          phone?: string | null;
-          grade_level?: string | null;
-          subject?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      teacher_student: {
-        Row: { teacher_id: string; student_id: string; status: string; created_at: string };
-        Insert: { teacher_id: string; student_id: string; status?: string; created_at?: string };
-        Update: { teacher_id?: string; student_id?: string; status?: string; created_at?: string };
-        Relationships: [];
-      };
-      notes: {
-        Row: {
-          id: string;
-          owner_user_id: string;
-          title: string;
-          content: string;
-          visibility: Database["public"]["Enums"]["note_visibility"];
-          status: Database["public"]["Enums"]["content_status"];
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          owner_user_id: string;
-          title: string;
-          content?: string;
-          visibility?: Database["public"]["Enums"]["note_visibility"];
-          status?: Database["public"]["Enums"]["content_status"];
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          owner_user_id?: string;
-          title?: string;
-          content?: string;
-          visibility?: Database["public"]["Enums"]["note_visibility"];
-          status?: Database["public"]["Enums"]["content_status"];
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      note_shares: {
-        Row: { note_id: string; student_id: string; shared_by_user_id: string; created_at: string };
-        Insert: { note_id: string; student_id: string; shared_by_user_id: string; created_at?: string };
-        Update: { note_id?: string; student_id?: string; shared_by_user_id?: string; created_at?: string };
-        Relationships: [];
-      };
-      tests: {
-        Row: {
-          id: string;
-          teacher_id: string;
-          title: string;
-          instructions: string;
-          duration_seconds: number | null;
-          status: Database["public"]["Enums"]["content_status"];
-          published_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          teacher_id: string;
-          title: string;
-          instructions?: string;
-          duration_seconds?: number | null;
-          status?: Database["public"]["Enums"]["content_status"];
-          published_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          teacher_id?: string;
-          title?: string;
-          instructions?: string;
-          duration_seconds?: number | null;
-          status?: Database["public"]["Enums"]["content_status"];
-          published_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      test_questions: {
-        Row: {
-          id: string;
-          test_id: string;
-          type: string;
-          prompt: string;
-          options_json: Json | null;
-          correct_answer_json: Json;
-          points: number;
-          position: number;
-        };
-        Insert: {
-          id?: string;
-          test_id: string;
-          type: string;
-          prompt: string;
-          options_json?: Json | null;
-          correct_answer_json: Json;
-          points: number;
-          position: number;
-        };
-        Update: {
-          id?: string;
-          test_id?: string;
-          type?: string;
-          prompt?: string;
-          options_json?: Json | null;
-          correct_answer_json?: Json;
-          points?: number;
-          position?: number;
-        };
-        Relationships: [];
-      };
-      test_attempts: {
-        Row: {
-          id: string;
-          test_id: string;
-          student_id: string;
-          status: Database["public"]["Enums"]["attempt_status"];
-          started_at: string | null;
-          submitted_at: string | null;
-          score: number | null;
-          max_score: number | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          test_id: string;
-          student_id: string;
-          status?: Database["public"]["Enums"]["attempt_status"];
-          started_at?: string | null;
-          submitted_at?: string | null;
-          score?: number | null;
-          max_score?: number | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          test_id?: string;
-          student_id?: string;
-          status?: Database["public"]["Enums"]["attempt_status"];
-          started_at?: string | null;
-          submitted_at?: string | null;
-          score?: number | null;
-          max_score?: number | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      test_answers: {
-        Row: {
-          id: string;
-          attempt_id: string;
-          question_id: string;
-          answer_json: Json | null;
-          awarded_points: number | null;
-          feedback: string | null;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          attempt_id: string;
-          question_id: string;
-          answer_json?: Json | null;
-          awarded_points?: number | null;
-          feedback?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          attempt_id?: string;
-          question_id?: string;
-          answer_json?: Json | null;
-          awarded_points?: number | null;
-          feedback?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      chat_conversations: {
-        Row: { id: string; user_id: string; title: string | null; created_at: string; updated_at: string };
-        Insert: { id?: string; user_id: string; title?: string | null; created_at?: string; updated_at?: string };
-        Update: { id?: string; user_id?: string; title?: string | null; created_at?: string; updated_at?: string };
-        Relationships: [];
-      };
-      chat_messages: {
-        Row: {
-          id: string;
-          conversation_id: string;
-          role: string;
-          content: string;
-          context_metadata_json: Json | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          conversation_id: string;
-          role: string;
-          content: string;
-          context_metadata_json?: Json | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          conversation_id?: string;
-          role?: string;
-          content?: string;
-          context_metadata_json?: Json | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
       audit_events: {
         Row: {
-          id: string;
-          actor_user_id: string | null;
-          action: string;
-          resource_type: string;
-          resource_id: string | null;
-          metadata_json: Json | null;
-          ip_hash: string | null;
-          created_at: string;
-        };
+          action: string
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          ip_hash: string | null
+          metadata_json: Json | null
+          resource_id: string | null
+          resource_type: string
+        }
         Insert: {
-          id?: string;
-          actor_user_id?: string | null;
-          action: string;
-          resource_type: string;
-          resource_id?: string | null;
-          metadata_json?: Json | null;
-          ip_hash?: string | null;
-          created_at?: string;
-        };
+          action: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          metadata_json?: Json | null
+          resource_id?: string | null
+          resource_type: string
+        }
         Update: {
-          id?: string;
-          actor_user_id?: string | null;
-          action?: string;
-          resource_type?: string;
-          resource_id?: string | null;
-          metadata_json?: Json | null;
-          ip_hash?: string | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-    };
-    Views: Record<string, never>;
+          action?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          metadata_json?: Json | null
+          resource_id?: string | null
+          resource_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_events_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          context_metadata_json: Json | null
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          context_metadata_json?: Json | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          context_metadata_json?: Json | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_shares: {
+        Row: {
+          created_at: string
+          note_id: string
+          shared_by_user_id: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          note_id: string
+          shared_by_user_id: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          note_id?: string
+          shared_by_user_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_shares_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_shared_by_user_id_fkey"
+            columns: ["shared_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_shares_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          owner_user_id: string
+          status: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at: string
+          visibility: Database["public"]["Enums"]["note_visibility"]
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          owner_user_id: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title: string
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["note_visibility"]
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          owner_user_id?: string
+          status?: Database["public"]["Enums"]["content_status"]
+          title?: string
+          updated_at?: string
+          visibility?: Database["public"]["Enums"]["note_visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          grade_level: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["user_status"]
+          subject: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          grade_level?: string | null
+          id: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["user_status"]
+          subject?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          grade_level?: string | null
+          id?: string
+          phone?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: Database["public"]["Enums"]["user_status"]
+          subject?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      study_material_chunks: {
+        Row: {
+          chunk_index: number
+          id: string
+          material_id: string
+          metadata_json: Json
+          page_number: number
+          text: string
+        }
+        Insert: {
+          chunk_index?: number
+          id?: string
+          material_id: string
+          metadata_json?: Json
+          page_number?: number
+          text?: string
+        }
+        Update: {
+          chunk_index?: number
+          id?: string
+          material_id?: string
+          metadata_json?: Json
+          page_number?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_chunks_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "study_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_material_embeddings: {
+        Row: {
+          chunk_id: string
+          embedding: string
+          model: string
+        }
+        Insert: {
+          chunk_id: string
+          embedding: string
+          model?: string
+        }
+        Update: {
+          chunk_id?: string
+          embedding?: string
+          model?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_material_embeddings_chunk_id_fkey"
+            columns: ["chunk_id"]
+            isOneToOne: true
+            referencedRelation: "study_material_chunks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      study_materials: {
+        Row: {
+          chapter: string
+          compression_ratio: number
+          created_at: string
+          description: string
+          embedding_model: string
+          embedding_status: string
+          extraction_status: string
+          grade_level: string
+          id: string
+          mime_type: string
+          optimization_status: string
+          original_filename: string
+          original_size_bytes: number
+          page_count: number
+          processing_error: string | null
+          processing_status: string
+          storage_path: string
+          stored_size_bytes: number
+          subject: string
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          chapter?: string
+          compression_ratio?: number
+          created_at?: string
+          description?: string
+          embedding_model?: string
+          embedding_status?: string
+          extraction_status?: string
+          grade_level?: string
+          id?: string
+          mime_type?: string
+          optimization_status?: string
+          original_filename?: string
+          original_size_bytes?: number
+          page_count?: number
+          processing_error?: string | null
+          processing_status?: string
+          storage_path?: string
+          stored_size_bytes?: number
+          subject?: string
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          chapter?: string
+          compression_ratio?: number
+          created_at?: string
+          description?: string
+          embedding_model?: string
+          embedding_status?: string
+          extraction_status?: string
+          grade_level?: string
+          id?: string
+          mime_type?: string
+          optimization_status?: string
+          original_filename?: string
+          original_size_bytes?: number
+          page_count?: number
+          processing_error?: string | null
+          processing_status?: string
+          storage_path?: string
+          stored_size_bytes?: number
+          subject?: string
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_materials_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_student: {
+        Row: {
+          created_at: string
+          status: string
+          student_id: string
+          teacher_id: string
+        }
+        Insert: {
+          created_at?: string
+          status?: string
+          student_id: string
+          teacher_id: string
+        }
+        Update: {
+          created_at?: string
+          status?: string
+          student_id?: string
+          teacher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_student_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_student_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_answers: {
+        Row: {
+          answer_json: Json | null
+          attempt_id: string
+          awarded_points: number | null
+          feedback: string | null
+          id: string
+          question_id: string
+          updated_at: string
+        }
+        Insert: {
+          answer_json?: Json | null
+          attempt_id: string
+          awarded_points?: number | null
+          feedback?: string | null
+          id?: string
+          question_id: string
+          updated_at?: string
+        }
+        Update: {
+          answer_json?: Json | null
+          attempt_id?: string
+          awarded_points?: number | null
+          feedback?: string | null
+          id?: string
+          question_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "test_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "test_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_attempts: {
+        Row: {
+          created_at: string
+          deadline_at: string | null
+          id: string
+          max_score: number | null
+          score: number | null
+          started_at: string | null
+          status: Database["public"]["Enums"]["attempt_status"]
+          student_id: string
+          submission_reason: string | null
+          submitted_at: string | null
+          test_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline_at?: string | null
+          id?: string
+          max_score?: number | null
+          score?: number | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["attempt_status"]
+          student_id: string
+          submission_reason?: string | null
+          submitted_at?: string | null
+          test_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline_at?: string | null
+          id?: string
+          max_score?: number | null
+          score?: number | null
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["attempt_status"]
+          student_id?: string
+          submission_reason?: string | null
+          submitted_at?: string | null
+          test_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_attempts_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_attempts_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_questions: {
+        Row: {
+          correct_answer_json: Json
+          id: string
+          options_json: Json | null
+          points: number
+          position: number
+          prompt: string
+          test_id: string
+          type: string
+        }
+        Insert: {
+          correct_answer_json: Json
+          id?: string
+          options_json?: Json | null
+          points: number
+          position: number
+          prompt: string
+          test_id: string
+          type: string
+        }
+        Update: {
+          correct_answer_json?: Json
+          id?: string
+          options_json?: Json | null
+          points?: number
+          position?: number
+          prompt?: string
+          test_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_questions_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_security_events: {
+        Row: {
+          attempt_id: string
+          created_at: string
+          event_type: string
+          id: string
+          metadata_json: Json
+          student_id: string
+        }
+        Insert: {
+          attempt_id: string
+          created_at?: string
+          event_type: string
+          id?: string
+          metadata_json?: Json
+          student_id: string
+        }
+        Update: {
+          attempt_id?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata_json?: Json
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_security_events_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "test_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_security_events_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tests: {
+        Row: {
+          assessment_pdf_path: string | null
+          created_at: string
+          duration_seconds: number | null
+          end_time: string | null
+          id: string
+          instructions: string
+          published_at: string | null
+          start_time: string | null
+          status: Database["public"]["Enums"]["content_status"]
+          teacher_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_pdf_path?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          instructions?: string
+          published_at?: string | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          teacher_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_pdf_path?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          end_time?: string | null
+          id?: string
+          instructions?: string
+          published_at?: string | null
+          start_time?: string | null
+          status?: Database["public"]["Enums"]["content_status"]
+          teacher_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tests_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
-      is_admin: { Args: Record<string, never>; Returns: boolean };
-      is_teacher_of: { Args: { target_student: string }; Returns: boolean };
-      current_profile_role: {
-        Args: Record<string, never>;
-        Returns: Database["public"]["Enums"]["app_role"];
-      };
-      current_profile_status: {
-        Args: Record<string, never>;
-        Returns: Database["public"]["Enums"]["user_status"];
-      };
-      handle_new_user: { Args: Record<string, never>; Returns: unknown };
-      protect_profile_authorization_fields: { Args: Record<string, never>; Returns: unknown };
-      create_teacher_test: {
-        Args: { p_title: string; p_instructions?: string; p_duration_seconds?: number | null };
-        Returns: string;
-      };
-      create_test_question: {
+      admin_assign_teacher_student: {
+        Args: { p_student_id: string; p_teacher_id: string }
+        Returns: boolean
+      }
+      admin_db_check: { Args: never; Returns: string }
+      admin_list_audit: {
         Args: {
-          p_test_id: string;
-          p_type: string;
-          p_prompt: string;
-          p_options: Json;
-          p_correct_answer: Json;
-          p_points: number;
-          p_position: number;
-        };
-        Returns: string;
-      };
-      publish_teacher_test: { Args: { p_test_id: string }; Returns: boolean };
-      save_test_answer: {
-        Args: { p_attempt_id: string; p_question_id: string; p_answer: Json };
-        Returns: undefined;
-      };
-      submit_test_attempt: {
-        Args: { p_attempt_id: string };
+          p_action?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+        }
         Returns: {
-          score: number;
-          max_score: number;
-          status: Database["public"]["Enums"]["attempt_status"];
-        }[];
-      };
-      start_test_attempt: { Args: { p_test_id: string }; Returns: string };
-      admin_provision_profile: {
-        Args: {
-          p_user_id: string;
-          p_display_name: string;
-          p_username: string;
-          p_role: Database["public"]["Enums"]["app_role"];
-          p_phone?: string | null;
-          p_grade_level?: string | null;
-          p_subject?: string | null;
-        };
-        Returns: Database["public"]["Tables"]["profiles"]["Row"];
-      };
-      admin_overview: { Args: Record<string, never>; Returns: Json };
+          action: string
+          actor_name: string
+          actor_user_id: string
+          created_at: string
+          id: string
+          metadata_json: Json
+          resource_id: string
+          resource_type: string
+          total_count: number
+        }[]
+      }
       admin_list_profiles: {
         Args: {
-          p_role?: string | null;
-          p_status?: string | null;
-          p_search?: string | null;
-          p_limit?: number;
-          p_offset?: number;
-        };
+          p_limit?: number
+          p_offset?: number
+          p_role?: string
+          p_search?: string
+          p_status?: string
+        }
         Returns: {
-          id: string;
-          display_name: string;
-          username: string | null;
-          role: Database["public"]["Enums"]["app_role"];
-          status: Database["public"]["Enums"]["user_status"];
-          phone: string | null;
-          grade_level: string | null;
-          subject: string | null;
-          created_at: string;
-          updated_at: string;
-          total_count: number;
-        }[];
-      };
+          created_at: string
+          display_name: string
+          grade_level: string
+          id: string
+          phone: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["user_status"]
+          subject: string
+          total_count: number
+          updated_at: string
+          username: string
+        }[]
+      }
+      admin_list_relationships: {
+        Args: { p_limit?: number; p_offset?: number; p_search?: string }
+        Returns: {
+          created_at: string
+          status: string
+          student_id: string
+          student_name: string
+          student_status: Database["public"]["Enums"]["user_status"]
+          teacher_id: string
+          teacher_name: string
+          total_count: number
+        }[]
+      }
+      admin_list_tests: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_status?: string
+        }
+        Returns: {
+          attempt_count: number
+          created_at: string
+          id: string
+          published_at: string
+          question_count: number
+          status: Database["public"]["Enums"]["content_status"]
+          teacher_id: string
+          teacher_name: string
+          title: string
+          total_count: number
+        }[]
+      }
+      admin_overview: { Args: never; Returns: Json }
+      admin_prepare_user: {
+        Args: {
+          p_display_name: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_status?: Database["public"]["Enums"]["user_status"]
+          p_user_id: string
+        }
+        Returns: {
+          created_at: string
+          display_name: string
+          grade_level: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["user_status"]
+          subject: string | null
+          updated_at: string
+          username: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_provision_profile: {
+        Args: {
+          p_display_name: string
+          p_grade_level?: string
+          p_phone?: string
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_subject?: string
+          p_user_id: string
+          p_username: string
+        }
+        Returns: {
+          created_at: string
+          display_name: string
+          grade_level: string | null
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          status: Database["public"]["Enums"]["user_status"]
+          subject: string | null
+          updated_at: string
+          username: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_set_profile_status: {
-        Args: { p_user_id: string; p_status: Database["public"]["Enums"]["user_status"] };
-        Returns: boolean;
-      };
+        Args: {
+          p_status: Database["public"]["Enums"]["user_status"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      admin_unassign_teacher_student: {
+        Args: { p_student_id: string; p_teacher_id: string }
+        Returns: boolean
+      }
       admin_update_profile: {
         Args: {
-          p_user_id: string;
-          p_display_name: string;
-          p_phone?: string | null;
-          p_grade_level?: string | null;
-          p_subject?: string | null;
-        };
-        Returns: boolean;
-      };
-      admin_assign_teacher_student: {
-        Args: { p_teacher_id: string; p_student_id: string };
-        Returns: boolean;
-      };
-      admin_unassign_teacher_student: {
-        Args: { p_teacher_id: string; p_student_id: string };
-        Returns: boolean;
-      };
-      admin_list_relationships: {
-        Args: { p_search?: string | null; p_limit?: number; p_offset?: number };
+          p_display_name: string
+          p_grade_level?: string
+          p_phone?: string
+          p_subject?: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      create_teacher_test: {
+        Args: {
+          p_duration_seconds?: number
+          p_instructions?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_test: {
+        Args: {
+          p_duration_seconds?: number
+          p_instructions?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_test_question: {
+        Args: {
+          p_correct_answer: Json
+          p_options: Json
+          p_points: number
+          p_position: number
+          p_prompt: string
+          p_test_id: string
+          p_type: string
+        }
+        Returns: string
+      }
+      finalize_expired_attempts: { Args: never; Returns: number }
+      is_admin: { Args: never; Returns: boolean }
+      is_teacher_of: { Args: { target_student: string }; Returns: boolean }
+      log_test_security_event: {
+        Args: { p_attempt_id: string; p_event_type: string; p_metadata?: Json }
+        Returns: boolean
+      }
+      match_material_chunks: {
+        Args: {
+          p_limit?: number
+          p_material_id?: string
+          p_query: string
+          p_threshold?: number
+        }
         Returns: {
-          teacher_id: string;
-          teacher_name: string;
-          student_id: string;
-          student_name: string;
-          student_status: Database["public"]["Enums"]["user_status"];
-          status: string;
-          created_at: string;
-          total_count: number;
-        }[];
-      };
-      admin_list_tests: {
-        Args: { p_status?: string | null; p_search?: string | null; p_limit?: number; p_offset?: number };
+          chunk_id: string
+          chunk_text: string
+          distance: number
+          material_id: string
+          material_title: string
+          page_number: number
+        }[]
+      }
+      schedule_test: {
+        Args: { p_end_time?: string; p_start_time?: string; p_test_id: string }
+        Returns: boolean
+      }
+      start_test_attempt: { Args: { p_test_id: string }; Returns: string }
+      submit_test_attempt: {
+        Args: { p_attempt_id: string; p_reason?: string }
         Returns: {
-          id: string;
-          title: string;
-          status: Database["public"]["Enums"]["content_status"];
-          teacher_id: string;
-          teacher_name: string;
-          question_count: number;
-          attempt_count: number;
-          created_at: string;
-          published_at: string | null;
-          total_count: number;
-        }[];
-      };
-      admin_list_audit: {
-        Args: { p_action?: string | null; p_search?: string | null; p_limit?: number; p_offset?: number };
-        Returns: {
-          id: string;
-          created_at: string;
-          actor_user_id: string | null;
-          actor_name: string;
-          action: string;
-          resource_type: string;
-          resource_id: string | null;
-          metadata_json: Json | null;
-          total_count: number;
-        }[];
-      };
-      admin_db_check: { Args: Record<string, never>; Returns: string };
+          max_score: number
+          score: number
+          status: Database["public"]["Enums"]["attempt_status"]
+        }[]
+      }
+      delete_test_question: {
+        Args: { p_question_id: string }
+        Returns: boolean
+      }
+      publish_teacher_test: { Args: { p_test_id: string }; Returns: boolean }
+      save_test_answer: {
+        Args: { p_answer: Json; p_attempt_id: string; p_question_id: string }
+        Returns: undefined
+      }
       upsert_test_question: {
         Args: {
-          p_question_id?: string | null;
-          p_test_id?: string | null;
-          p_type?: string | null;
-          p_prompt?: string | null;
-          p_options?: Json | null;
-          p_correct?: Json | null;
-          p_points?: number | null;
-          p_position?: number | null;
-        };
-        Returns: string;
-      };
-      delete_test_question: { Args: { p_question_id: string }; Returns: boolean };
-    };
+          p_correct?: Json
+          p_options?: Json
+          p_points?: number
+          p_position?: number
+          p_prompt?: string
+          p_question_id?: string
+          p_test_id?: string
+          p_type?: string
+        }
+        Returns: string
+      }
+    }
     Enums: {
-      app_role: "student" | "teacher" | "admin";
-      user_status: "active" | "suspended" | "pending";
-      note_visibility: "private" | "shared" | "published";
-      content_status: "draft" | "published" | "archived";
-      attempt_status: "created" | "in_progress" | "submitted" | "graded" | "reviewed";
-    };
-    CompositeTypes: Record<string, never>;
-  };
-};
+      app_role: "student" | "teacher" | "admin"
+      attempt_status:
+        | "created"
+        | "in_progress"
+        | "submitted"
+        | "graded"
+        | "reviewed"
+      content_status: "draft" | "published" | "archived"
+      note_visibility: "private" | "shared" | "published"
+      user_status: "active" | "suspended" | "pending"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["student", "teacher", "admin"],
+      attempt_status: [
+        "created",
+        "in_progress",
+        "submitted",
+        "graded",
+        "reviewed",
+      ],
+      content_status: ["draft", "published", "archived"],
+      note_visibility: ["private", "shared", "published"],
+      user_status: ["active", "suspended", "pending"],
+    },
+  },
+} as const
