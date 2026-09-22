@@ -20,11 +20,10 @@ export default async function StudentWorkspace() {
   const materials: Array<{ id: string; title: string }> =
     (await getStudentMaterials().catch(() => null)) ?? [];
 
-  const now = Date.now();
   const activeAttempt = attempts.find((a) => a.status === "in_progress" || a.status === "created");
   const attemptedTestIds = new Set(attempts.map((a) => a.test_id));
   const liveUnattempted = tests.find(
-    (t) => resolveTestLifecycle("published", t.start_time, t.end_time, now) === "live" && !attemptedTestIds.has(t.id),
+    (t) => resolveTestLifecycle("published", t.start_time, t.end_time) === "live" && !attemptedTestIds.has(t.id),
   );
   const weakest = signals
     .filter((s) => s.latestPercent !== null && s.missedQuestions > 0)

@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { deleteNote } from "../actions";
 import { getSharedNotes, getStudentNotes } from "@/lib/student";
+import { EmptyState, PageHeading, StatusPill } from "@/components/ui";
+
+function readingTime(content: string): string {
+  const words = content.trim().split(/\s+/).filter(Boolean).length;
+  if (words === 0) return "Empty";
+  const minutes = Math.max(1, Math.round(words / 200));
+  return `${minutes} min read`;
+}
 
 export default async function NotesPage({
   searchParams,
@@ -12,41 +20,81 @@ export default async function NotesPage({
   const [notes, shared] = await Promise.all([getStudentNotes(search), getSharedNotes(search)]);
 
   return (
-    <main className="container" style={{ padding: "48px 0 80px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 18, alignItems: "end", flexWrap: "wrap" }}>
-        <div><span className="eyebrow">Notes</span><h1 style={{ fontSize: "clamp(42px,6vw,70px)", lineHeight: .95, letterSpacing: "-.06em", margin: "18px 0 10px" }}>Think on paper.</h1><p style={{ color: "var(--muted)", margin: 0 }}>Private by default. Yours to revisit, revise and learn from.</p></div>
-        <Link href="/app/notes/new" style={{ background: "var(--accent)", color: "white", padding: "13px 18px", borderRadius: 999, fontWeight: 700 }}>New note →</Link>
+    <main className="workspace-page">
+      <div className="container">
+        <PageHeading
+          eyebrow="Notes · your library"
+          title={<>Think on <em>paper.</em></>}
+          lede="Private by default. Yours to revisit, revise and learn from."
+          action={<Link href="/app/notes/new" className="primary-button">New note →</Link>}
+        />
+        <form method="get" className="library-search" role="search">
+          <input
+            name="q"
+            defaultValue={search}
+            maxLength={120}
+            placeholder="Search your notes…  ( press / )"
+            aria-label="Search notes"
+            className="library-search-input"
+          />
+          <button type="submit" className="primary-button">Search</button>
+          {search && <Link href="/app/notes" className="text-link">Clear</Link>}
+        </form>
+        {notes.length > 0 ? (
+          <div className="data-rows">
+            {notes.map((note) => (
+              <div key={note.id} className="data-row">
+                <span className="data-row-main">
+                  <Link href={`/app/notes/${note.id}`}><strong>{note.title}</strong></Link>
+                  <span>
+                    {readingTime(note.content)} · {note.visibility}
+                    {note.updated_at ? ` · edited ${new Date(note.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
+                  </span>
+                </span>
+                <span className="data-row-side">
+                  <StatusPill tone={note.visibility === "published" ? "info" : "idle"}>{note.visibility}</StatusPill>
+                  <form action={deleteNote}>
+                    <input type="hidden" name="id" value={note.id} />
+                    <button type="submit" className="row-delete">Delete</button>
+                  </form>
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title={search ? "Nothing matches that search." : "Your library opens empty — deliberately."}
+            body={
+              search
+                ? "Try fewer words, or a different spelling. Search covers titles and content."
+                : "Start with the idea you keep coming back to. One honest paragraph beats ten copied pages."
+            }
+            action={search ? undefined : { href: "/app/notes/new", label: "Write your first note →" }}
+          />
+        )}
+        <section className="library-shared">
+          <span className="eyebrow">Shared with you</span>
+          <h2>From your teachers.</h2>
+          {shared.length > 0 ? (
+            <div className="data-rows">
+              {shared.map((note) => (
+                <Link href={`/app/notes/${note.id}`} key={note.id} className="data-row">
+                  <span className="data-row-main">
+                    <strong>{note.title}</strong>
+                    <span>{readingTime(note.content)} · shared note</span>
+                  </span>
+                  <span className="data-row-side"><span className="row-arrow" aria-hidden="true">→</span></span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="No shared material yet."
+              body="Anything a teacher shares with you will appear here, ready to read and ask the tutor about."
+            />
+          )}
+        </section>
       </div>
-      <form method="get" style={{ marginTop: 30, display: "flex", gap: 10 }}>
-        <input name="q" defaultValue={search} maxLength={120} placeholder="Search your notes…" aria-label="Search notes" style={inputStyle} />
-        <button type="submit" style={buttonStyle}>Search</button>
-        {search && <Link href="/app/notes" style={{ alignSelf: "center", color: "var(--muted)", fontSize: 14 }}>Clear</Link>}
-      </form>
-      <div style={{ marginTop: 26 }}>
-        {notes.map((note) => (
-          <article key={note.id} style={{ borderTop: "1px solid var(--line)", padding: "20px 0", display: "grid", gridTemplateColumns: "1fr auto", gap: 22, alignItems: "start" }}>
-            <div><div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}><Link href={`/app/notes/${note.id}`} style={{ fontSize: 22, fontWeight: 750, letterSpacing: "-.03em" }}>{note.title}</Link><span style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: ".1em", color: "var(--muted)" }}>{note.visibility}</span></div><p style={{ color: "var(--muted)", lineHeight: 1.6, margin: "7px 0 0", maxWidth: 760 }}>{note.content.slice(0, 180) || "Empty note"}</p></div>
-            <form action={deleteNote}><input type="hidden" name="id" value={note.id} /><button type="submit" style={{ border: 0, background: "transparent", color: "var(--muted)", cursor: "pointer" }}>Delete</button></form>
-          </article>
-        ))}
-        {!notes.length && <div style={{ borderTop: "1px solid var(--line)", padding: "28px 0", color: "var(--muted)" }}>{search ? "No notes match that search." : "No notes yet. Start with the idea you keep coming back to."}</div>}
-      </div>
-      <section style={{ marginTop: 44 }}>
-        <span className="eyebrow">Shared with you</span>
-        <h2 style={{ fontSize: 26, letterSpacing: "-.03em", margin: "12px 0 4px" }}>From your teachers.</h2>
-        <div style={{ marginTop: 10 }}>
-          {shared.map((note) => (
-            <Link href={`/app/notes/${note.id}`} key={note.id} style={{ display: "block", borderTop: "1px solid var(--line)", padding: "18px 0" }}>
-              <strong style={{ fontSize: 19 }}>{note.title}</strong>
-              <p style={{ color: "var(--muted)", lineHeight: 1.6, margin: "6px 0 0", maxWidth: 760 }}>{note.content.slice(0, 160) || "Empty note"}</p>
-            </Link>
-          ))}
-          {!shared.length && <div style={{ borderTop: "1px solid var(--line)", padding: "24px 0", color: "var(--muted)" }}>No shared material yet. Anything a teacher shares with you will appear here.</div>}
-        </div>
-      </section>
     </main>
   );
 }
-
-const inputStyle = { flex: 1, minWidth: 0, border: "1px solid var(--line)", borderRadius: 14, padding: "13px 14px", background: "white", color: "var(--ink)", font: "inherit", lineHeight: 1.6 };
-const buttonStyle = { border: 0, borderRadius: 999, padding: "13px 20px", background: "var(--accent)", color: "white", fontWeight: 750, cursor: "pointer", whiteSpace: "nowrap" as const };
