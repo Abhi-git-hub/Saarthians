@@ -18,6 +18,33 @@ export function WorkspaceNav({ role, displayName, username }: { role: Role; disp
   const router = useRouter();
 
   async function signOut() {
+    // If a test attempt is active, warn and finalize it first: signing out
+    // submits the attempt (server decides manual-leave vs past-deadline).
+    // Never silently discard an attempt.
+    try {
+      const raw = window.sessionStorage.getItem("saarthians-active-attempt");
+      if (raw) {
+        const active = JSON.parse(raw) as { attemptId?: string };
+        if (active?.attemptId) {
+          const confirmed = window.confirm(
+            "You have an assessment in progress. Signing out will submit it now. Continue?",
+          );
+          if (!confirmed) return;
+          try {
+            await fetch("/api/attempts/finalize", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ attemptId: active.attemptId, reason: "signout_finalize" }),
+            });
+          } catch {
+            // The server sweep will finalize it; continue signing out.
+          }
+          window.sessionStorage.removeItem("saarthians-active-attempt");
+        }
+      }
+    } catch {
+      // Storage may be unavailable; fall through to normal sign-out.
+    }
     const supabase = createClient();
     await supabase.auth.signOut();
     // Route the sign-out through the server as well so server-managed state

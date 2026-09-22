@@ -67,3 +67,26 @@ export async function publishTeacherTest(testId: string) {
   const { error } = await supabase.rpc("publish_teacher_test", { p_test_id: testId });
   if (error) throw new Error(`Unable to publish the assessment (${error.code ?? "unknown"}).`);
 }
+
+const scheduleSchema = z.object({
+  testId: z.string().uuid(),
+  startTime: z.string().datetime({ offset: true }).nullable(),
+  endTime: z.string().datetime({ offset: true }).nullable(),
+});
+
+// Teacher-controlled live window. Past-start or missing bounds simply widen
+// the window; the server RPCs still enforce whatever is stored.
+export async function scheduleTeacherTest(input: unknown) {
+  await requireRole(["teacher", "admin"]);
+  const parsed = scheduleSchema.parse(input);
+  if (parsed.startTime && parsed.endTime && parsed.endTime <= parsed.startTime) {
+    throw new Error("The window must end after it starts.");
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("schedule_test", {
+    p_test_id: parsed.testId,
+    p_start_time: parsed.startTime,
+    p_end_time: parsed.endTime,
+  });
+  if (error) throw new Error(`Unable to schedule the assessment (${error.code ?? "unknown"}).`);
+}

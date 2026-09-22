@@ -69,7 +69,7 @@ export async function getStudentTests() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("tests")
-    .select("id,title,instructions,duration_seconds,published_at,teacher_id")
+    .select("id,title,instructions,duration_seconds,published_at,start_time,end_time,teacher_id")
     .eq("status", "published")
     .order("published_at", { ascending: false, nullsFirst: false });
 
@@ -82,7 +82,7 @@ export async function getStudentAttempts() {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("test_attempts")
-    .select("id,test_id,status,score,max_score,started_at,submitted_at,created_at,tests(title)")
+    .select("id,test_id,status,submission_reason,score,max_score,started_at,submitted_at,created_at,tests(title)")
     .eq("student_id", user.id)
     .order("created_at", { ascending: false });
 

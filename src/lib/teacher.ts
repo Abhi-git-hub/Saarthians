@@ -91,11 +91,29 @@ export async function getTeacherResults(userId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("test_attempts")
-    .select("id,student_id,test_id,status,score,max_score,submitted_at,tests!inner(id,title,teacher_id),profiles:student_id(display_name)")
+    .select("id,student_id,test_id,status,submission_reason,score,max_score,submitted_at,tests!inner(id,title,teacher_id),profiles:student_id(display_name)")
     .eq("tests.teacher_id", userId)
-    .in("status", ["graded", "reviewed"])
+    .in("status", ["graded", "reviewed", "submitted"])
     .order("submitted_at", { ascending: false });
 
   if (error) throw new Error("TEACHER_DATA_UNAVAILABLE");
-  return data ?? [];
+  const attempts = data ?? [];
+  const ids = attempts.map((attempt) => attempt.id);
+  let signals: Record<string, { focusLoss: number; fullscreenExits: number; heartbeats: number }> = {};
+  if (ids.length > 0) {
+    const { data: events } = await supabase
+      .from("test_security_events")
+      .select("attempt_id,event_type")
+      .in("attempt_id", ids);
+    for (const event of events ?? []) {
+      const entry = (signals[event.attempt_id] ??= { focusLoss: 0, fullscreenExits: 0, heartbeats: 0 });
+      if (event.event_type === "visibility_hidden" || event.event_type === "focus_blur") entry.focusLoss += 1;
+      if (event.event_type === "fullscreen_exit") entry.fullscreenExits += 1;
+      if (event.event_type === "heartbeat") entry.heartbeats += 1;
+    }
+  }
+  return attempts.map((attempt) => ({
+    ...attempt,
+    signals: signals[attempt.id] ?? { focusLoss: 0, fullscreenExits: 0, heartbeats: 0 },
+  }));
 }

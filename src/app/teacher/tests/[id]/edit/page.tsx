@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { TestEditor } from "@/components/teacher/test-editor";
+import { LiveSettings } from "@/components/teacher/live-settings";
 
 export default async function TeacherTestEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -10,7 +11,7 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
   const supabase = await createClient();
   const { data: test } = await supabase
     .from("tests")
-    .select("id,title,instructions,duration_seconds,status,teacher_id,test_questions(id,type,prompt,options_json,correct_answer_json,points,position)")
+    .select("id,title,instructions,duration_seconds,status,start_time,end_time,assessment_pdf_path,teacher_id,test_questions(id,type,prompt,options_json,correct_answer_json,points,position)")
     .eq("id", id)
     .single();
 
@@ -25,6 +26,7 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
       <h1 style={{ fontSize: "clamp(42px,6vw,72px)", lineHeight: .95, letterSpacing: "-.06em", margin: "16px 0 10px" }}>{test.title}</h1>
       <p style={{ color: "var(--muted)", lineHeight: 1.65, maxWidth: 720 }}>{test.instructions || "Build a focused assessment. Keep questions clear, answer keys deliberate, and points proportional to difficulty."}</p>
       <TestEditor testId={test.id} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: q.correct_answer_json as unknown }))} status={test.status} />
+      <LiveSettings testId={test.id} initialStart={test.start_time} initialEnd={test.end_time} initialAssessment={test.assessment_pdf_path} />
     </main>
   );
 }
