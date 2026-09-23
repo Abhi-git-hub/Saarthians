@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  MATCH_PAIRS,
   QUESTION_BANK,
-  buildMatchDeck,
   dailyQuestion,
-  isMatch,
   performanceLabel,
   pickQuestions,
   scoreQuiz,
@@ -49,15 +46,6 @@ describe("question bank integrity", () => {
     expect(blob.toLowerCase()).not.toContain("lorem");
   });
 
-  it("has complete match pairs without placeholders", () => {
-    expect(MATCH_PAIRS.length).toBeGreaterThanOrEqual(12);
-    for (const pair of MATCH_PAIRS) {
-      expect(pair.term.length).toBeGreaterThan(1);
-      expect(pair.match.length).toBeGreaterThan(10);
-    }
-    const blob = JSON.stringify(MATCH_PAIRS).toLowerCase();
-    expect(blob).not.toContain("placeholder");
-  });
 });
 
 describe("pickQuestions", () => {
@@ -112,19 +100,5 @@ describe("dailyQuestion", () => {
       ),
     );
     expect(surrounding.size).toBeGreaterThan(1);
-  });
-});
-
-describe("match deck", () => {
-  it("builds complete decks and validates matches", () => {
-    const science = MATCH_PAIRS.filter((p) => p.category === "science");
-    const deck = buildMatchDeck(science, "deck");
-    expect(deck).toHaveLength(science.length * 2);
-    const term = deck.find((c) => c.pairId === "p1" && c.kind === "term")!;
-    const def = deck.find((c) => c.pairId === "p1" && c.kind === "match")!;
-    const other = deck.find((c) => c.pairId === "p2" && c.kind === "match")!;
-    expect(isMatch(term, def)).toBe(true);
-    expect(isMatch(term, other)).toBe(false);
-    expect(isMatch(term, term)).toBe(false);
   });
 });

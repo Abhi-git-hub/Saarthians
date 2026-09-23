@@ -544,6 +544,29 @@ a.data-row:hover .row-arrow { transform:translateX(4px); color:var(--ink); }
 .std-form-actions { display:flex; gap:14px; align-items:center; margin-top:6px; flex-wrap:wrap; }
 .std-form-hint { color:var(--muted); font-size:13px; font-weight:400; }
 .std-form-error { color:var(--danger); font-size:13px; font-weight:600; }
+/* ---- Curiosity shelf (questions worth pausing for) ---- */
+.curio-shell { margin-top:28px; }
+.curio-filters { display:flex; gap:8px; flex-wrap:wrap; }
+.curio-list { margin-top:18px; display:grid; gap:10px; }
+.curio { border:1px solid var(--line); border-radius:18px; background:var(--elevated); overflow:hidden; min-width:0; transition:border-color .18s var(--ease), box-shadow .18s var(--ease); }
+.curio:hover { border-color:#cfc2a4; }
+.curio[open] { border-color:var(--accent); box-shadow:var(--shadow-sm); }
+.curio summary { cursor:pointer; padding:20px 22px; display:grid; gap:10px; min-width:0; }
+.curio summary::marker { color:var(--ember); }
+.curio-tags { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.curio-tags i { font-style:normal; font-size:10.5px; font-weight:850; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); border:1px solid var(--line); border-radius:999px; padding:4px 11px; background:var(--paper); }
+.curio-tags em { font-style:normal; font-size:12px; color:var(--muted); }
+.curio summary strong { font-size:clamp(17px,2.6vw,22px); line-height:1.45; letter-spacing:-.02em; overflow-wrap:break-word; min-width:0; }
+.curio-answer { padding:0 22px 22px; display:grid; gap:10px; min-width:0; }
+.curio-answer p { margin:0; line-height:1.75; font-size:15px; overflow-wrap:break-word; }
+.curio-stick { color:var(--muted); font-size:13.5px !important; border-left:3px solid var(--accent-2); padding-left:12px; }
+.curio-foot { margin:22px 0 0; color:var(--muted); font-size:14px; }
+/* ---- Global fit + robustness ---- */
+body { overflow-x:clip; }
+.public-site, .lab-section, .lab-shell, .lab-stage, .lab-daily, .lab-style, .lab-journey, .desk-chat, .exam-stage { min-width:0; }
+.lab-options > *, .lab-match-grid > *, .lab-style-grid > *, .curio-list > *, .lab-journey-cards > * { min-width:0; }
+.lab-prompt, .lab-card, .lab-option, .desk-user, .desk-assistant, .curio summary strong, p, h1, h2, h3 { overflow-wrap:break-word; }
+img { max-width:100%; }
 /* Saarthi Classes brand integration */
 .public-brand { display:inline-flex; align-items:center; gap:10px; }
 .public-brand-logo { width:42px; height:42px; border-radius:50%; object-fit:cover; background:#0b0b0c; box-shadow:0 0 0 1px var(--line); }

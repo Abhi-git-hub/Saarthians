@@ -4,7 +4,7 @@ import { PublicHeader } from "@/components/public-header";
 import { Reveal } from "@/components/reveal";
 import { SafeImage } from "@/components/safe-image";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
-import { LearningLab } from "@/components/lab/learning-lab";
+import { CuriosityShelf } from "@/components/lab/curiosity-shelf";
 import { DailyChallenge } from "@/components/lab/daily-challenge";
 import { SyllabusJourney } from "@/components/lab/syllabus-journey";
 import { LearningStyle } from "@/components/lab/learning-style";
@@ -78,7 +78,7 @@ export default function Home() {
               <Stars count={5} />
               <p><strong>Loved by parents on Google.</strong><br />Real 5-star reviews on our Maps listing — read them below.</p>
             </div>
-            <p className="hero-teaser"><strong>Think with us.</strong> Try a 20-second challenge, no sign-up. <a href="#lab">Take the challenge →</a></p>
+            <p className="hero-teaser"><strong>Think with us.</strong> Questions worth pausing for — no sign-up. <a href="#lab">Get curious →</a></p>
           </div>
           <div className="hero-visual hero-arch">
             <SafeImage src={BRAND_IMAGES.classroom} alt="Inside a Saarthi Classes classroom" eager />
@@ -101,12 +101,12 @@ export default function Home() {
         <div className="container">
           <Reveal>
             <div className="section-intro">
-              <div><span className="chapter-mark"><i>02</i>Think</span><span className="eyebrow">The Learning Lab</span><h2>Think for <em>a minute.</em></h2></div>
-              <p>Try a few questions. No sign-up, no pressure — just see how Saarthians makes learning feel.</p>
+              <div><span className="chapter-mark"><i>02</i>Think</span><span className="eyebrow">The Learning Lab</span><h2>Questions worth <em>pausing for.</em></h2></div>
+              <p>Real ideas, honestly answered. Open one, think first, then reveal — this is how a Saarthians classroom feels.</p>
             </div>
           </Reveal>
           <Reveal delay={100}>
-            <LearningLab />
+            <CuriosityShelf />
           </Reveal>
         </div>
       </section>

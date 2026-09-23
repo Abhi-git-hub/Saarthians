@@ -18,14 +18,6 @@ export interface LabQuestion {
   gradeRange: string;
 }
 
-export interface MatchPair {
-  id: string;
-  category: LabCategory;
-  term: string;
-  match: string;
-  gradeRange: string;
-}
-
 function hashSeed(value: string): number {
   let hash = 2166136261;
   for (let i = 0; i < value.length; i += 1) {
@@ -105,25 +97,6 @@ export function dailyQuestion(bank: readonly LabQuestion[], dateISO: string): La
   return bank[total % bank.length];
 }
 
-export interface MatchCard {
-  key: string;
-  pairId: string;
-  kind: "term" | "match";
-  text: string;
-}
-
-export function buildMatchDeck(pairs: readonly MatchPair[], seed: string): MatchCard[] {
-  const cards: MatchCard[] = pairs.flatMap((pair) => [
-    { key: `${pair.id}-term`, pairId: pair.id, kind: "term" as const, text: pair.term },
-    { key: `${pair.id}-match`, pairId: pair.id, kind: "match" as const, text: pair.match },
-  ]);
-  return shuffled(cards, seed);
-}
-
-export function isMatch(a: MatchCard, b: MatchCard): boolean {
-  return a.key !== b.key && a.pairId === b.pairId && a.kind !== b.kind;
-}
-
 // ---------------------------------------------------------------------------
 // Question bank (static, faculty-tone, classes 9–12). Answers never leave
 // this module except through gameplay validation.
@@ -167,20 +140,5 @@ export const QUESTION_BANK: LabQuestion[] = [
   { id: "e6", category: "english", difficulty: 3, prompt: "Choose the sentence with correct punctuation:", options: ["Its raining, take an umbrella.", "It's raining; take an umbrella.", "Its' raining take an umbrella.", "It's raining take, an umbrella."],
     correctIndex: 1, explanation: "'It's' = it is; the semicolon cleanly joins two related clauses.", skill: "Punctuation", gradeRange: "Class 9–12" },
   { id: "e7", category: "english", difficulty: 1, prompt: "Antonym of 'ancient':", options: ["Old", "Modern", "Historic", "Classic"], correctIndex: 1, explanation: "'Ancient' (very old) opposes 'modern'.", skill: "Antonyms", gradeRange: "Class 9–10" },
-  { id: "e8", category: "english", difficulty: 3, prompt: "'The committee ___ divided on this issue.' (collective noun, members acting separately)", options: ["is", "are", "was", "has been"], correctIndex: 1, explanation: "When members act as individuals, the collective noun takes a plural verb: 'are'.", skill: "Collective nouns", gradeRange: "Class 11–12" },
-];
-
-export const MATCH_PAIRS: MatchPair[] = [
-  { id: "p1", category: "science", term: "Photosynthesis", match: "Process by which plants convert light energy into chemical energy", gradeRange: "Class 9–10" },
-  { id: "p2", category: "science", term: "Newton's first law", match: "A body keeps its state of rest or motion unless a net force acts", gradeRange: "Class 9–11" },
-  { id: "p3", category: "science", term: "Mitochondria", match: "Organelle that releases energy from food; the cell's powerhouse", gradeRange: "Class 9–10" },
-  { id: "p4", category: "science", term: "Acid + Base", match: "Always produce salt and water in a neutralisation reaction", gradeRange: "Class 10" },
-  { id: "p5", category: "science", term: "Refraction", match: "Bending of light when it passes between mediums of different density", gradeRange: "Class 10" },
-  { id: "p6", category: "science", term: "Ohm's law", match: "Current through a conductor is directly proportional to voltage across it", gradeRange: "Class 10" },
-  { id: "e1", category: "english", term: "Ephemeral", match: "Lasting for a very short time", gradeRange: "Class 10–12" },
-  { id: "e2", category: "english", term: "Pragmatic", match: "Dealing with problems in a practical rather than idealistic way", gradeRange: "Class 10–12" },
-  { id: "e3", category: "english", term: "Candid", match: "Truthful and straightforward in speech", gradeRange: "Class 9–12" },
-  { id: "e4", category: "english", term: "Meticulous", match: "Showing great attention to detail; very careful", gradeRange: "Class 10–12" },
-  { id: "e5", category: "english", term: "Resilient", match: "Able to recover quickly from difficulties", gradeRange: "Class 9–12" },
-  { id: "e6", category: "english", term: "Ambiguous", match: "Open to more than one interpretation; unclear", gradeRange: "Class 10–12" },
+  { id: "e8", category: "english", difficulty: 3, prompt: "'The committee ___ divided on this issue.' (collective noun, members acting separately)", options: ["is", "are", "was", "has been"],     correctIndex: 1, explanation: "When members act as individuals, the collective noun takes a plural verb: 'are'.", skill: "Collective nouns", gradeRange: "Class 11–12" },
 ];
