@@ -6,13 +6,13 @@ import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { COURSES, WHATSAPP_DISPLAY, whatsAppLink } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Programs | Saarthians",
+  title: "Saarthians Programs | Classes 9–12, JEE & NEET",
   description:
-    "Six focused tracks at Saarthi Classes Shahdara: Classes 9-12 all subjects plus dedicated NEET and JEE preparation. Message us for batch timings.",
+    "Explore Saarthians programs at Saarthi Classes in Shahdara, Delhi: Classes 9–12 coaching, all-subject tuition, JEE preparation, and NEET preparation.",
   alternates: { canonical: "https://saarthians.online/programs" },
   openGraph: {
-  title: "Programs",
-    description: "Classes 9-12 all subjects plus dedicated NEET and JEE preparation in Shahdara, Delhi.",
+  title: "Saarthians Programs | Saarthi Classes Shahdara",
+    description: "Classes 9–12 coaching, all-subject tuition, JEE and NEET preparation at Saarthi Classes in Shahdara, Delhi.",
     url: "https://saarthians.online/programs",
   },
 };
@@ -31,8 +31,8 @@ export default function ProgramsPage() {
       <section className="public-section container">
         <Reveal>
           <span className="eyebrow">Programs</span>
-          <h1 className="editorial-title">Classes 9–12,<br /><em>all subjects.</em></h1>
-          <p className="editorial-lede">Complete school coaching plus NEET and JEE preparation. Message us on WhatsApp at {WHATSAPP_DISPLAY} for batch timings and admission.</p>
+          <h1 className="editorial-title">Saarthians Programs:<br /><em>Classes 9–12, JEE & NEET.</em></h1>
+          <p className="editorial-lede">Saarthi Classes in Shahdara, Delhi provides coaching for Classes 9–12 across school subjects, plus JEE and NEET preparation. Message us on WhatsApp at {WHATSAPP_DISPLAY} for batch timings and admission.</p>
         </Reveal>
         <div className="program-rows">
           {COURSES.map((course, i) => (
