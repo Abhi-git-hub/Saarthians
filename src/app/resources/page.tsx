@@ -6,12 +6,12 @@ import { MAPS_PLACE_URL, whatsAppLink } from "@/lib/site";
 import { ResourcesBrowser, type Resource } from "./resources-browser";
 
 export const metadata: Metadata = {
-  title: "Resources | Saarthians",
-  description: "Study guides, direct help on WhatsApp, and the tools Saarthians members use every day.",
+  title: "Saarthians Resources | Study Guides & Student Help",
+  description: "Saarthians study resources, doubt support, parent information, and student workspace tools from Saarthi Classes in Shahdara, Delhi.",
   alternates: { canonical: "https://saarthians.online/resources" },
   openGraph: {
   title: "Resources",
-    description: "Study guides, direct help on WhatsApp, and the tools Saarthians members use every day.",
+    description: "Saarthians study resources, doubt support, parent information, and student workspace tools from Saarthi Classes in Shahdara, Delhi.",
     url: "https://saarthians.online/resources",
   },
 };
@@ -32,8 +32,8 @@ export default function ResourcesPage() {
       <section className="public-section container">
         <Reveal>
           <span className="eyebrow">Resources</span>
-          <h1 className="editorial-title">Useful things<br /><em>for the journey.</em></h1>
-          <p className="editorial-lede">Study guides, direct help, and the tools members use every day.</p>
+          <h1 className="editorial-title">Saarthians study resources<br /><em>for the journey.</em></h1>
+          <p className="editorial-lede">Study guides, doubt support, and student tools from Saarthi Classes in Shahdara, Delhi.</p>
         </Reveal>
         <Reveal delay={100}>
           <ResourcesBrowser resources={resources} />
