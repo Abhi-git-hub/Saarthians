@@ -781,3 +781,23 @@ img { max-width:100%; }
 @media (prefers-reduced-motion: no-preference) { .lab-option.is-correct { animation:pop .25s var(--ease); } .lab-card.is-matched { animation:pop .25s var(--ease); } @keyframes pop { 0% { transform:scale(.985); } 60% { transform:scale(1.008); } 100% { transform:none; } } }
 @media (prefers-reduced-motion: reduce) { .lab-option, .lab-card, .lab-tab, .lab-stage, .lab-progress > span { transition:none; animation:none; } }
 @media (max-width: 640px) { .lab-stage { padding:20px 16px; } .lab-match-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lab-card { min-height:96px; font-size:13.5px; } .lab-stage-head { flex-direction:column; } .lab-time { align-self:flex-start; } .lab-stats { gap:20px; } .lab-ctas .public-button { width:100%; } }
+/* Local SEO cluster: breadcrumbs, FAQ, sibling links */
+.crumbs { padding-top:26px; }
+.crumbs ol { list-style:none; display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; font-size:12.5px; color:var(--muted); }
+.crumbs li { display:flex; align-items:center; gap:8px; }
+.crumbs li + li::before { content:"/"; color:var(--line); }
+.crumbs a { color:var(--muted); }
+.crumbs a:hover { color:var(--accent); }
+.faq-list { display:grid; gap:10px; margin-top:34px; }
+.faq-item { border:1px solid var(--line); border-radius:18px; background:#fff; padding:4px 24px; }
+.faq-item summary { cursor:pointer; padding:18px 0; font-size:17px; font-weight:700; letter-spacing:-.02em; }
+.faq-item summary::marker { color:var(--ember); }
+.faq-item p { margin:0 0 20px; color:var(--muted); line-height:1.75; font-size:15px; max-width:720px; }
+.sibling-links { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:30px; }
+.sibling-link { display:grid; gap:8px; padding:24px; border:1px solid var(--line); border-radius:22px; background:#fff; transition:transform .2s ease,box-shadow .2s ease; }
+.sibling-link:hover { transform:translateY(-4px); box-shadow:0 18px 50px rgba(16,24,39,.08); }
+.sibling-link strong { font-size:18px; letter-spacing:-.03em; }
+.sibling-link span { color:var(--muted); font-size:13.5px; line-height:1.6; }
+.seo-prose p { color:#525b66; font-size:16.5px; line-height:1.8; max-width:760px; }
+.seo-prose p + p { margin-top:18px; }
+@media (max-width: 860px) { .sibling-links { grid-template-columns:1fr; } }

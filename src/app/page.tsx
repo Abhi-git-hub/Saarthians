@@ -236,7 +236,10 @@ export default function Home() {
           ))}
         </div>
         <Reveal>
-          <div className="center-cta"><Link href="/programs" className="public-button public-button-secondary">Compare all programs →</Link></div>
+          <div className="center-cta" style={{ gap: 12 }}>
+            <Link href="/programs" className="public-button public-button-secondary">Compare all programs →</Link>
+            <Link href="/coaching-classes-shahdara" className="text-link-big" style={{ color: "var(--ink)", borderColor: "var(--ember)", marginTop: 0 }}>Coaching in Shahdara →</Link>
+          </div>
         </Reveal>
       </section>
 

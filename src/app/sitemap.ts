@@ -4,7 +4,22 @@ const BASE = "https://saarthians.online";
 
 // Public canonical URLs only. Everything under /app, /teacher, /admin,
 // /login, and /api is private or auth-scoped and must never be crawled.
-const PUBLIC_PATHS = ["/", "/programs", "/about", "/resources", "/contact", "/privacy", "/terms"];
+const PUBLIC_PATHS = [
+  "/",
+  "/programs",
+  "/about",
+  "/resources",
+  "/contact",
+  "/privacy",
+  "/terms",
+  "/coaching-classes-shahdara",
+  "/classes/class-9",
+  "/classes/class-10",
+  "/classes/class-11-science",
+  "/classes/class-12-science",
+  "/jee-coaching-shahdara",
+  "/neet-coaching-shahdara",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return PUBLIC_PATHS.map((path) => ({

@@ -14,6 +14,23 @@ describe("sitemap", () => {
     expect(urls).toContain("https://saarthians.online/");
     expect(urls).toContain("https://saarthians.online/programs");
   });
+
+  it("includes the full local SEO topic cluster", () => {
+    const urls = sitemap().map((e) => e.url);
+    for (const path of [
+      "/coaching-classes-shahdara",
+      "/classes/class-9",
+      "/classes/class-10",
+      "/classes/class-11-science",
+      "/classes/class-12-science",
+      "/jee-coaching-shahdara",
+      "/neet-coaching-shahdara",
+    ]) {
+      expect(urls).toContain(`https://saarthians.online${path}`);
+    }
+    // No duplicates.
+    expect(new Set(urls).size).toBe(urls.length);
+  });
 });
 
 describe("robots", () => {
