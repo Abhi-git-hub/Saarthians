@@ -11,11 +11,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://saarthians.online"),
   title: {
-    default: "Saarthians — Learn with direction",
+    default: "Saarthians | Saarthi Classes in Shahdara, Delhi",
     template: "%s | Saarthians",
   },
   description:
-    "Saarthi Classes, Shahdara: Classes 9–12 all subjects with NEET & JEE coaching, plus a secure student workspace.",
+    "Saarthians is the online home of Saarthi Classes in Shahdara, Delhi — Classes 9–12 coaching, all-subject tuition, and JEE & NEET preparation with a student workspace.",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
