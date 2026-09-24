@@ -11,7 +11,7 @@ export function OrganizationJsonLd() {
     logo: "https://saarthians.online/icons/icon-512.png",
     image: "https://saarthians.online/og-cover.png",
     description:
-      "Saarthi Classes, Shahdara: Classes 9–12 all subjects with NEET & JEE coaching, plus a secure student workspace.",
+      "Saarthians is the online home of Saarthi Classes in Shahdara, Delhi, offering Classes 9–12 coaching across school subjects, plus JEE and NEET preparation and a secure student workspace.",
     email: "hello@saarthians.online",
     telephone: "+91-93112-30129",
     address: {
