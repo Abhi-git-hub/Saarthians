@@ -14,9 +14,9 @@ import {
 } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact Saarthians | Admissions & Enquiries",
+  title: "Contact Saarthians | Saarthi Classes Shahdara",
   description:
-    "Talk to Saarthi Classes about admissions, batches and programs. WhatsApp, email, or visit the centre in Shahdara, Delhi.",
+    "Contact Saarthians and Saarthi Classes in Shahdara, Delhi for Classes 9–12 admissions, tuition, JEE and NEET programs, batches, and visits.",
   alternates: { canonical: "https://saarthians.online/contact" },
   openGraph: {
     title: "Contact Saarthians",
@@ -32,7 +32,7 @@ export default function ContactPage() {
       <section className="public-section container">
         <Reveal>
           <span className="eyebrow">Contact</span>
-          <h1 className="editorial-title">Let’s talk about<br /><em>learning.</em></h1>
+          <h1 className="editorial-title">Contact Saarthians<br /><em>and start learning.</em></h1>
         </Reveal>
         <div className="contact-grid">
           <Reveal delay={60}>
