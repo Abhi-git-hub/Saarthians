@@ -7,12 +7,12 @@ import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { BRAND_IMAGES, FOUNDER_NAME, FOUNDER_QUOTE, FOUNDER_TITLE, whatsAppLink } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "About Saarthians — Our Teaching Philosophy",
+  title: "About Saarthians | Saarthi Classes Shahdara",
   description:
-    "The philosophy behind Saarthi Classes: understanding first, personal attention, and visible progress for Classes 9-12, NEET and JEE.",
+    "Learn about Saarthians and Saarthi Classes in Shahdara, Delhi: concept-first teaching, personal attention, regular assessment, and visible progress for Classes 9–12, JEE and NEET.",
   alternates: { canonical: "https://saarthians.online/about" },
   openGraph: {
-    title: "About Saarthians — Our Teaching Philosophy",
+    title: "About Saarthians | Saarthi Classes Shahdara",
     description:
       "The philosophy behind Saarthi Classes: understanding first, personal attention, and visible progress.",
     url: "https://saarthians.online/about",
@@ -33,7 +33,7 @@ export default function AboutPage() {
       <section className="public-section container">
         <Reveal>
           <span className="eyebrow">About Saarthians</span>
-          <h1 className="editorial-title">Less noise.<br /><em>More direction.</em></h1>
+          <h1 className="editorial-title">Saarthians.<br /><em>Learning with direction.</em></h1>
           <div className="editorial-grid"><p>Saarthians is the digital home of Saarthi Classes, Shahdara — an education experience built around a simple idea: students do better when the system around them makes the next useful step obvious.</p><p>That means thoughtful study tools, meaningful assessment, visible progress and human support — all in one secure place.</p></div>
         </Reveal>
       </section>
