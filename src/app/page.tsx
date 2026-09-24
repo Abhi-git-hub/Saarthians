@@ -11,13 +11,13 @@ import { LearningStyle } from "@/components/lab/learning-style";
 import { OrganizationJsonLd, WebSiteJsonLd } from "@/components/structured-data";
 
 export const metadata: Metadata = {
-  title: "Saarthians — Learn. Grow. Go Further.",
+  title: "Saarthians | Saarthi Classes in Shahdara, Delhi",
   description:
-    "Saarthi Classes, Shahdara: Classes 9–12 all subjects with NEET & JEE coaching. Try the Learning Lab, meet your teachers, and visit the centre.",
+    "Saarthians is the online home of Saarthi Classes in Shahdara, Delhi, offering Classes 9–12 coaching, all-subject tuition, and JEE & NEET preparation.",
   alternates: { canonical: "https://saarthians.online/" },
   openGraph: {
-    title: "Saarthians — Learn. Grow. Go Further.",
-    description: "Classes 9–12 all subjects with NEET & JEE coaching in Shahdara, Delhi.",
+    title: "Saarthians | Saarthi Classes in Shahdara, Delhi",
+    description: "Classes 9–12 coaching, all-subject tuition, and JEE & NEET preparation at Saarthi Classes in Shahdara, Delhi.",
     url: "https://saarthians.online/",
   },
 };
@@ -68,8 +68,8 @@ export default function Home() {
         <div className="container public-hero-grid">
           <div className="public-hero-copy">
             <span className="eyebrow">Saarthi Classes · Shahdara, Delhi</span>
-            <h1>Where Shahdara comes <em>to understand.</em></h1>
-            <p>Classes 9–12 in every subject, with NEET & JEE coaching built in — taught by teachers students describe as patient, personal, and relentlessly clear.</p>
+            <h1>Saarthians — <em>Saarthi Classes in Shahdara.</em></h1>
+            <p>Saarthians is the online home of Saarthi Classes in Shahdara, Delhi — coaching for Classes 9–12 across school subjects, with JEE and NEET preparation, personal attention, regular tests, and daily doubt clearing.</p>
             <div className="hero-actions">
               <a href={whatsAppLink("Hi Saarthi Classes, I would like to know more about admission.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Talk to Saarthi →</a>
               <Link href="/programs" className="public-button public-button-secondary">Explore programs</Link>
