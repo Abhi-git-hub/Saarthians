@@ -12,7 +12,7 @@ import {
 } from "@/lib/admin-validation";
 import { asSafeProvisionMessage, mapProvisionInvokeError } from "./provision-errors";
 
-type ActionResult = { ok: true; userId?: string; username?: string } | { error: string };
+type ActionResult = { ok: true; userId?: string; username?: string } | { error: string; fields?: Record<string, string> };
 
 function formValues(formData: FormData) {
   return Object.fromEntries(
@@ -39,7 +39,12 @@ export async function provisionAccount(formData: FormData): Promise<ActionResult
     subject: values.subject || undefined,
   });
   if (!parsed.success) {
-    return { error: "Check the highlighted details and try again." };
+    const flat = parsed.error.flatten().fieldErrors;
+    const fields: Record<string, string> = {};
+    for (const [key, messages] of Object.entries(flat)) {
+      if (messages?.[0]) fields[key] = messages[0];
+    }
+    return { error: "Check the highlighted details and try again.", fields };
   }
 
   try {

@@ -68,7 +68,12 @@ describe("provisionAccount authorization", () => {
     asAdmin();
     const { invoke } = mockClient();
     const result = await provisionAccount(provisionForm({ username: "ab", password: "short", role: "admin" }));
-    expect(result).toEqual({ error: expect.any(String) });
+    expect(result).toEqual({ error: expect.any(String), fields: expect.any(Object) });
+    if ("fields" in result && result.fields) {
+      expect(result.fields.username).toMatch(/3 characters|lowercase|dots/i);
+      expect(result.fields.password).toMatch(/10 characters/i);
+      expect(result.fields.role).toBeDefined();
+    }
     expect(invoke).not.toHaveBeenCalled();
   });
 

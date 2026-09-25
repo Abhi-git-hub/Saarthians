@@ -24,6 +24,17 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function updateField<Key extends keyof typeof emptyForm>(key: Key, value: string) {
+    setForm((v) => ({ ...v, [key]: value }));
+    setFieldErrors((v) => {
+      if (!v[key]) return v;
+      const next = { ...v };
+      delete next[key];
+      return next;
+    });
+  }
 
   const filteredUsers = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -39,6 +50,7 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
     event.preventDefault();
     setPending(true);
     setFeedback(null);
+    setFieldErrors({});
     try {
       const formData = new FormData();
       formData.set("username", form.username);
@@ -51,6 +63,7 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
       const result = await provisionAccount(formData);
       if ("error" in result) {
         setFeedback({ kind: "error", text: result.error });
+        if (result.fields) setFieldErrors(result.fields);
         return;
       }
       setFeedback({ kind: "success", text: `Account @${result.username ?? form.username} is active and ready to use.` });
@@ -69,21 +82,41 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
     <div className="provision-stack">
       <section className="surface-card" aria-labelledby="provision-title">
         <div className="section-heading"><div><span className="eyebrow">New account</span><h2 id="provision-title">Provision a workspace.</h2></div><span className="section-badge">Admin only</span></div>
-        <form onSubmit={submit} className="provision-form">
+        <form onSubmit={submit} className="provision-form" noValidate>
           <div className="field-grid two">
-            <label className="field-label">Full name<input required maxLength={120} value={form.displayName} onChange={(e) => setForm((v) => ({ ...v, displayName: e.target.value }))} /></label>
-            <label className="field-label">Username<input required minLength={3} maxLength={30} autoCapitalize="none" autoCorrect="off" value={form.username} onChange={(e) => setForm((v) => ({ ...v, username: e.target.value.toLowerCase() }))} placeholder="e.g. ananya.sharma" /></label>
+            <label className="field-label">Full name
+              <input maxLength={120} value={form.displayName} onChange={(e) => updateField("displayName", e.target.value)} aria-invalid={Boolean(fieldErrors.displayName)} aria-describedby={fieldErrors.displayName ? "err-displayName" : undefined} />
+              {fieldErrors.displayName && <span id="err-displayName" role="alert" className="std-form-error">{fieldErrors.displayName}</span>}
+            </label>
+            <label className="field-label">Username
+              <input minLength={3} maxLength={30} autoCapitalize="none" autoCorrect="off" value={form.username} onChange={(e) => updateField("username", e.target.value.toLowerCase())} placeholder="e.g. ananya.sharma" aria-invalid={Boolean(fieldErrors.username)} aria-describedby={fieldErrors.username ? "err-username" : undefined} />
+              {fieldErrors.username && <span id="err-username" role="alert" className="std-form-error">{fieldErrors.username}</span>}
+            </label>
           </div>
           <div className="field-grid two">
-            <label className="field-label">Role<select value={form.role} onChange={(e) => setForm((v) => ({ ...v, role: e.target.value as "student" | "teacher" }))}><option value="student">Student</option><option value="teacher">Teacher</option></select></label>
-            <label className="field-label">Initial password<input required minLength={10} maxLength={128} type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm((v) => ({ ...v, password: e.target.value }))} /></label>
+            <label className="field-label">Role<select value={form.role} onChange={(e) => updateField("role", e.target.value)} aria-invalid={Boolean(fieldErrors.role)}><option value="student">Student</option><option value="teacher">Teacher</option></select>
+              {fieldErrors.role && <span role="alert" className="std-form-error">{fieldErrors.role}</span>}
+            </label>
+            <label className="field-label">Initial password
+              <input minLength={10} maxLength={128} type="password" autoComplete="new-password" value={form.password} onChange={(e) => updateField("password", e.target.value)} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "err-password" : undefined} />
+              {fieldErrors.password && <span id="err-password" role="alert" className="std-form-error">{fieldErrors.password}</span>}
+            </label>
           </div>
           <div className="field-grid two">
-            <label className="field-label">Phone <span>optional</span><input maxLength={32} inputMode="tel" value={form.phone} onChange={(e) => setForm((v) => ({ ...v, phone: e.target.value }))} /></label>
+            <label className="field-label">Phone <span>optional</span>
+              <input maxLength={32} inputMode="tel" value={form.phone} onChange={(e) => updateField("phone", e.target.value)} aria-invalid={Boolean(fieldErrors.phone)} />
+              {fieldErrors.phone && <span role="alert" className="std-form-error">{fieldErrors.phone}</span>}
+            </label>
             {roleIsStudent ? (
-              <label className="field-label">Class / grade <span>optional</span><input maxLength={40} value={form.gradeLevel} onChange={(e) => setForm((v) => ({ ...v, gradeLevel: e.target.value }))} placeholder="e.g. Class 10" /></label>
+              <label className="field-label">Class / grade <span>optional</span>
+                <input maxLength={40} value={form.gradeLevel} onChange={(e) => updateField("gradeLevel", e.target.value)} placeholder="e.g. Class 10" aria-invalid={Boolean(fieldErrors.gradeLevel)} />
+                {fieldErrors.gradeLevel && <span role="alert" className="std-form-error">{fieldErrors.gradeLevel}</span>}
+              </label>
             ) : (
-              <label className="field-label">Teaching subject <span>optional</span><input maxLength={120} value={form.subject} onChange={(e) => setForm((v) => ({ ...v, subject: e.target.value }))} placeholder="e.g. Mathematics" /></label>
+              <label className="field-label">Teaching subject <span>optional</span>
+                <input maxLength={120} value={form.subject} onChange={(e) => updateField("subject", e.target.value)} placeholder="e.g. Mathematics" aria-invalid={Boolean(fieldErrors.subject)} />
+                {fieldErrors.subject && <span role="alert" className="std-form-error">{fieldErrors.subject}</span>}
+              </label>
             )}
           </div>
           {feedback && <p className={feedback.kind === "error" ? "form-error" : "form-success"} role={feedback.kind === "error" ? "alert" : "status"}>{feedback.text}</p>}
