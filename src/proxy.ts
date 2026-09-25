@@ -47,8 +47,21 @@ export async function proxy(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getClaims();
+  let userId = data?.claims?.sub ?? null;
 
-  if (isProtected && !data?.claims?.sub) {
+  // getClaims() only verifies the access token locally and never refreshes.
+  // Supabase access tokens live ~1 hour: without a refresh attempt here,
+  // every visit after expiry bounced to /login even with a valid refresh
+  // token in cookies. So on missing/expired claims, fall through to
+  // getUser(), which refreshes the session server-side and persists the new
+  // cookies via setAll above. Only when that also fails is the visitor
+  // genuinely signed out.
+  if (!userId) {
+    const { data: refreshed } = await supabase.auth.getUser();
+    userId = refreshed.user?.id ?? null;
+  }
+
+  if (isProtected && !userId) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", request.nextUrl.pathname);
