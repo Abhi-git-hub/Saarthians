@@ -57,8 +57,13 @@ export async function proxy(request: NextRequest) {
   // cookies via setAll above. Only when that also fails is the visitor
   // genuinely signed out.
   if (!userId) {
-    const { data: refreshed } = await supabase.auth.getUser();
-    userId = refreshed.user?.id ?? null;
+    try {
+      const { data: refreshed } = await supabase.auth.getUser();
+      userId = refreshed.user?.id ?? null;
+    } catch {
+      // Auth backend unreachable: behave as signed out rather than 500.
+      userId = null;
+    }
   }
 
   if (isProtected && !userId) {
