@@ -604,7 +604,7 @@ img { max-width:100%; }
 .experience-rows li { display:grid; grid-template-columns:110px 1fr; gap:18px; padding:22px 0; border-top:1px solid rgba(243,234,216,.16); }
 .experience-rows strong { font-family:var(--font-display); font-style:italic; font-weight:500; font-size:22px; color:var(--accent-2); }
 .experience-rows p { margin:0; color:#cfc6b2; line-height:1.7; font-size:14px; max-width:440px; }
-.text-link-big { display:inline-flex; margin-top:26px; color:#f3ead8; font-weight:850; font-size:15px; border-bottom:2px solid var(--accent-2); padding-bottom:4px; }
+.text-link-big { display:inline-flex; margin-top:26px; color:#f3ead8; font-weight:850; font-size:15px; border-bottom:2px solid var(--accent-2); padding-bottom:4px; max-width:100%; overflow-wrap:break-word; }
 .signal-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0; margin-top:50px; border-top:1px solid var(--line); }
 .signal-grid > .reveal { border-bottom:1px solid var(--line); }
 .signal { padding:30px 26px 30px 0; }
@@ -754,7 +754,7 @@ img { max-width:100%; }
 .lab-ctas { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
 .lab-note { color:var(--muted); font-size:12.5px; margin:14px 0 0; }
 .lab-daily { border:1px solid var(--line); border-radius:22px; padding:26px; background:#fff; }
-.lab-daily-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.lab-daily-head { display:flex; justify-content:space-between; align-items:center; gap:8px 12px; flex-wrap:wrap; }
 .lab-date { color:var(--muted); font-size:13px; font-weight:700; }
 .lab-journey-rail { display:flex; gap:8px; flex-wrap:wrap; margin:26px 0 18px; }
 .lab-stage { border:1px solid var(--line); background:var(--paper); border-radius:999px; padding:12px 18px; min-height:48px; display:inline-flex; align-items:center; gap:10px; font:inherit; font-size:13px; font-weight:750; color:var(--muted); cursor:pointer; transition:all .18s var(--ease); }
@@ -775,12 +775,12 @@ img { max-width:100%; }
 .lab-style-card.is-picked { border-color:var(--accent); box-shadow:0 0 0 2px var(--accent) inset; }
 .lab-style-card strong { font-size:15px; letter-spacing:.04em; }
 .lab-style-card span { color:var(--muted); font-size:13.5px; line-height:1.6; }
-.hero-teaser { display:flex; align-items:center; gap:12px; margin-top:22px; padding:14px 18px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.7); font-size:14px; color:var(--muted); }
+.hero-teaser { display:flex; align-items:center; gap:6px 12px; flex-wrap:wrap; margin-top:22px; padding:14px 18px; border:1px solid var(--line); border-radius:16px; background:rgba(255,255,255,.7); font-size:14px; color:var(--muted); min-width:0; }
 .hero-teaser strong { color:var(--ink); }
-.hero-teaser a { font-weight:800; color:var(--accent); white-space:nowrap; }
+.hero-teaser a { font-weight:800; color:var(--accent); }
 @media (prefers-reduced-motion: no-preference) { .lab-option.is-correct { animation:pop .25s var(--ease); } .lab-card.is-matched { animation:pop .25s var(--ease); } @keyframes pop { 0% { transform:scale(.985); } 60% { transform:scale(1.008); } 100% { transform:none; } } }
 @media (prefers-reduced-motion: reduce) { .lab-option, .lab-card, .lab-tab, .lab-stage, .lab-progress > span { transition:none; animation:none; } }
-@media (max-width: 640px) { .lab-stage { padding:20px 16px; } .lab-match-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lab-card { min-height:96px; font-size:13.5px; } .lab-stage-head { flex-direction:column; } .lab-time { align-self:flex-start; } .lab-stats { gap:20px; } .lab-ctas .public-button { width:100%; } }
+@media (max-width: 640px) { .lab-stage { padding:20px 16px; } .lab-match-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .lab-card { min-height:96px; font-size:13.5px; } .lab-stage-head { flex-direction:column; } .lab-time { align-self:flex-start; } .lab-stats { gap:20px; } .lab-ctas .public-button { width:100%; } .curio summary { padding:16px; } .curio-answer { padding:0 16px 18px; } .lab-daily, .lab-style { padding:20px 16px; } .lab-option { font-size:14.5px; } }
 /* Local SEO cluster: breadcrumbs, FAQ, sibling links */
 .crumbs { padding-top:26px; }
 .crumbs ol { list-style:none; display:flex; flex-wrap:wrap; gap:8px; margin:0; padding:0; font-size:12.5px; color:var(--muted); }

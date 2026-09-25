@@ -13,7 +13,7 @@ export async function signInWithIdentifier(input: { identifier: string; password
     return { error: "Enter your username (or administrator email) and password." };
   }
 
-  const identifier = parsedIdentifier.data.toLowerCase();
+  const identifier = parsedIdentifier.data.trim().toLowerCase();
   const email = identifier.includes("@") ? identifier : `${identifier}@${managedAccountDomain}`;
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({ email, password: input.password });

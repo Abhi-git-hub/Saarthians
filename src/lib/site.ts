@@ -89,7 +89,7 @@ export const COURSES: Course[] = [
 export const BRAND_IMAGES = {
   logo: "/images/saarthians-logo.png",
   legacyLogo: "/images/saarthi-logo.png",
-  signature: "/images/founder-signature.jpg",
+  signature: "/images/signature.svg",
   classroom: "/images/classroom.jpg",
 };
 
