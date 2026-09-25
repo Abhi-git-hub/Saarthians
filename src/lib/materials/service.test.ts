@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { processMaterialUpload, retryMaterialProcessing } from "./service";
-import { extractPdfPages, optimizePdf, validatePdfUpload } from "./pdf";
+import { extractPdfTextRobust, optimizePdf, validatePdfUpload } from "./pdf";
 
 vi.mock("./pdf", () => ({
   validatePdfUpload: vi.fn(),
   optimizePdf: vi.fn(),
-  extractPdfPages: vi.fn(),
+  extractPdfTextRobust: vi.fn(),
   chunkExtractedPages: vi.fn(),
 }));
 
@@ -68,11 +68,15 @@ function mockHappyPipeline() {
     storedSize: 40,
     compressionRatio: 0.6,
   });
-  vi.mocked(extractPdfPages).mockResolvedValue([
-    { pageNumber: 1, text: "alpha beta" },
-    { pageNumber: 2, text: "" },
-    { pageNumber: 3, text: "gamma delta" },
-  ]);
+  vi.mocked(extractPdfTextRobust).mockResolvedValue({
+    pages: [
+      { pageNumber: 1, text: "alpha beta" },
+      { pageNumber: 2, text: "" },
+      { pageNumber: 3, text: "gamma delta" },
+    ],
+    source: "pdfjs",
+    diagnostics: "pdfjs ok",
+  });
   vi.mocked(chunkExtractedPages).mockReturnValue([
     { pageNumber: 1, chunkIndex: 0, text: "alpha beta" },
     { pageNumber: 3, chunkIndex: 1, text: "gamma delta" },
@@ -102,13 +106,37 @@ describe("processMaterialUpload", () => {
       processing_status: "ready",
       embedding_status: "skipped",
     });
-    const sized = updates.find((u) => u.patch.original_size_bytes === 100);
+    const sized = updates.find((u) => u.patch.original_size_bytes === 3);
     expect(sized?.patch).toMatchObject({
-      stored_size_bytes: 40,
-      compression_ratio: 0.6,
+      stored_size_bytes: 2,
+      compression_ratio: 1 / 3,
       optimization_status: "compressed",
       page_count: 3,
     });
+  });
+
+  it("falls back to the original file when the rewrite loses text", async () => {
+    mockHappyPipeline();
+    // Optimized bytes extract to almost nothing: keep the original instead.
+    vi.mocked(extractPdfTextRobust)
+      .mockResolvedValueOnce({
+        pages: [{ pageNumber: 1, text: "alpha beta gamma delta epsilon" }],
+        source: "pdfjs",
+        diagnostics: "pdfjs ok",
+      })
+      .mockResolvedValueOnce({ pages: [{ pageNumber: 1, text: "" }], source: "pdfjs", diagnostics: "empty" });
+    const { supabase, updates, storage } = mockDb();
+    await processMaterialUpload(supabase as never, {
+      materialId: "m6",
+      teacherId: "t1",
+      bytes: BYTES,
+      filename: "notes.pdf",
+    });
+    // Stored bytes are the original (3 bytes), not the optimized (2 bytes).
+    expect(storage.uploaded[0].bytes).toEqual(BYTES);
+    expect(updates.some((u) => u.patch.optimization_status === "stored_original")).toBe(true);
+    const final = updates[updates.length - 1];
+    expect(final.patch.processing_status).toBe("ready");
   });
 
   it("fails invalid PDFs and image-only PDFs without going ready", async () => {
@@ -122,7 +150,7 @@ describe("processMaterialUpload", () => {
     const second = mockDb();
     vi.mocked(validatePdfUpload).mockResolvedValue({ bytes: BYTES, filename: "x.pdf", pageCount: 1 });
     vi.mocked(optimizePdf).mockResolvedValue({ bytes: BYTES, status: "stored_original", originalSize: 10, storedSize: 10, compressionRatio: 0 });
-    vi.mocked(extractPdfPages).mockResolvedValue([{ pageNumber: 1, text: "" }]);
+    vi.mocked(extractPdfTextRobust).mockRejectedValue(new Error("NO_READABLE_TEXT: pages=1, pdfjs_chars=0, scraped_chars=0, text_streams=0. Scanned or image-only PDFs are not supported yet."));
     await expect(
       processMaterialUpload(second.supabase as never, { materialId: "m3", teacherId: "t1", bytes: BYTES, filename: "x.pdf" }),
     ).rejects.toThrow("NO_READABLE_TEXT");

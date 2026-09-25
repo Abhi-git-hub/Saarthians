@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { getStudentAttempts, getStudentNotes, getStudentTests } from "@/lib/student";
+import { getStudentAttempts, getStudentNotes } from "@/lib/student";
 import { getStudentMaterials } from "@/lib/materials/service";
-import { getStudentProgressSignals, type ProgressSignal } from "@/lib/progress";
+import { getStudentProgressSignals } from "@/lib/progress";
 import { requireRole } from "@/lib/auth";
-import { resolveTestLifecycle } from "@/lib/assessment";
 import { EmptyState, PageHeading, ProgressBar, SectionHeader } from "@/components/ui";
 
 type Focus = { kind: string; title: string; reason: string; href: string; cta: string };
@@ -11,45 +10,25 @@ type Focus = { kind: string; title: string; reason: string; href: string; cta: s
 export default async function StudentWorkspace() {
   const user = await requireRole(["student"]);
   const firstName = user.displayName.split(" ")[0] || "learner";
-  const [notes, tests, attempts, signals] = await Promise.all([
+  const [notes, attempts, signals] = await Promise.all([
     getStudentNotes(),
-    getStudentTests(),
     getStudentAttempts(),
     getStudentProgressSignals(),
   ]);
   const materials: Array<{ id: string; title: string }> =
     (await getStudentMaterials().catch(() => null)) ?? [];
 
-  const activeAttempt = attempts.find((a) => a.status === "in_progress" || a.status === "created");
-  const attemptedTestIds = new Set(attempts.map((a) => a.test_id));
-  const liveUnattempted = tests.find(
-    (t) => resolveTestLifecycle("published", t.start_time, t.end_time) === "live" && !attemptedTestIds.has(t.id),
-  );
+  // Tests happen offline; scores arrive from the teacher. Focus order:
+  // weakest area → newest material → recent note → latest score → onboard.
   const weakest = signals
     .filter((s) => s.latestPercent !== null && s.missedQuestions > 0)
     .sort((a, b) => (a.latestPercent ?? 100) - (b.latestPercent ?? 100))[0];
   const newestMaterial = materials[0];
   const recentNote = notes[0];
+  const latestGraded = attempts.find((a) => a.score !== null && a.max_score !== null);
 
   let focus: Focus;
-  if (activeAttempt) {
-    const title = tests.find((t) => t.id === activeAttempt.test_id)?.title;
-    focus = {
-      kind: "Resume",
-      title: title ?? "Your assessment",
-      reason: "An attempt is already in progress — your answers are saved.",
-      href: `/app/tests/${activeAttempt.test_id}`,
-      cta: "Resume assessment →",
-    };
-  } else if (liveUnattempted) {
-    focus = {
-      kind: "New",
-      title: liveUnattempted.title,
-      reason: "A live assessment is waiting. The server clock decides the window.",
-      href: `/app/tests/${liveUnattempted.id}`,
-      cta: "Start assessment →",
-    };
-  } else if (weakest) {
+  if (weakest) {
     focus = {
       kind: "Fix mistakes",
       title: weakest.title,
@@ -69,17 +48,25 @@ export default async function StudentWorkspace() {
     focus = {
       kind: "Revisit",
       title: recentNote.title,
-      reason: "Your most recently touched note. Reread it, then quiz yourself.",
+      reason: "Your most recently touched note. Reread it, then ask the tutor about it.",
       href: "/app/notes",
       cta: "Open notes →",
+    };
+  } else if (latestGraded) {
+    focus = {
+      kind: "Latest score",
+      title: `${Math.round((Number(latestGraded.score) / Math.max(Number(latestGraded.max_score), 1)) * 100)}% — keep the streak going.`,
+      reason: "Your most recent class-test score. New scores from your teacher will appear here.",
+      href: "/app/results",
+      cta: "See results →",
     };
   } else {
     focus = {
       kind: "Begin",
       title: "Your library is empty — on purpose.",
-      reason: "Write your first note or take your first assessment. This focus box will learn your rhythm from there.",
-      href: "/app/tests",
-      cta: "See assessments →",
+      reason: "Write your first note. Scores from your class tests will appear here once your teacher records them.",
+      href: "/app/notes/new",
+      cta: "Write a note →",
     };
   }
 
@@ -115,7 +102,7 @@ export default async function StudentWorkspace() {
 
         <section className="dashboard-grid two-column">
           <article className="surface-card">
-            <SectionHeader eyebrow="Continue" title="Pick up where you left off." link={{ href: "/app/results", label: "View results →" }} />
+            <SectionHeader eyebrow="Scores" title="Latest class-test scores." link={{ href: "/app/results", label: "View results →" }} />
             {recentAttempts.length > 0 ? (
               <div className="data-rows">
                 {recentAttempts.map((attempt) => {
@@ -141,9 +128,9 @@ export default async function StudentWorkspace() {
               </div>
             ) : (
               <EmptyState
-                title="Nothing in flight yet."
-                body="When you start an assessment, it will wait for you right here — answers saved, timer honest."
-                action={{ href: "/app/tests", label: "Browse assessments →" }}
+                title="No scores recorded yet."
+                body="Scores from your offline class tests appear here once your teacher records them."
+                action={{ href: "/app/tests", label: "See tests →" }}
               />
             )}
           </article>
@@ -171,8 +158,8 @@ export default async function StudentWorkspace() {
             ) : (
               <EmptyState
                 title="No graded work yet."
-                body="Your best scores will line up here once the server grades your first attempts."
-                action={{ href: "/app/tests", label: "Take a test →" }}
+                body="Your best scores will line up here once your teacher records your first class-test scores."
+                action={{ href: "/app/tests", label: "See tests →" }}
               />
             )}
           </article>

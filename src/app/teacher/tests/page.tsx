@@ -26,18 +26,18 @@ export default async function TeacherTestsPage() {
         ) : (
           <div className="data-rows">
             {tests.map((test) => (
-              <Link key={test.id} href={`/teacher/tests/${test.id}/edit`} className="data-row">
+              <div key={test.id} className="data-row">
                 <span className="data-row-main">
-                  <strong>{test.title}</strong>
+                  <Link href={`/teacher/tests/${test.id}/edit`}><strong>{test.title}</strong></Link>
                   <span>{test.test_questions?.length ?? 0} questions</span>
                 </span>
                 <span className="data-row-side">
                   <StatusPill tone={test.status === "published" ? "live" : test.status === "draft" ? "warn" : "idle"}>
                     {test.status}
                   </StatusPill>
-                  <span className="row-arrow" aria-hidden="true">→</span>
+                  <Link href={`/teacher/tests/${test.id}/scores`} className="text-link">Scores →</Link>
                 </span>
-              </Link>
+              </div>
             ))}
           </div>
         )}

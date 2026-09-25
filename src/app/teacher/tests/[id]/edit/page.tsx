@@ -19,7 +19,7 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
   const supabase = await createClient();
   const { data: test } = await supabase
     .from("tests")
-    .select("id,title,instructions,duration_seconds,status,start_time,end_time,assessment_pdf_path,teacher_id,test_questions(id,type,prompt,options_json,points,position,test_question_keys(correct_answer_json))")
+    .select("id,title,instructions,duration_seconds,status,start_time,end_time,max_marks,assessment_pdf_path,teacher_id,test_questions(id,type,prompt,options_json,points,position,test_question_keys(correct_answer_json))")
     .eq("id", id)
     .single();
 
@@ -39,7 +39,7 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
         <li><a href="#builder-review"><b>3</b> Review & publish</a></li>
       </ol>
       <div id="builder-questions">
-        <TestEditor testId={test.id} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: keyOf(q) }))} status={test.status} />
+        <TestEditor testId={test.id} maxMarks={test.max_marks === null ? null : Number(test.max_marks)} initialQuestions={questions.map((q) => ({ ...q, options_json: q.options_json as unknown, correct_answer_json: keyOf(q) }))} status={test.status} />
       </div>
       <div id="builder-schedule">
         <LiveSettings testId={test.id} initialStart={test.start_time} initialEnd={test.end_time} initialAssessment={test.assessment_pdf_path} />
@@ -49,9 +49,11 @@ export default async function TeacherTestEditorPage({ params }: { params: Promis
         <dl>
           <div><dt>Status</dt><dd>{test.status}</dd></div>
           <div><dt>Questions</dt><dd>{questions.length}</dd></div>
+          <div><dt>Max marks</dt><dd>{test.max_marks === null ? "—" : Number(test.max_marks)}</dd></div>
           <div><dt>Window</dt><dd>{test.start_time ? new Date(test.start_time).toLocaleString("en-IN") : "open-ended"} → {test.end_time ? new Date(test.end_time).toLocaleString("en-IN") : "open"}</dd></div>
         </dl>
-        <p>Publishing happens from the question editor above once at least one question exists. Published tests lock their questions — the window stays editable.</p>
+        <p>Publish from the question editor above — with questions, or question-less once max marks are set on the Scores tab. Then record each student&apos;s offline marks.</p>
+        <p style={{ marginTop: 10 }}><Link href={`/teacher/tests/${test.id}/scores`} style={{ fontWeight: 750, color: "var(--accent)" }}>Open scorebook →</Link></p>
       </section>
     </main>
   );

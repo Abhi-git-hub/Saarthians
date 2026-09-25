@@ -17,13 +17,16 @@ function optionList(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
-export function TestEditor({ testId, initialQuestions, status }: { testId: string; initialQuestions: Question[]; status: string }) {
+export function TestEditor({ testId, initialQuestions, status, maxMarks }: { testId: string; initialQuestions: Question[]; status: string; maxMarks: number | null }) {
   const [questions, setQuestions] = useState(initialQuestions);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [draft, setDraft] = useState({ type: "mcq", prompt: "", options: ["", ""], correct: 0, points: 1 });
   const isEditable = status === "draft";
   const total = useMemo(() => questions.reduce((sum, q) => sum + Number(q.points), 0), [questions]);
+  // Scorebook tests publish with zero questions once max marks are set
+  // (scores come from offline class tests, not the player).
+  const canPublish = questions.length > 0 || maxMarks !== null;
 
   async function addQuestion() {
     setPending(true); setMessage(null);
@@ -59,7 +62,7 @@ export function TestEditor({ testId, initialQuestions, status }: { testId: strin
     <section style={{ marginTop: 34 }}>
       <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", padding: "16px 0", borderTop: "1px solid var(--line)", borderBottom: "1px solid var(--line)" }}>
         <div><strong>{questions.length} questions</strong><span style={{ color: "var(--muted)", marginLeft: 14 }}>{total} total points</span></div>
-        {isEditable ? <button onClick={publish} disabled={pending || questions.length === 0} style={buttonStyle}>Publish assessment →</button> : <span className="eyebrow">Published</span>}
+        {isEditable ? <button onClick={publish} disabled={pending || !canPublish} style={buttonStyle}>Publish assessment →</button> : <span className="eyebrow">Published</span>}
       </div>
 
       <div style={{ display: "grid", gap: 14, marginTop: 20 }}>

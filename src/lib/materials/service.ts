@@ -1,6 +1,6 @@
 ﻿import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { chunkExtractedPages, extractPdfPages, optimizePdf, validatePdfUpload } from "./pdf";
+import { chunkExtractedPages, extractPdfTextRobust, optimizePdf, validatePdfUpload } from "./pdf";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -54,11 +54,49 @@ export async function processMaterialUpload(
     return failMaterial(supabase, materialId, error instanceof Error ? `INVALID_PDF: ${error.message}` : "INVALID_PDF");
   }
 
+  // Extract from the ORIGINAL bytes first: the optimizer rewrite can disturb
+  // exotic files, so the canonical text always comes from a verified source.
+  let originalText;
+  try {
+    originalText = await extractPdfTextRobust(validated.bytes);
+  } catch (error) {
+    await markMaterial(supabase, materialId, { extraction_status: "no_text" });
+    return failMaterial(
+      supabase,
+      materialId,
+      error instanceof Error ? error.message : "NO_READABLE_TEXT",
+    );
+  }
+
   const optimized = await optimizePdf(validated.bytes);
+
+  // Verify the rewrite preserved the text: re-extract from the optimized
+  // bytes and keep whichever file the extractor reads better. The stored
+  // bytes and the indexed text always come from the same source.
+  let storedBytes = optimized.bytes;
+  let storedText = originalText;
+  let optimizationNote = optimized.status;
+  if (optimized.status === "compressed") {
+    try {
+      const recheck = await extractPdfTextRobust(optimized.bytes);
+      const originalChars = originalText.pages.reduce((sum, page) => sum + page.text.length, 0);
+      const recheckChars = recheck.pages.reduce((sum, page) => sum + page.text.length, 0);
+      if (recheckChars >= originalChars * 0.9) {
+        storedText = recheck;
+      } else {
+        storedBytes = validated.bytes;
+        optimizationNote = "stored_original";
+      }
+    } catch {
+      storedBytes = validated.bytes;
+      optimizationNote = "stored_original";
+    }
+  }
+
   const storagePath = `${teacherId}/${materialId}/material.pdf`;
   const { error: uploadError } = await supabase.storage
     .from(MATERIAL_BUCKET)
-    .upload(storagePath, optimized.bytes, { contentType: "application/pdf", upsert: true });
+    .upload(storagePath, storedBytes, { contentType: "application/pdf", upsert: true });
   if (uploadError) {
     return failMaterial(supabase, materialId, `STORAGE_UPLOAD_FAILED: ${uploadError.message}`);
   }
@@ -67,29 +105,21 @@ export async function processMaterialUpload(
     original_filename: validated.filename,
     storage_path: storagePath,
     mime_type: "application/pdf",
-    original_size_bytes: optimized.originalSize,
-    stored_size_bytes: optimized.storedSize,
-    compression_ratio: optimized.compressionRatio,
-    optimization_status: optimized.status === "compressed" ? "compressed" : optimized.status === "stored_original" ? "stored_original" : "skipped",
+    original_size_bytes: validated.bytes.length,
+    stored_size_bytes: storedBytes.length,
+    compression_ratio: storedBytes.length < validated.bytes.length
+      ? (validated.bytes.length - storedBytes.length) / validated.bytes.length
+      : 0,
+    optimization_status: optimizationNote === "compressed" ? "compressed" : optimizationNote === "stored_original" ? "stored_original" : "skipped",
     page_count: validated.pageCount,
   });
 
-  let pages;
-  try {
-    pages = await extractPdfPages(optimized.bytes);
-  } catch {
-    return failMaterial(supabase, materialId, "EXTRACTION_FAILED: the PDF text could not be read.");
-  }
-  const usableText = pages.some((page) => page.text.length > 0);
-  if (!usableText) {
-    await markMaterial(supabase, materialId, { extraction_status: "no_text" });
-    return failMaterial(
-      supabase,
-      materialId,
-      "NO_READABLE_TEXT: scanned or image-only PDFs are not supported yet.",
-    );
-  }
-  await markMaterial(supabase, materialId, { extraction_status: "complete" });
+  await markMaterial(supabase, materialId, {
+    extraction_status: "complete",
+    processing_error: null,
+  });
+
+  const pages = storedText.pages;
 
   const chunks = chunkExtractedPages(pages);
   if (chunks.length === 0) {

@@ -643,6 +643,7 @@ export type Database = {
           end_time: string | null
           id: string
           instructions: string
+          max_marks: number | null
           published_at: string | null
           start_time: string | null
           status: Database["public"]["Enums"]["content_status"]
@@ -657,6 +658,7 @@ export type Database = {
           end_time?: string | null
           id?: string
           instructions?: string
+          max_marks?: number | null
           published_at?: string | null
           start_time?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -671,6 +673,7 @@ export type Database = {
           end_time?: string | null
           id?: string
           instructions?: string
+          max_marks?: number | null
           published_at?: string | null
           start_time?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -910,6 +913,10 @@ export type Database = {
           page_number: number
           similarity: number
         }[]
+      }
+      record_student_score: {
+        Args: { p_score: number; p_student_id: string; p_test_id: string }
+        Returns: string
       }
       schedule_test: {
         Args: { p_end_time?: string; p_start_time?: string; p_test_id: string }

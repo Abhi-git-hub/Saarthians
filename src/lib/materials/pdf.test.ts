@@ -3,8 +3,11 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import {
   chunkExtractedPages,
   extractPdfPages,
+  extractPdfTextRobust,
   optimizePdf,
   sanitizeFilename,
+  scrapeContentText,
+  scrapePdfText,
   validatePdfUpload,
 } from "./pdf";
 
@@ -104,5 +107,42 @@ describe("chunkExtractedPages", () => {
         expect(long.includes(word) || word === "Short" || word === "tail.").toBe(true);
       }
     }
+  });
+});
+
+describe("scrapeContentText", () => {
+  it("recovers literal, hex, escaped, and TJ-array text", () => {
+    expect(scrapeContentText("BT /F1 12 Tf 72 720 Td (Hello World) Tj ET")).toContain("Hello World");
+    expect(scrapeContentText("BT <48656C6C6F> Tj ET")).toContain("Hello");
+    expect(scrapeContentText("BT (a\\(b\\)c) Tj ET")).toContain("a(b)c");
+    expect(scrapeContentText("BT [(Hello) 120 (World)] TJ ET")).toContain("Hello");
+    expect(scrapeContentText("BT [(Hello) 120 (World)] TJ ET")).toContain("World");
+    expect(scrapeContentText("q 1 0 0 1 0 0 cm /Im0 Do Q")).toBe("");
+  });
+});
+
+describe("scrapePdfText", () => {
+  it("recovers per-page text through pdf-lib content streams", async () => {
+    const bytes = await makePdf([["Alpha page one"], ["Beta page two"]]);
+    const { pages, streamsWithTextOps } = await scrapePdfText(bytes);
+    expect(pages).toHaveLength(2);
+    expect(pages[0].pageNumber).toBe(1);
+    expect(pages[0].text).toContain("Alpha");
+    expect(pages[1].text).toContain("Beta");
+    expect(streamsWithTextOps).toBeGreaterThan(0);
+  });
+});
+
+describe("extractPdfTextRobust", () => {
+  it("prefers the primary extractor and reports diagnostics", async () => {
+    const bytes = await makePdf([[UNIQUE_PHRASE]]);
+    const result = await extractPdfTextRobust(bytes);
+    expect(result.pages[0].text).toContain("BLUE-MANGO-47");
+    expect(result.diagnostics).toContain("chars");
+  });
+
+  it("fails honestly with diagnostics on image-only PDFs", async () => {
+    const bytes = await makePdf([[]], true);
+    await expect(extractPdfTextRobust(bytes)).rejects.toThrow(/NO_READABLE_TEXT.*pages=1.*pdfjs_chars=0/);
   });
 });

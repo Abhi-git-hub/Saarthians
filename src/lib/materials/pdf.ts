@@ -135,6 +135,246 @@ export async function extractPdfPages(bytes: Uint8Array): Promise<ExtractedPage[
   return pages;
 }
 
+async function inflateRaw(data: Uint8Array): Promise<Uint8Array> {
+  // DecompressionStream is web-standard: Cloudflare Workers, browsers, and
+  // Node 18+. No native binary, no extra dependency.
+  const stream = new DecompressionStream("deflate");
+  const writer = stream.writable.getWriter();
+  await writer.write(data as unknown as ArrayBuffer);
+  await writer.close();
+  const chunks: Uint8Array[] = [];
+  const reader = stream.readable.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return out;
+}
+
+// Common Windows-1252 punctuation mapped to ASCII so fallback text stays
+// readable. Anything else non-ASCII becomes a space (never a lie, just a gap).
+const WIN1252_EXTRA: Record<number, string> = {
+  0x82: "'", 0x83: "f", 0x84: '"', 0x85: "...", 0x86: "+", 0x87: "++", 0x88: "^",
+  0x89: "%", 0x8a: "S", 0x8b: "<", 0x8c: "OE", 0x91: "'", 0x92: "'", 0x93: '"',
+  0x94: '"', 0x95: "-", 0x96: "-", 0x97: "--", 0x98: "~", 0x99: "(TM)", 0x9a: "s",
+  0x9b: ">", 0x9c: "oe", 0x9f: "Y", 0xa0: " ", 0xa9: "(c)", 0xae: "(R)", 0xb0: "deg",
+  0xb1: "+/-", 0xb7: "-", 0xd7: "x", 0xf7: "/",
+};
+
+function decodeTextBytes(bytes: number[]): string {
+  let out = "";
+  for (const byte of bytes) {
+    if (byte === 10 || byte === 13) out += " ";
+    else if (byte >= 32 && byte < 127) out += String.fromCharCode(byte);
+    else if (byte >= 160) out += String.fromCharCode(byte);
+    else if (WIN1252_EXTRA[byte] !== undefined) out += WIN1252_EXTRA[byte];
+    else out += " ";
+  }
+  return out;
+}
+
+/**
+ * Scrape text-showing operators (Tj / TJ with literal or hex strings)
+ * from one decoded content stream. No font maps are consulted, so custom
+ * encodings may decode imperfectly — but real embedded text is recovered
+ * where the primary extractor sees nothing.
+ */
+export function scrapeContentText(content: string): string {
+  const pieces: string[] = [];
+  let i = 0;
+  const flush = (bytes: number[]) => {
+    const text = decodeTextBytes(bytes).replace(/\s+/g, " ").trim();
+    if (text) pieces.push(text);
+  };
+  while (i < content.length) {
+    const char = content[i];
+    if (char === "(") {
+      const bytes: number[] = [];
+      i += 1;
+      while (i < content.length && content[i] !== ")") {
+        if (content[i] === "\\" && i + 1 < content.length) {
+          const next = content[i + 1];
+          if (next >= "0" && next <= "7") {
+            let octal = "";
+            let j = i + 1;
+            while (j < content.length && octal.length < 3 && content[j] >= "0" && content[j] <= "7") {
+              octal += content[j];
+              j += 1;
+            }
+            bytes.push(parseInt(octal, 8) & 0xff);
+            i = j;
+          } else {
+            const escapes: Record<string, number> = { n: 10, r: 13, t: 9, b: 8, f: 12, "\\": 92, "(": 40, ")": 41 };
+            bytes.push(escapes[next] ?? next.charCodeAt(0));
+            i += 2;
+          }
+        } else {
+          bytes.push(content.charCodeAt(i) & 0xff);
+          i += 1;
+        }
+      }
+      i += 1; // consume ")"
+      flush(bytes);
+    } else if (char === "<" && content[i + 1] !== "<") {
+      let hex = "";
+      i += 1;
+      while (i < content.length && content[i] !== ">") {
+        if (/[0-9a-fA-F]/.test(content[i])) hex += content[i];
+        i += 1;
+      }
+      i += 1; // consume ">"
+      if (hex.length % 2 === 1) hex += "0";
+      const bytes: number[] = [];
+      for (let h = 0; h < hex.length; h += 2) bytes.push(parseInt(hex.slice(h, h + 2), 16));
+      flush(bytes);
+    } else {
+      i += 1;
+    }
+  }
+  return pieces.join(" ").replace(/\s+/g, " ").trim();
+}
+
+// Manual latin1 decode (no Node Buffer — must run on Workers too).
+function toLatin1(raw: Uint8Array): string {
+  let out = "";
+  for (let i = 0; i < raw.length; i += 1) out += String.fromCharCode(raw[i]);
+  return out;
+}
+
+interface PageStream {
+  bytes: Uint8Array;
+  filter: string;
+}
+
+/** Read a page's raw content streams via pdf-lib (single stream or array). */
+async function readPageStreams(doc: Awaited<ReturnType<typeof PDFDocument.load>>, pageIndex: number): Promise<PageStream[]> {
+  const context = (doc as unknown as { context: unknown }).context as {
+    lookup: (obj: unknown) => unknown;
+  };
+  const leaf = doc.getPages()[pageIndex]?.node as unknown as { Contents: () => unknown };
+  if (!leaf || typeof leaf.Contents !== "function") return [];
+  const entry = context.lookup(leaf.Contents());
+  const refs: unknown[] = Array.isArray((entry as { array?: unknown[] }).array)
+    ? (entry as { array: unknown[] }).array
+    : [entry];
+  const streams: PageStream[] = [];
+  for (const ref of refs) {
+    const stream = context.lookup(ref) as {
+      dict?: { toString: () => string };
+      getContents?: () => Uint8Array;
+    } | null;
+    if (!stream || typeof stream.getContents !== "function") continue;
+    streams.push({ bytes: stream.getContents(), filter: stream.dict?.toString() ?? "" });
+  }
+  return streams;
+}
+
+/**
+ * Fallback: scrape text operators page by page. Returns per-page text plus
+ * how many streams actually contained text-showing operators (diagnostics).
+ */
+export async function scrapePdfText(bytes: Uint8Array): Promise<{ pages: ExtractedPage[]; streamsWithTextOps: number }> {
+  const doc = await PDFDocument.load(bytes);
+  const pageCount = doc.getPageCount();
+  const pages: ExtractedPage[] = [];
+  let streamsWithTextOps = 0;
+  for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
+    const parts: string[] = [];
+    for (const stream of await readPageStreams(doc, pageIndex)) {
+      let raw = stream.bytes;
+      if (/FlateDecode/.test(stream.filter)) {
+        try {
+          raw = await inflateRaw(raw);
+        } catch {
+          continue;
+        }
+      }
+      const content = toLatin1(raw);
+      if (!/[Tt][Jj]\b/.test(content)) continue;
+      streamsWithTextOps += 1;
+      const text = scrapeContentText(content);
+      if (text) parts.push(text);
+    }
+    pages.push({ pageNumber: pageIndex + 1, text: parts.join(" ").replace(/\s+/g, " ").trim() });
+  }
+  return { pages, streamsWithTextOps };
+}
+
+export interface RobustExtraction {
+  pages: ExtractedPage[];
+  /** Which extractor produced the returned text. */
+  source: "pdfjs" | "fallback";
+  diagnostics: string;
+}
+
+const MIN_CHARS_PER_PAGE = 12;
+const MIN_CHARS_TOTAL = 30;
+
+/** Minimum usable characters for a document of `pageCount` pages. */
+function minUsableChars(pageCount: number): number {
+  return Math.max(MIN_CHARS_TOTAL, MIN_CHARS_PER_PAGE * Math.max(pageCount, 1));
+}
+
+/**
+ * Robust extraction: pdf.js first (proper unicode via font maps), raw
+ * operator scraping as fallback (recovers real text where font handling
+ * fails). Throws NO_READABLE_TEXT with per-page diagnostics when neither
+ * yields usable text — never a silent empty index.
+ */
+export async function extractPdfTextRobust(bytes: Uint8Array): Promise<RobustExtraction> {
+  let pdfjsPages: ExtractedPage[] | null = null;
+  let pdfjsError: string | null = null;
+  try {
+    // Copy: pdf.js may detach (transfer) the buffer it parses, which would
+    // corrupt the bytes for the fallback below. Never hand it the original.
+    pdfjsPages = await extractPdfPages(bytes.slice());
+  } catch (error) {
+    pdfjsError = error instanceof Error ? error.message : "parse failed";
+  }
+  const pdfjsChars = (pdfjsPages ?? []).reduce((sum, page) => sum + page.text.length, 0);
+  const pageCount = pdfjsPages?.length ?? 0;
+
+  if (pdfjsPages && pdfjsChars >= minUsableChars(pageCount)) {
+    return {
+      pages: pdfjsPages,
+      source: "pdfjs",
+      diagnostics: `pdfjs ok: ${pageCount} pages, ${pdfjsChars} chars`,
+    };
+  }
+
+  let scraped: { pages: ExtractedPage[]; streamsWithTextOps: number } | null = null;
+  let scrapeError: string | null = null;
+  try {
+    scraped = await scrapePdfText(bytes);
+  } catch (error) {
+    scrapeError = error instanceof Error ? error.message : "scrape failed";
+  }
+  const scrapedChars = (scraped?.pages ?? []).reduce((sum, page) => sum + page.text.length, 0);
+  if (scraped && scrapedChars > pdfjsChars && scrapedChars >= minUsableChars(scraped.pages.length || 1)) {
+    return {
+      pages: scraped.pages,
+      source: "fallback",
+      diagnostics: `pdfjs weak (${pdfjsChars} chars${pdfjsError ? `, ${pdfjsError}` : ""}); fallback recovered ${scrapedChars} chars`,
+    };
+  }
+
+  const detail = [
+    `pages=${pageCount || "unknown"}`,
+    `pdfjs_chars=${pdfjsChars}${pdfjsError ? ` (${pdfjsError})` : ""}`,
+    `scraped_chars=${scrapedChars}${scrapeError ? ` (${scrapeError})` : ""}`,
+    `text_streams=${scraped?.streamsWithTextOps ?? 0}`,
+  ].join(", ");
+  throw new Error(`NO_READABLE_TEXT: ${detail}. Scanned or image-only PDFs are not supported yet.`);
+}
+
 export interface MaterialChunk {
   pageNumber: number;
   chunkIndex: number;

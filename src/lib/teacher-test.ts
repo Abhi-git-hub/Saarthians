@@ -90,3 +90,49 @@ export async function scheduleTeacherTest(input: unknown) {
   });
   if (error) throw new Error(`Unable to schedule the assessment (${error.code ?? "unknown"}).`);
 }
+
+const maxMarksSchema = z.object({
+  testId: z.string().uuid(),
+  // Null clears back to question-derived max. Positive, sane ceiling.
+  maxMarks: z.number().finite().positive().max(10000).nullable(),
+});
+
+// Ceiling for score-only (question-less) tests. Owner-checked both in the
+// action (teacher_id match) and by RLS; the record RPC re-derives it anyway.
+export async function setTestMaxMarks(input: unknown) {
+  const user = await requireRole(["teacher", "admin"]);
+  const parsed = maxMarksSchema.parse(input);
+  const supabase = await createClient();
+  let query = supabase.from("tests").update({ max_marks: parsed.maxMarks }).eq("id", parsed.testId).select("id");
+  if (user.role !== "admin") query = query.eq("teacher_id", user.id);
+  const { data, error } = await query;
+  if (error || !data || data.length === 0) {
+    throw new Error("Unable to save max marks. The test was not found or is not yours.");
+  }
+}
+
+const recordScoreSchema = z.object({
+  testId: z.string().uuid(),
+  studentId: z.string().uuid(),
+  score: z.number().finite().min(0).max(10000),
+});
+
+// Record one student's offline-test score. The RPC enforces ownership,
+// assignment, and 0 <= score <= max; this action only validates shape.
+export async function recordStudentScore(input: unknown): Promise<string> {
+  await requireRole(["teacher", "admin"]);
+  const parsed = recordScoreSchema.parse(input);
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("record_student_score", {
+    p_test_id: parsed.testId,
+    p_student_id: parsed.studentId,
+    p_score: parsed.score,
+  });
+  if (error || !data) {
+    const code = error?.code ?? "";
+    if (code === "42501") throw new Error("That student is not assigned to you.");
+    if (code === "22023") throw new Error("Check the test, student, and score values.");
+    throw new Error(`Unable to record the score (${code || "unknown"}).`);
+  }
+  return data as string;
+}

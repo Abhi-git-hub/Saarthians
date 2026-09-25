@@ -26,9 +26,11 @@ payloads far below the 15 MB product limit):
    honest numbers are shown (`saved x%` vs `stored without additional
    compression`).
 3. **Store** the canonical file; the original is not retained separately.
-4. **Extract** (unpdf, pdf.js serverless build) per page. Image-only PDFs
-   yield no text → status `failed` with `NO_READABLE_TEXT` (no OCR — none
-   reliable exists for this runtime).
+4. **Extract** (pdf.js primary; raw text-operator scraping fallback) from the
+   ORIGINAL bytes first. The optimized copy is re-extracted and kept only
+   if it preserves ≥90% of the characters — stored bytes and indexed text
+   always come from the same source. Failures report per-page diagnostics
+   (pages, chars per extractor, streams with text ops).
 5. **Chunk** along paragraph/sentence boundaries (~1200 chars, 150 overlap),
    each chunk pinned to its starting page.
 6. **Embed** with `gemini-embedding-001`, `outputDimensionality: 768`,

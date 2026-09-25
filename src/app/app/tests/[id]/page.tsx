@@ -2,52 +2,57 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
-import { lifecycleLabel, resolveTestLifecycle } from "@/lib/assessment";
-import { TestPlayerV2 } from "./test-player-v2";
 
+// Assessment detail is read-only for students: tests happen offline, scores
+// are recorded by the teacher. No answering happens here.
 export default async function TestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireRole(["student"]);
   const supabase = await createClient();
   const { data: test, error } = await supabase
     .from("tests")
-    .select("id,title,instructions,duration_seconds,status,start_time,end_time,published_at,test_questions(id,type,prompt,options_json,points,position)")
+    .select("id,title,instructions,status")
     .eq("id", id)
     .eq("status", "published")
     .single();
   if (error || !test) notFound();
-  const lifecycle = resolveTestLifecycle(test.status, test.start_time, test.end_time);
-  const questions = [...(test.test_questions ?? [])].sort((a, b) => a.position - b.position);
-  const { data: activeAttempt } = await supabase
+
+  const { data: attempt } = await supabase
     .from("test_attempts")
-    .select("id,status,started_at,deadline_at,test_answers(question_id,answer_json)")
+    .select("score,max_score,submitted_at")
     .eq("test_id", id)
     .eq("student_id", user.id)
-    .in("status", ["created", "in_progress"])
-    .order("created_at", { ascending: false })
+    .neq("status", "in_progress")
+    .order("submitted_at", { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle();
-  const initialAnswers = Object.fromEntries((activeAttempt?.test_answers ?? []).map((answer) => [answer.question_id, answer.answer_json]));
-  const windowNote =
-    lifecycle === "scheduled" && test.start_time
-      ? `Opens ${new Date(test.start_time).toLocaleString()}.`
-      : lifecycle === "closed"
-        ? "This assessment window has closed."
-        : null;
-  return <main className="container" style={{ padding: "48px 0 80px", maxWidth: 960 }}>
-    <Link href="/app/tests" style={{ color: "var(--muted)", fontSize: 13 }}>← Back to tests</Link>
-    <span className="eyebrow" style={{ display: "flex", marginTop: 30 }}>Assessment · {lifecycleLabel(lifecycle)}</span>
-    <h1 style={{ fontSize: "clamp(42px,6vw,70px)", lineHeight: .95, letterSpacing: "-.06em", margin: "16px 0 12px" }}>{test.title}</h1>
-    <p style={{ color: "var(--muted)", lineHeight: 1.65, maxWidth: 700 }}>{test.instructions || "Read each question carefully and submit when you are done."}</p>
-    <div style={{ marginTop: 30, display: "flex", gap: 10, flexWrap: "wrap" }}><span style={metaStyle}>{questions.length} question{questions.length === 1 ? "" : "s"}</span>{test.duration_seconds ? <span style={metaStyle}>{Math.ceil(test.duration_seconds / 60)} minutes</span> : null}{test.end_time && lifecycle === "live" ? <span style={metaStyle}>Closes {new Date(test.end_time).toLocaleString()}</span> : null}{activeAttempt ? <span style={{ ...metaStyle, background: "#eaf0e8" }}>Attempt in progress</span> : null}</div>
-    {windowNote ? (
+
+  const scored = attempt && attempt.score !== null && attempt.max_score !== null;
+
+  return (
+    <main className="container" style={{ padding: "48px 0 80px", maxWidth: 960 }}>
+      <Link href="/app/tests" style={{ color: "var(--muted)", fontSize: 13 }}>← Back to tests</Link>
+      <span className="eyebrow" style={{ display: "flex", marginTop: 30 }}>Assessment</span>
+      <h1 style={{ fontSize: "clamp(42px,6vw,70px)", lineHeight: .95, letterSpacing: "-.06em", margin: "16px 0 12px" }}>{test.title}</h1>
+      <p style={{ color: "var(--muted)", lineHeight: 1.65, maxWidth: 700 }}>{test.instructions || "Class test conducted offline."}</p>
       <div style={{ marginTop: 30, border: "1px solid var(--line)", borderRadius: 22, padding: 26, background: "white" }}>
-        <h2 style={{ margin: "0 0 8px" }}>{lifecycle === "scheduled" ? "Not open yet." : "Window closed."}</h2>
-        <p style={{ color: "var(--muted)", lineHeight: 1.65, margin: 0 }}>{windowNote} The server clock decides — opening this page early never starts an attempt.</p>
+        {scored ? (
+          <>
+            <span className="eyebrow">Your score</span>
+            <p style={{ fontSize: 52, margin: "12px 0 6px", fontWeight: 850, letterSpacing: "-.04em" }}>
+              {Number(attempt.score)} <span style={{ fontSize: 22, color: "var(--muted)" }}>/ {Number(attempt.max_score)}</span>
+            </p>
+            <Link href="/app/results" style={{ color: "var(--accent)", fontSize: 14, fontWeight: 700 }}>See all results →</Link>
+          </>
+        ) : (
+          <>
+            <span className="eyebrow">Score pending</span>
+            <p style={{ color: "var(--muted)", lineHeight: 1.65, margin: "12px 0 0" }}>
+              Your teacher hasn&apos;t recorded a score for this test yet. Scores appear here after class tests are checked.
+            </p>
+          </>
+        )}
       </div>
-    ) : (
-      <TestPlayerV2 testId={test.id} durationSeconds={test.duration_seconds} deadlineAt={test.end_time} questions={questions} initialAttemptId={activeAttempt?.id ?? null} initialStartedAt={activeAttempt?.started_at ?? null} initialDeadlineAt={activeAttempt?.deadline_at ?? null} initialAnswers={initialAnswers} />
-    )}
-  </main>;
+    </main>
+  );
 }
-const metaStyle = { display: "inline-flex", alignItems: "center", border: "1px solid var(--line)", borderRadius: 999, padding: "8px 12px", color: "var(--muted)", fontSize: 13 };

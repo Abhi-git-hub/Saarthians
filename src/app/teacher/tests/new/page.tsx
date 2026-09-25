@@ -10,7 +10,7 @@ export default async function NewTestPage() {
       <Link href="/teacher/tests" style={{ color: "var(--muted)", fontSize: 13 }}>← Assessments</Link>
       <span className="eyebrow" style={{ display: "flex", marginTop: 28 }}>New assessment</span>
       <h1 style={{ fontSize: "clamp(40px,6vw,68px)", lineHeight: .95, letterSpacing: "-.06em", margin: "16px 0 12px" }}>Create a test.</h1>
-      <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>The test is created as a draft. Questions and publishing are handled through server-authorized workflows.</p>
+      <p style={{ color: "var(--muted)", lineHeight: 1.7 }}>The test is created as a draft. Scores come from your offline class tests — set max marks now, publish, then record each student&apos;s score.</p>
       <form action={createTest} style={{ marginTop: 34, display: "grid", gap: 18, padding: 26, border: "1px solid var(--line)", borderRadius: 22, background: "white" }}>
         <label style={{ display: "grid", gap: 8, fontWeight: 700 }}>
           Title
@@ -23,6 +23,11 @@ export default async function NewTestPage() {
         <label style={{ display: "grid", gap: 8, fontWeight: 700 }}>
           Duration (minutes)
           <input name="duration" type="number" min={1} max={600} placeholder="45" style={inputStyle} />
+        </label>
+        <label style={{ display: "grid", gap: 8, fontWeight: 700 }}>
+          Max marks
+          <input name="maxMarks" type="number" min={1} max={10000} placeholder="e.g. 50" style={inputStyle} />
+          <span style={{ fontWeight: 400, fontSize: 13, color: "var(--muted)" }}>Required to publish without questions. Scores are recorded against this ceiling.</span>
         </label>
         <button type="submit" style={buttonStyle}>Create draft →</button>
       </form>
