@@ -25,6 +25,7 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
   const [pending, setPending] = useState(false);
   const [feedback, setFeedback] = useState<{ kind: "success" | "error"; text: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
 
   function updateField<Key extends keyof typeof emptyForm>(key: Key, value: string) {
     setForm((v) => ({ ...v, [key]: value }));
@@ -34,6 +35,29 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
       delete next[key];
       return next;
     });
+  }
+
+  // Instant client-side check mirroring the server contract (single source
+  // of truth stays server-side; this only surfaces obvious misses without a
+  // roundtrip). Returns per-field messages, empty when the form is sendable.
+  function clientCheck(values: typeof emptyForm): Record<string, string> {
+    const errors: Record<string, string> = {};
+    if (values.displayName.trim().length < 1) errors.displayName = "Enter the full name.";
+    else if (values.displayName.trim().length > 120) errors.displayName = "Keep the name under 120 characters.";
+    const username = values.username.trim().toLowerCase();
+    if (username.length < 3) errors.username = "Username needs at least 3 characters.";
+    else if (username.length > 30) errors.username = "Keep the username under 30 characters.";
+    else if (!/^[a-z0-9](?:[a-z0-9._-]{2,29})$/.test(username))
+      errors.username = "Only lowercase letters, numbers, dots, hyphens and underscores — no spaces.";
+    if (values.password.length < 10) errors.password = "Password needs at least 10 characters.";
+    else if (values.password.length > 128) errors.password = "Keep the password under 128 characters.";
+    if (values.phone.trim().length > 32) errors.phone = "Keep the phone number under 32 characters.";
+    if (values.role === "student" && values.gradeLevel.trim().length > 40)
+      errors.gradeLevel = "Keep the class under 40 characters.";
+    if (values.role === "teacher" && values.subject.trim().length > 120)
+      errors.subject = "Keep the subject under 120 characters.";
+    if (values.role !== "student" && values.role !== "teacher") errors.role = "Choose student or teacher.";
+    return errors;
   }
 
   const filteredUsers = useMemo(() => {
@@ -48,9 +72,14 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
   // browser never calls the Edge Function directly.
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const problems = clientCheck(form);
+    setFieldErrors(problems);
+    if (Object.keys(problems).length > 0) {
+      setFeedback({ kind: "error", text: "Check the highlighted details and try again." });
+      return;
+    }
     setPending(true);
     setFeedback(null);
-    setFieldErrors({});
     try {
       const formData = new FormData();
       formData.set("username", form.username);
@@ -89,7 +118,8 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
               {fieldErrors.displayName && <span id="err-displayName" role="alert" className="std-form-error">{fieldErrors.displayName}</span>}
             </label>
             <label className="field-label">Username
-              <input minLength={3} maxLength={30} autoCapitalize="none" autoCorrect="off" value={form.username} onChange={(e) => updateField("username", e.target.value.toLowerCase())} placeholder="e.g. ananya.sharma" aria-invalid={Boolean(fieldErrors.username)} aria-describedby={fieldErrors.username ? "err-username" : undefined} />
+              <input minLength={3} maxLength={30} autoCapitalize="none" autoCorrect="off" autoComplete="off" spellCheck={false} value={form.username} onChange={(e) => updateField("username", e.target.value.toLowerCase().replace(/\s+/g, ""))} placeholder="e.g. ananya.sharma" aria-invalid={Boolean(fieldErrors.username)} aria-describedby={fieldErrors.username ? "err-username" : "username-hint"} />
+              <span id="username-hint" className="std-form-hint">Lowercase letters, numbers, dots only — becomes {form.username ? `${form.username}@accounts.saarthians.online` : "…@accounts.saarthians.online"}</span>
               {fieldErrors.username && <span id="err-username" role="alert" className="std-form-error">{fieldErrors.username}</span>}
             </label>
           </div>
@@ -98,7 +128,13 @@ export function AdminUserProvisioner({ initialUsers, initialRole = "student" }: 
               {fieldErrors.role && <span role="alert" className="std-form-error">{fieldErrors.role}</span>}
             </label>
             <label className="field-label">Initial password
-              <input minLength={10} maxLength={128} type="password" autoComplete="new-password" value={form.password} onChange={(e) => updateField("password", e.target.value)} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "err-password" : undefined} />
+              <span className="password-row">
+                <input minLength={10} maxLength={128} type={showPassword ? "text" : "password"} autoComplete="new-password" value={form.password} onChange={(e) => updateField("password", e.target.value)} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? "err-password" : "password-hint"} />
+                <button type="button" className="password-toggle" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </span>
+              <span id="password-hint" className="std-form-hint">At least 10 characters{form.password ? ` · ${form.password.length} entered` : ""}.</span>
               {fieldErrors.password && <span id="err-password" role="alert" className="std-form-error">{fieldErrors.password}</span>}
             </label>
           </div>

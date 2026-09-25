@@ -567,6 +567,10 @@ body { overflow-x:clip; }
 .lab-options > *, .lab-match-grid > *, .lab-style-grid > *, .curio-list > *, .lab-journey-cards > * { min-width:0; }
 .lab-prompt, .lab-card, .lab-option, .desk-user, .desk-assistant, .curio summary strong, p, h1, h2, h3 { overflow-wrap:break-word; }
 img { max-width:100%; }
+.password-row { display:flex; gap:8px; align-items:stretch; }
+.password-row input { flex:1; min-width:0; }
+.password-toggle { flex:none; border:1px solid var(--line); border-radius:13px; padding:0 16px; background:var(--surface); color:var(--ink); font-size:13px; font-weight:750; cursor:pointer; min-height:44px; }
+.password-toggle:hover { border-color:var(--ink); }
 /* Saarthi Classes brand integration */
 .public-brand { display:inline-flex; align-items:center; gap:10px; }
 .public-brand-logo { width:42px; height:42px; border-radius:50%; object-fit:cover; background:#0b0b0c; box-shadow:0 0 0 1px var(--line); }
