@@ -19,7 +19,7 @@ export default async function RecordMarksPage() {
 
   return (
     <main className="container" style={{ padding: "46px 0 80px", maxWidth: 760 }}>
-      <Link href="/teacher/tests" style={{ color: "var(--muted)", fontSize: 13 }}>← Assessments</Link>
+      <Link href="/teacher/settings" style={{ color: "var(--muted)", fontSize: 13 }}>Account settings →</Link>
       <span className="eyebrow" style={{ display: "flex", marginTop: 28 }}>Record marks</span>
       <h1 style={{ fontSize: "clamp(36px,5vw,56px)", lineHeight: 1, letterSpacing: "-.05em", margin: "16px 0 10px" }}>
         Whose marks, which subject?

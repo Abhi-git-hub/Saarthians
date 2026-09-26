@@ -7,10 +7,12 @@ import { createClient } from "@/lib/supabase/client";
 import type { Role } from "@/lib/security";
 
 const navigation: Record<Role, Array<[string, string]>> = {
-  student: [["Overview", "/app"], ["Notes", "/app/notes"], ["Material", "/app/materials"], ["Tests", "/app/tests"], ["Results", "/app/results"], ["Progress", "/app/progress"], ["AI Tutor", "/app/chat"], ["Profile", "/app/profile"], ["Settings", "/app/settings"]],
-  teacher: [["Overview", "/teacher"], ["Students", "/teacher/students"], ["Notes", "/teacher/notes"], ["Material", "/teacher/materials"], ["Tests", "/teacher/tests"], ["Results", "/teacher/results"], ["Progress", "/teacher/progress"], ["Profile", "/teacher/profile"], ["Settings", "/teacher/settings"]],
+  student: [["Notes", "/app/notes"], ["Material", "/app/materials"], ["Profile", "/app/profile"]],
+  teacher: [["Notes", "/teacher/notes"], ["Material", "/teacher/materials"], ["Marks", "/teacher/marks"]],
   admin: [["Overview", "/admin"], ["Users", "/admin/users"], ["Relationships", "/admin/relationships"], ["Tests", "/admin/tests"], ["Audit", "/admin/audit"], ["Security", "/admin/security"], ["System", "/admin/system"], ["Settings", "/admin/settings"]],
 };
+
+const homeFor: Record<Role, string> = { student: "/app/notes", teacher: "/teacher/notes", admin: "/admin" };
 
 const labels: Record<Role, string> = { student: "Student", teacher: "Teacher", admin: "Admin" };
 
@@ -27,33 +29,6 @@ export function WorkspaceNav({ role, displayName, username }: { role: Role; disp
   }, []);
 
   async function signOut() {
-    // If a test attempt is active, warn and finalize it first: signing out
-    // submits the attempt (server decides manual-leave vs past-deadline).
-    // Never silently discard an attempt.
-    try {
-      const raw = window.sessionStorage.getItem("saarthians-active-attempt");
-      if (raw) {
-        const active = JSON.parse(raw) as { attemptId?: string };
-        if (active?.attemptId) {
-          const confirmed = window.confirm(
-            "You have an assessment in progress. Signing out will submit it now. Continue?",
-          );
-          if (!confirmed) return;
-          try {
-            await fetch("/api/attempts/finalize", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ attemptId: active.attemptId, reason: "signout_finalize" }),
-            });
-          } catch {
-            // The server sweep will finalize it; continue signing out.
-          }
-          window.sessionStorage.removeItem("saarthians-active-attempt");
-        }
-      }
-    } catch {
-      // Storage may be unavailable; fall through to normal sign-out.
-    }
     const supabase = createClient();
     await supabase.auth.signOut();
     // Route the sign-out through the server as well so server-managed state
@@ -70,7 +45,7 @@ export function WorkspaceNav({ role, displayName, username }: { role: Role; disp
   return (
     <header className="workspace-nav" data-scrolled={scrolled}>
       <div className="container workspace-nav-inner">
-        <Link href={role === "student" ? "/app" : role === "teacher" ? "/teacher" : "/admin"} className="workspace-brand">
+        <Link href={homeFor[role]} className="workspace-brand">
           saarthians<span>.online</span>
         </Link>
         <nav className="workspace-links" aria-label={`${labels[role]} workspace navigation`}>

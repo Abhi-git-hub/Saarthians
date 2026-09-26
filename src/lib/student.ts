@@ -64,19 +64,6 @@ export async function getSharedNotes(search?: string) {
   return data ?? [];
 }
 
-export async function getStudentTests() {
-  const user = await requireRole(["student"]);
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("tests")
-    .select("id,title,instructions,duration_seconds,published_at,start_time,end_time,teacher_id")
-    .eq("status", "published")
-    .order("published_at", { ascending: false, nullsFirst: false });
-
-  if (error) throw new Error("TESTS_LOAD_FAILED");
-  return data.filter(Boolean).map((test) => ({ ...test, studentId: user.id }));
-}
-
 export async function getStudentAttempts() {
   const user = await requireRole(["student"]);
   const supabase = await createClient();

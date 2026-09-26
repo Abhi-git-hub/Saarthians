@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getStudentMaterials } from "@/lib/materials/service";
 import { EmptyState, PageHeading } from "@/components/ui";
 
@@ -18,7 +17,7 @@ export default async function StudentMaterialsPage() {
         <PageHeading
           eyebrow="Study material · document library"
           title={<>Read the <em>chapter.</em></>}
-          lede="Material from your teachers. Download it, study it, then ask the tutor about anything inside."
+          lede="Material from your teachers. Download it and study it — your class sees only its own chapters."
         />
         {materials.length > 0 ? (
           <div className="data-rows doc-rows">
@@ -35,7 +34,6 @@ export default async function StudentMaterialsPage() {
                   {material.description && <span className="doc-desc">{material.description.slice(0, 220)}</span>}
                 </span>
                 <span className="data-row-side">
-                  <Link href={`/app/chat?m=${material.id}`} className="text-link">Ask tutor →</Link>
                   <a href={`/api/materials/${material.id}/download`} className="primary-button doc-download">Download</a>
                 </span>
               </article>
@@ -44,7 +42,7 @@ export default async function StudentMaterialsPage() {
         ) : (
           <EmptyState
             title="No chapters on your shelf yet."
-            body="When your teacher uploads study material, it will appear here — downloadable, and ready for the tutor to reason over."
+            body="When your teacher uploads study material for your class, it will appear here — downloadable."
             action={{ href: "/app/notes", label: "Review your notes instead →" }}
           />
         )}

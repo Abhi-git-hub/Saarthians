@@ -1,6 +1,6 @@
 ﻿import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { isOcrConfigured, ocrPdfPages } from "@/lib/ai/ocr";
+import { isOcrConfigured, ocrPdfPages } from "./ocr";
 import { chunkExtractedPages, extractPdfTextRobust, optimizePdf, validatePdfUpload } from "./pdf";
 import type { ExtractedPage } from "./pdf";
 

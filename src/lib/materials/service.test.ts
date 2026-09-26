@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { processMaterialUpload, retryMaterialProcessing } from "./service";
 import { extractPdfTextRobust, optimizePdf, validatePdfUpload } from "./pdf";
-import { isOcrConfigured, ocrPdfPages } from "@/lib/ai/ocr";
+import { isOcrConfigured, ocrPdfPages } from "./ocr";
 
 vi.mock("./pdf", () => ({
   validatePdfUpload: vi.fn(),
@@ -10,7 +10,7 @@ vi.mock("./pdf", () => ({
   chunkExtractedPages: vi.fn(),
 }));
 
-vi.mock("@/lib/ai/ocr", () => ({
+vi.mock("./ocr", () => ({
   isOcrConfigured: vi.fn().mockReturnValue(false),
   ocrPdfPages: vi.fn(),
 }));
