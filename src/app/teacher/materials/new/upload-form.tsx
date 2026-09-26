@@ -83,7 +83,15 @@ export default function UploadForm() {
       <div className="upload-grid">
         <label className="upload-field">Title<input name="title" required maxLength={200} placeholder="Class 10 Physics — Light" /></label>
         <label className="upload-field">Subject<input name="subject" maxLength={100} placeholder="Physics" /></label>
-        <label className="upload-field">Class / grade<input name="gradeLevel" maxLength={50} placeholder="Class 10" /></label>
+        <label className="upload-field">Class / grade
+          <select name="gradeLevel" required defaultValue="Class 10">
+            <option value="Class 9">Class 9</option>
+            <option value="Class 10">Class 10</option>
+            <option value="Class 11">Class 11</option>
+            <option value="Class 12">Class 12</option>
+            <option value="All classes">All classes</option>
+          </select>
+        </label>
         <label className="upload-field">Chapter / topic<input name="chapter" maxLength={200} placeholder="Light — Reflection" /></label>
       </div>
       <label className="upload-field">Description<textarea name="description" maxLength={2000} rows={2} placeholder="What should students focus on?" /></label>
@@ -110,7 +118,7 @@ export default function UploadForm() {
         {file ? (
           <span className="dropzone-file"><b>{file.name}</b><i>{(file.size / 1024 / 1024).toFixed(1)} MB · {file.name.toLowerCase().endsWith(".docx") ? "Word" : "PDF"}</i></span>
         ) : (
-          <span className="dropzone-empty"><b>Drop your PDF or Word file here</b><i>or click to choose · max 15 MB · PDFs are indexed for search + tutor; Word files are stored for download</i></span>
+          <span className="dropzone-empty"><b>Drop your PDF or Word file here</b><i>or click to choose · max 15 MB · PDFs are indexed for search; Word files are stored for download</i></span>
         )}
       </div>
       {(busy || (result?.ok ?? false)) && (

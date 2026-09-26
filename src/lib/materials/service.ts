@@ -57,9 +57,8 @@ export async function processMaterialUpload(
   }
 
   // Word documents and unreadable-but-valid files are stored verbatim and
-  // served for download. They carry extraction_status 'file_only', produce
-  // no chunks, and therefore never enter tutor retrieval (which ranks
-  // chunks only) — the product stays honest about what is searchable.
+  // served for download. They carry extraction_status 'file_only' and
+  // produce no chunks — the product stays honest about what is searchable.
   if (validated.kind === "docx") {
     const docPath = `${teacherId}/${materialId}/material.docx`;
     const { error: docUploadError } = await supabase.storage

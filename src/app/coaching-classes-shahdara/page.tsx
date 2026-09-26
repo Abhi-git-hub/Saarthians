@@ -33,7 +33,7 @@ const faqs: Faq[] = [
   },
   {
     q: "What is the difference between Saarthians and Saarthi Classes?",
-    a: "Saarthi Classes is the physical coaching centre in Shahdara where teaching happens. Saarthians is the student learning platform members use alongside it — for notes, practice tests, progress tracking and an AI tutor grounded in their own coursework.",
+    a: "Saarthi Classes is the physical coaching centre in Shahdara where teaching happens. Saarthians is the student learning platform members use alongside it — for shared notes, class study material, and class-test marks recorded by their teachers.",
   },
   {
     q: "How do admissions work?",
@@ -126,8 +126,8 @@ export default function CoachingHubPage() {
               <p style={{ color: "#cfc6b2" }}>
                 A concept is taught until it feels obvious, then practised until it holds under exam pressure.
                 Tests are marked and analysed with the student — mistakes become the next week&apos;s plan, not
-                just a score. Members also get the Saarthians workspace: notes, assignments, progress they can
-                see, and a tutor that answers from their own coursework.
+                just a score. Members also get the Saarthians workspace: shared notes with pictures, study
+                material for their own class, and class-test marks they can see in their profile.
               </p>
             </div>
           </Reveal>

@@ -52,7 +52,7 @@ export default async function TeacherMaterialsPage() {
         <PageHeading
           eyebrow="Study material · your shelf"
           title={<>Upload <em>once.</em></>}
-          lede="PDFs are validated, optimized, and indexed. Your students and the AI tutor read from the same canonical file."
+          lede="PDFs are validated, optimized, and indexed. Only your class sees what you upload for them."
           action={<Link href="/teacher/materials/new" className="primary-button">Upload PDF →</Link>}
         />
         {materials.length > 0 ? (
@@ -82,7 +82,7 @@ export default async function TeacherMaterialsPage() {
                       <span className="pipeline-error">{material.processing_error}</span>
                     )}
                     {material.extraction_status === "file_only" && (
-                      <span style={{ color: "var(--muted)", fontSize: 12.5 }}>Download only — text not indexed, tutor answers from other material.</span>
+                      <span style={{ color: "var(--muted)", fontSize: 12.5 }}>Download only — text not indexed for search.</span>
                     )}
                   </span>
                   <span className="data-row-side">

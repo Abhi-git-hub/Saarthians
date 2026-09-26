@@ -26,7 +26,7 @@ export default async function NotesPage({
       <div className="container">
         <PageHeading
           eyebrow="Notes · shared library"
-          title={<>Everyone's <em>notes.</em></>}
+          title={<>Everyone&apos;s <em>notes.</em></>}
           lede="Every note any of us writes lives here. Read anyone's, add your own, attach pictures."
           action={<Link href="/app/notes/new" className="primary-button">New note →</Link>}
         />

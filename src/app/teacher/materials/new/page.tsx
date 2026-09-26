@@ -8,8 +8,8 @@ export default function NewMaterialPage() {
         Upload a chapter.
       </h1>
       <p style={{ color: "var(--muted)", maxWidth: 640, lineHeight: 1.7, margin: 0 }}>
-        The PDF is validated, optimized to save storage, and indexed for the AI tutor — only after every stage
-        succeeds does it become visible to your students.
+        The PDF is validated, optimized to save storage, and indexed for search — only after every stage
+        succeeds does it become visible to your class.
       </p>
       <UploadForm />
     </main>

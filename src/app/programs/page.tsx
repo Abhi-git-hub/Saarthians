@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 const rhythm = [
   ["Understand", "Concept-first classroom teaching where no doubt is too small."],
-  ["Practice", "Notes, assignments and tests inside the student workspace."],
+  ["Practice", "Shared notes, class study material, and recorded class-test marks inside the student workspace."],
   ["Review", "Teachers analyse mistakes with students, not just mark them."],
   ["Improve", "The next week targets exactly what the last one revealed."],
 ];

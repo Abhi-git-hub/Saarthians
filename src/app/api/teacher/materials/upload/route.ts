@@ -16,7 +16,7 @@ const metadataSchema = z.object({
   title: z.string().trim().min(1).max(200),
   description: z.string().trim().max(2000).default(""),
   subject: z.string().trim().max(100).default(""),
-  gradeLevel: z.string().trim().max(50).default(""),
+  gradeLevel: z.enum(["Class 9", "Class 10", "Class 11", "Class 12", "All classes"]),
   chapter: z.string().trim().max(200).default(""),
 });
 
