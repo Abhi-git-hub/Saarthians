@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import {
   chunkExtractedPages,
+  detectFileKind,
   extractPdfPages,
   extractPdfTextRobust,
   optimizePdf,
@@ -53,6 +54,26 @@ describe("validatePdfUpload", () => {
     await expect(
       validatePdfUpload({ bytes: new TextEncoder().encode("%PDF-truncated"), filename: "a.pdf" }),
     ).rejects.toThrow("UNREADABLE_PDF");
+  });
+
+  it("accepts Word documents and rejects legacy .doc with guidance", async () => {
+    // Minimal zip header is enough for kind detection (content unread).
+    const zippy = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 1, 2, 3]);
+    const docx = await validatePdfUpload({ bytes: zippy, filename: "Notes Ch 3.docx" });
+    expect(docx.kind).toBe("docx");
+    expect(docx.filename).toBe("Notes-Ch-3.docx");
+    expect(docx.pageCount).toBe(0);
+    const ole = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, 1, 2, 3]);
+    await expect(validatePdfUpload({ bytes: ole, filename: "old.doc" })).rejects.toThrow("LEGACY_DOC");
+    const good = await makePdf([["hi"]]);
+    await expect(validatePdfUpload({ bytes: good, filename: "a.docx" })).rejects.toThrow("NOT_A_FILE");
+  });
+
+  it("detects kinds from content, not the extension", async () => {
+    const good = await makePdf([["hi"]]);
+    expect(detectFileKind(good, "whatever.pdf")).toBe("pdf");
+    expect(detectFileKind(good, "whatever.docx")).toBe("unknown");
+    expect(detectFileKind(new Uint8Array([0x50, 0x4b, 0x03, 0x04]), "x.docx")).toBe("docx");
   });
 });
 

@@ -12,6 +12,31 @@ import { getDocumentProxy } from "unpdf";
 
 export const MAX_PDF_BYTES = 15 * 1024 * 1024;
 const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d]); // "%PDF-"
+const ZIP_MAGIC = new Uint8Array([0x50, 0x4b, 0x03, 0x04]); // zip container (docx)
+const OLE_MAGIC = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0]); // legacy .doc
+
+export type SupportedKind = "pdf" | "docx";
+
+function magicMatches(bytes: Uint8Array, magic: Uint8Array): boolean {
+  if (bytes.length < magic.length) return false;
+  return magic.every((b, i) => bytes[i] === b);
+}
+
+function hasPdfMagic(bytes: Uint8Array): boolean {
+  return magicMatches(bytes, PDF_MAGIC);
+}
+
+/**
+ * Detect PDF vs Word from content first, extension second. A zip claiming
+ * to be a PDF is rejected; legacy .doc is identified for a useful message.
+ */
+export function detectFileKind(bytes: Uint8Array, filename: string): SupportedKind | "legacy-doc" | "unknown" {
+  const rawBase = (filename.split(/[\\/]/).pop() ?? "").trim().toLowerCase();
+  if (hasPdfMagic(bytes)) return rawBase.endsWith(".pdf") ? "pdf" : "unknown";
+  if (magicMatches(bytes, ZIP_MAGIC)) return rawBase.endsWith(".docx") ? "docx" : "unknown";
+  if (magicMatches(bytes, OLE_MAGIC)) return "legacy-doc";
+  return "unknown";
+}
 
 export type PdfValidationError =
   | "EMPTY_FILE"
@@ -25,18 +50,16 @@ export interface ValidatedPdf {
   bytes: Uint8Array;
   filename: string;
   pageCount: number;
+  kind: SupportedKind;
 }
 
-export function sanitizeFilename(raw: string): string {
-  const base = raw.split(/[\\/]/).pop() ?? "material.pdf";
+export function sanitizeFilename(raw: string, kind: SupportedKind = "pdf"): string {
+  const fallback = kind === "docx" ? "material.docx" : "material.pdf";
+  const base = raw.split(/[\\/]/).pop() ?? fallback;
   const cleaned = base.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-").slice(0, 120);
-  const withExt = cleaned.toLowerCase().endsWith(".pdf") ? cleaned : `${cleaned}.pdf`;
-  return withExt.length > 4 ? withExt : "material.pdf";
-}
-
-function hasPdfMagic(bytes: Uint8Array): boolean {
-  if (bytes.length < PDF_MAGIC.length) return false;
-  return PDF_MAGIC.every((b, i) => bytes[i] === b);
+  const want = `.${kind}`;
+  const withExt = cleaned.toLowerCase().endsWith(want) ? cleaned : `${cleaned}${want}`;
+  return withExt.length > want.length ? withExt : fallback;
 }
 
 /** Validate raw upload bytes. Returns the sanitized filename + page count. */
@@ -49,10 +72,20 @@ export async function validatePdfUpload(input: {
   const maxBytes = input.maxBytes ?? MAX_PDF_BYTES;
   if (input.bytes.length === 0) throw new Error("EMPTY_FILE");
   if (input.bytes.length > maxBytes) throw new Error("FILE_TOO_LARGE");
-  const filename = sanitizeFilename(input.filename);
-  const rawBase = (input.filename.split(/[\\/]/).pop() ?? "").trim();
-  if (!rawBase.toLowerCase().endsWith(".pdf")) throw new Error("INVALID_EXTENSION");
-  if (!hasPdfMagic(input.bytes)) throw new Error("NOT_A_PDF");
+  const kind = detectFileKind(input.bytes, input.filename);
+  if (kind === "legacy-doc") {
+    throw new Error("LEGACY_DOC: old .doc files cannot be stored — open it in Word or Docs and save as .docx first.");
+  }
+  if (kind === "unknown") {
+    const rawBase = (input.filename.split(/[\\/]/).pop() ?? "").trim().toLowerCase();
+    if (!rawBase.endsWith(".pdf") && !rawBase.endsWith(".docx")) throw new Error("INVALID_EXTENSION");
+    // Historical contract: junk bytes with a .pdf name report NOT_A_PDF.
+    throw new Error(rawBase.endsWith(".docx") ? "NOT_A_FILE" : "NOT_A_PDF");
+  }
+  if (kind === "docx") {
+    return { bytes: input.bytes, filename: sanitizeFilename(input.filename, "docx"), pageCount: 0, kind };
+  }
+  const filename = sanitizeFilename(input.filename, "pdf");
 
   let doc: Awaited<ReturnType<typeof PDFDocument.load>> | null = null;
   try {
@@ -63,7 +96,7 @@ export async function validatePdfUpload(input: {
   }
   const pageCount = doc.getPageCount();
   if (pageCount < 1) throw new Error("UNREADABLE_PDF");
-  return { bytes: input.bytes, filename, pageCount };
+  return { bytes: input.bytes, filename, pageCount, kind: "pdf" };
 }
 
 export type OptimizationStatus = "compressed" | "stored_original" | "skipped";

@@ -51,7 +51,16 @@ export default async function MaterialDetailPage({ params }: { params: Promise<{
           }
         />
         <Row label="Pages" value={String(material.page_count || "—")} />
-        <Row label="Text extraction" value={material.extraction_status} />
+        <Row
+          label="Text extraction"
+          value={
+            material.extraction_status === "file_only"
+              ? "Not indexed — download only"
+              : material.extraction_status === "ocr"
+                ? "Complete (machine-read from scans)"
+                : material.extraction_status
+          }
+        />
         <Row label="Search index" value={material.embedding_status} />
       </section>
 

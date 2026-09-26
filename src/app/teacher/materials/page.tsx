@@ -64,7 +64,7 @@ export default async function TeacherMaterialsPage() {
                   : null;
               return (
                 <article key={material.id} className="data-row material-row">
-                  <span className="doc-icon" aria-hidden="true">PDF</span>
+                  <span className="doc-icon" aria-hidden="true">{material.mime_type?.includes("word") ? "DOC" : "PDF"}</span>
                   <span className="data-row-main">
                     <Link href={`/teacher/materials/${material.id}`}><strong>{material.title}</strong></Link>
                     <span>
@@ -80,6 +80,9 @@ export default async function TeacherMaterialsPage() {
                     </span>
                     {material.processing_status === "failed" && material.processing_error && (
                       <span className="pipeline-error">{material.processing_error}</span>
+                    )}
+                    {material.extraction_status === "file_only" && (
+                      <span style={{ color: "var(--muted)", fontSize: 12.5 }}>Download only — text not indexed, tutor answers from other material.</span>
                     )}
                   </span>
                   <span className="data-row-side">

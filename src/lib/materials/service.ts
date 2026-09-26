@@ -56,6 +56,36 @@ export async function processMaterialUpload(
     return failMaterial(supabase, materialId, error instanceof Error ? `INVALID_PDF: ${error.message}` : "INVALID_PDF");
   }
 
+  // Word documents and unreadable-but-valid files are stored verbatim and
+  // served for download. They carry extraction_status 'file_only', produce
+  // no chunks, and therefore never enter tutor retrieval (which ranks
+  // chunks only) — the product stays honest about what is searchable.
+  if (validated.kind === "docx") {
+    const docPath = `${teacherId}/${materialId}/material.docx`;
+    const { error: docUploadError } = await supabase.storage
+      .from(MATERIAL_BUCKET)
+      .upload(docPath, validated.bytes, { contentType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", upsert: true });
+    if (docUploadError) {
+      return failMaterial(supabase, materialId, `STORAGE_UPLOAD_FAILED: ${docUploadError.message}`);
+    }
+    await markMaterial(supabase, materialId, {
+      original_filename: validated.filename,
+      storage_path: docPath,
+      mime_type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      original_size_bytes: validated.bytes.length,
+      stored_size_bytes: validated.bytes.length,
+      compression_ratio: 0,
+      optimization_status: "skipped",
+      page_count: 0,
+      extraction_status: "file_only",
+      processing_status: "ready",
+      processing_error: null,
+      embedding_status: "skipped",
+      updated_at: new Date().toISOString(),
+    });
+    return { materialId };
+  }
+
   // Extract from the ORIGINAL bytes first: the optimizer rewrite can disturb
   // exotic files, so the canonical text always comes from a verified source.
   // Scanned (image-only) documents route to vision OCR instead of failing,
@@ -198,11 +228,14 @@ export async function retryMaterialProcessing(
     .eq("material_id", input.materialId);
   if (clearError) throw new Error(`MATERIAL_RETRY_FAILED: ${clearError.message}`);
   const bytes = new Uint8Array(await data.arrayBuffer());
+  // Derive the filename from the stored path so type detection (pdf vs
+  // docx) works on retry exactly as on first upload.
+  const storedName = input.storagePath.split("/").pop() ?? "material.pdf";
   return processMaterialUpload(supabase, {
     materialId: input.materialId,
     teacherId: input.teacherId,
     bytes,
-    filename: "material.pdf",
+    filename: storedName,
   });
 }
 
@@ -212,7 +245,7 @@ export async function getTeacherMaterials() {
   const { data, error } = await supabase
     .from("study_materials")
     .select(
-      "id,title,subject,grade_level,chapter,processing_status,processing_error,original_size_bytes,stored_size_bytes,compression_ratio,optimization_status,page_count,extraction_status,embedding_status,created_at,updated_at",
+      "id,title,subject,grade_level,chapter,processing_status,processing_error,original_size_bytes,stored_size_bytes,compression_ratio,optimization_status,page_count,extraction_status,embedding_status,mime_type,created_at,updated_at",
     )
     .eq("teacher_id", user.id)
     .order("created_at", { ascending: false });
