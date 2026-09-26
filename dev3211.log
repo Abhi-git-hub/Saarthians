@@ -1,0 +1,13 @@
+
+> saarthians@0.1.0 dev
+> next dev --port 3211 --hostname 127.0.0.1
+
+▲ Next.js 16.3.4 (Turbopack)
+- Local:         http://127.0.0.1:3211
+- Network:       http://127.0.0.1:3211
+- Environments: .env.local
+✓ Ready in 928ms
+✓ Running next.config.mjs took 46ms
+
+ GET / 200 in 867ms (next.js: 349ms, application-code: 518ms)
+[?25h

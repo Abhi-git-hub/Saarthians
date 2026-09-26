@@ -129,8 +129,9 @@ export default function Home() {
       <section className="experience-band">
         <div className="container experience-grid">
           <Reveal className="experience-media">
-            <SafeImage src={BRAND_IMAGES.studentsClass} alt="Saarthians students learning together in Shahdara" />
-            <p className="media-caption">Our students in Shahdara — the faces you&apos;ll learn beside.</p>
+            <SafeImage src={BRAND_IMAGES.classroom} alt="Inside a Saarthi Classes classroom" />
+            <SafeImage src={BRAND_IMAGES.studentsClass} alt="Saarthians students learning together in Shahdara" className="experience-second" />
+            <p className="media-caption">The room and its students — a real classroom in Shahdara.</p>
           </Reveal>
           <div>
             <Reveal>
