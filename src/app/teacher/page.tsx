@@ -29,13 +29,13 @@ export default async function TeacherWorkspace() {
         />
 
         <nav className="command-strip" aria-label="Primary actions">
+          <Link href="/teacher/tests/record">
+            <strong>Record marks</strong>
+            <span>Student → subject → score</span>
+          </Link>
           <Link href="/teacher/materials/new">
             <strong>Upload material</strong>
             <span>PDF → students + tutor</span>
-          </Link>
-          <Link href="/teacher/tests/new">
-            <strong>Create test</strong>
-            <span>Draft → schedule → publish</span>
           </Link>
           <Link href="/teacher/students">
             <strong>View students</strong>

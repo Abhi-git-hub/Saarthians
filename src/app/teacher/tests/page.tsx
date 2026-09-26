@@ -15,7 +15,7 @@ export default async function TeacherTestsPage() {
           eyebrow="Assessments"
           title={<>Build better <em>tests.</em></>}
           lede="Drafts stay private until you publish them to your assigned students."
-          action={<Link href="/teacher/tests/new" className="primary-button">New assessment →</Link>}
+          action={<Link href="/teacher/tests/record" className="primary-button">Record marks →</Link>}
         />
         {tests.length === 0 ? (
           <EmptyState
