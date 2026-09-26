@@ -1,8 +1,8 @@
 // Supabase Database types generated from the live project.
 // Regenerate with the Supabase MCP `generate_typescript_types` tool
 // (or: supabase gen types typescript --project-id <ref>)
-// and overwrite this file. Last sync: learning-engine upgrade
-// (study materials, test scheduling, security events, pgvector RPCs).
+// and overwrite this file. Last sync: v1 simplification
+// (note_images, material_grade_visible, record_score_simple).
 export type Json =
   | string
   | number
@@ -123,6 +123,38 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_images: {
+        Row: {
+          created_at: string
+          id: string
+          note_id: string
+          position: number
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note_id: string
+          position?: number
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note_id?: string
+          position?: number
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_images_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
             referencedColumns: ["id"]
           },
         ]
@@ -913,6 +945,19 @@ export type Database = {
           page_number: number
           similarity: number
         }[]
+      }
+      material_grade_visible: {
+        Args: { material_grade: string; student_grade: string }
+        Returns: boolean
+      }
+      record_score_simple: {
+        Args: {
+          p_obtained: number
+          p_student_id: string
+          p_subject: string
+          p_total: number
+        }
+        Returns: string
       }
       record_student_score: {
         Args: { p_score: number; p_student_id: string; p_test_id: string }

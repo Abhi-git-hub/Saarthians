@@ -1,12 +1,11 @@
 "use server";
 
-import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 
-export const NOTE_IMAGE_BUCKET = "note-images";
+const NOTE_IMAGE_BUCKET = "note-images";
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGES = 10;
 const ALLOWED_TYPES = {
@@ -56,7 +55,7 @@ export async function addNoteImage(noteId: string, formData: FormData): Promise<
     .eq("note_id", noteId);
   if ((count ?? 0) >= MAX_IMAGES) throw new Error("A note holds at most 10 pictures.");
 
-  const path = `${user.id}/${noteId}/${randomUUID()}.${ext}`;
+  const path = `${user.id}/${noteId}/${crypto.randomUUID()}.${ext}`;
   const bytes = new Uint8Array(await file.arrayBuffer());
   const { error: uploadError } = await supabase.storage
     .from(NOTE_IMAGE_BUCKET)

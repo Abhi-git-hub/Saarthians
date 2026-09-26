@@ -47,7 +47,7 @@ function Stars({ count }: { count: number }) {
 const principles = [
   ["01", "Attention is personal", "Small batches mean Abhi Sir knows exactly where each student stands — which concept clicked, which doubt keeps returning, what to revise next."],
   ["02", "Concepts before shortcuts", "Every chapter is taught until it feels obvious. Tests and tricks come after understanding, never instead of it."],
-  ["03", "Progress you can see", "Regular tests, honest feedback, and a workspace where students, teachers and parents watch understanding grow week by week."],
+  ["03", "Progress you can see", "Regular class tests, honest feedback, and a workspace where notes, material, and marks stay visible week by week."],
 ];
 
 const signals = [
@@ -67,9 +67,9 @@ export default function Home() {
       <section className="public-hero hero-story">
         <div className="container public-hero-grid">
           <div className="public-hero-copy">
-            <span className="eyebrow">Saarthi Classes · Shahdara, Delhi</span>
-            <h1>Saarthians — <em>Saarthi Classes in Shahdara.</em></h1>
-            <p>Saarthians is the online home of Saarthi Classes in Shahdara, Delhi — coaching for Classes 9–12 across school subjects, with JEE and NEET preparation, personal attention, regular tests, and daily doubt clearing.</p>
+            <span className="eyebrow rise">Saarthi Classes · Shahdara, Delhi</span>
+            <h1 className="rise-2">Learn it in class. <em>Keep it forever.</em></h1>
+            <p className="rise-3">Classes 9–12, all subjects, plus JEE & NEET — small batches, doubts cleared daily, and a workspace where every note and mark stays visible.</p>
             <div className="hero-actions">
               <a href={whatsAppLink("Hi Saarthi Classes, I would like to know more about admission.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Talk to Saarthi →</a>
               <Link href="/programs" className="public-button public-button-secondary">Explore programs</Link>
@@ -81,10 +81,9 @@ export default function Home() {
             <p className="hero-teaser"><strong>Think with us.</strong> Questions worth pausing for — no sign-up. <a href="#lab">Get curious →</a></p>
           </div>
           <div className="hero-visual hero-arch">
-            <SafeImage src={BRAND_IMAGES.classroom} alt="Inside a Saarthi Classes classroom" eager />
+            <SafeImage src={BRAND_IMAGES.studentsHero} alt="Saarthians students in the Shahdara classroom" eager />
             <div className="hero-seal"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthi Classes seal" eager /><span>Guiding towards success</span></div>
             <div className="hero-float-card float"><strong>Doubts cleared daily.</strong><span>Ask anything · No hesitation</span></div>
-            <div className="hero-annotation float-slow" aria-hidden="true"><span>Today&apos;s focus</span><strong>Quadratic equations</strong><em>Class 10 · Mathematics</em></div>
           </div>
         </div>
       </section>
@@ -130,8 +129,8 @@ export default function Home() {
       <section className="experience-band">
         <div className="container experience-grid">
           <Reveal className="experience-media">
-            <SafeImage src={BRAND_IMAGES.classroom} alt="Students learning at Saarthi Classes" />
-            <p className="media-caption">A real classroom in Shahdara — whiteboard, trophies, and chairs that fill up.</p>
+            <SafeImage src={BRAND_IMAGES.studentsClass} alt="Saarthians students learning together in Shahdara" />
+            <p className="media-caption">Our students in Shahdara — the faces you&apos;ll learn beside.</p>
           </Reveal>
           <div>
             <Reveal>
@@ -140,7 +139,7 @@ export default function Home() {
             </Reveal>
             <ul className="experience-rows">
               <Reveal as="li" delay={60}><strong>Learn</strong><p>Concept-first classroom teaching for Classes 9–12, NEET and JEE.</p></Reveal>
-              <Reveal as="li" delay={120}><strong>Practice</strong><p>Notes, assignments and server-graded tests inside the student workspace.</p></Reveal>
+              <Reveal as="li" delay={120}><strong>Practice</strong><p>Shared notes with pictures, class material, and recorded marks inside the student workspace.</p></Reveal>
               <Reveal as="li" delay={180}><strong>Improve</strong><p>Results become visible patterns — teachers intervene before small gaps grow.</p></Reveal>
             </ul>
             <Reveal delay={220}><Link href="/login" className="text-link-big">Enter the student workspace →</Link></Reveal>
@@ -266,7 +265,7 @@ export default function Home() {
             </div>
           </Reveal>
           <Reveal delay={120}>
-            <div className="split-story-copy"><p>Saarthi Classes exists for one reason: students in Shahdara and beyond deserve teaching that treats every concept as learnable and every student as capable of a top rank. Small batches, honest feedback, and a workspace that keeps learning visible.</p><Link href="/about" className="light-link">Why Saarthians exists →</Link></div>
+            <div className="split-story-copy"><p>Saarthi Classes exists for one reason: students in Shahdara and beyond deserve teaching that treats every concept as learnable and every student as capable of far more than they believe. Small batches, honest feedback, and a workspace that keeps learning visible.</p><Link href="/about" className="light-link">Why Saarthians exists →</Link></div>
           </Reveal>
         </div>
       </section>
@@ -292,7 +291,7 @@ export default function Home() {
 
       <section className="public-cta container">
         <Reveal>
-          <div><span className="chapter-mark"><i>07</i>Begin</span><span className="eyebrow">Begin</span><h2>Your rank journey<br /><em>starts with a message.</em></h2></div>
+          <div><span className="chapter-mark"><i>07</i>Begin</span><span className="eyebrow">Begin</span><h2>Big goals start with<br /><em>one message.</em></h2></div>
         </Reveal>
         <div className="hero-actions">
           <a href={whatsAppLink("Hi Saarthi Classes, I want to join.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Join Saarthians →</a>

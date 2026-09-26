@@ -23,7 +23,7 @@ Each module owns domain rules, validation, authorization, persistence, service A
 Roles: `student`, `teacher`, `admin`. Use defense in depth: UI visibility, authenticated API/service validation, domain policy checks, database constraints/policies, and audit logs for high-risk privileged changes. Resource ownership and relationship checks are required; a malicious client must not gain access by modifying URLs, bodies, hidden fields, or role values.
 
 ## Database model
-Core tables: `users`, `student_profiles`, `teacher_profiles`, `teacher_student`, `notes`, `note_shares`, `tests`, `test_questions`, `test_attempts`, `test_answers`, `chat_conversations`, `chat_messages`, `audit_events`.
+Core tables: `users`, `student_profiles`, `teacher_profiles`, `teacher_student`, `notes`, `note_images`, `note_shares` (legacy, unused), `tests`, `test_questions`, `test_attempts`, `test_answers`, `chat_conversations` (dormant), `chat_messages` (dormant), `audit_events`.
 
 Academic records and audit events should use append-only or controlled mutation patterns wherever possible.
 

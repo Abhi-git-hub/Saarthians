@@ -51,57 +51,21 @@ poppler). Both libraries are pure JS / WASM-free, import cleanly at the
 edge, and need no shell-outs. Downsampling raster images is therefore
 best-effort via stream recompression — documented honestly in the UI numbers.
 
-## Embeddings & retrieval
+## V1 scope: three features, no AI, no online tests
 
-- pgvector 0.8.2 schema (`vector(768)`, HNSW) is in place but **dormant**:
-  the Groq account backing this project exposes chat models only — its
-  `/models` list contains no embedding model and `/embeddings` answers
-  `model_not_found` (verified live 2026-09-23).
-- Retrieval therefore uses `match_material_chunks_lexical()` (pg_trgm
-  similarity, GIN index) with the **same authorization gates** as the vector
-  RPC (owner teacher / actively-assigned student / admin, READY only).
-  Relevance cutoffs live in application code; authorization lives in SQL.
-- If an embedding provider is configured later, re-enable the semantic path
-  against the dormant tables with one consistent model + dimension (never
-  mix).
-
-## Groq tutor
-
-- Server-only OpenAI-compatible REST client (`src/lib/ai/groq.ts`), no SDK.
-  Key travels in the `Authorization: Bearer` header, read only server-side;
-  never `NEXT_PUBLIC_*`. gpt-oss models ignore `response_format`, so the
-  JSON contract is instructed in-prompt and validated server-side
-  (fences stripped); malformed output is never persisted.
-- Chat model: `GROQ_CHAT_MODEL`, else `OPENAI_MODEL`, else
-  `openai/gpt-oss-20b` (verified live 2026-09-23 via chat completions).
-  Base URL chain: `GROQ_BASE_URL`, else `OPENAI_BASE_URL`, else
-  `https://api.groq.com/openai/v1`.
-- Knowledge hierarchy in the system prompt: teacher materials → student
-  notes → mistakes/progress → general knowledge (labeled, never attributed
-  to the teacher).
-- Failure contract: missing key / timeout / 429 / 4xx / malformed /
-  retrieval failure → deterministic local engine with mode `fallback`.
-  The UI badge always shows the true mode: grounded / general / study engine.
-
-## Scheduled live tests
-
-- `tests.start_time/end_time` + derived lifecycle
-  `draft/scheduled/live/closed` (`resolveTestLifecycle`, mirrored in RPCs).
-- `test_attempts.deadline_at` (duration ∩ window, stamped at start) +
-  `submission_reason` (`manual/auto_deadline/auto_leave/expired_sweep`);
-  display states via `resolveAttemptState`.
-- **Server time is the only clock.** Browser timers are displays.
-- Auto-submit architecture: client countdown + pagehide beacon + sign-out
-  finalize all funnel into `submit_test_attempt`/`finalize_expired_attempts`,
-  which stamp `submitted_at` at the deadline. Critical subtlety: an RPC that
-  raises rolls back its whole transaction — so the client calls
-  `finalize_expired_attempts()` as a **separate committed call before**
-  start/save/submit; the in-RPC sweep is only a backstop.
-- Anti-cheating (deterrents, not promises): single active attempt, seeded
-  per-attempt question/option shuffle, server scoring, heartbeat +
-  visibility/focus/fullscreen telemetry into `test_security_events`
-  (evidence rows, never gates), 1.5 s client save throttle. No webcam/mic/
-  screen surveillance.
+- The workspace is Notes (shared library with pictures, visible to every
+  logged-in user), Material (READY PDFs/Word scoped to the student's own
+  class via `material_grade_visible()`), and Marks (scores recorded by the
+  teacher, visible to the owning student in their profile only).
+- The AI tutor, online test player, results/progress pages, and per-student
+  note sharing were removed (2026-09-26). The `chat_*` tables,
+  `match_material_chunks*` RPCs, and pgvector schema remain in the database
+  but have no UI consumer; re-enable only with a real product surface.
+- Vision OCR (`src/lib/materials/ocr.ts`) stays inside the materials
+  pipeline so scanned PDFs report `ocr` honestly instead of failing blind.
+- Tests happen offline in class. Teachers record marks with
+  `record_score_simple` (assigned-student, clamped, single graded record);
+  students never see questions, attempts, or anyone else's scores.
 
 ## Known limitations
 

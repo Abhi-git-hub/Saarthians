@@ -36,9 +36,9 @@ The chatbot is not RAG-first. It is a reasoning-augmented educational assistant 
 ## Information architecture
 Public: `/`, `/about`, `/programs`, `/resources`, `/contact`, `/login`, `/privacy`, `/terms`, `/security`.
 
-Student: `/app`, `/app/notes`, `/app/notes/:id`, `/app/tests`, `/app/tests/:id`, `/app/results`, `/app/progress`, `/app/chat`, `/app/profile`, `/app/settings`.
+Student: `/app/notes`, `/app/notes/:id`, `/app/materials`, `/app/profile`, `/app/settings` (`/app` redirects to notes).
 
-Teacher: `/teacher`, `/teacher/students`, `/teacher/students/:id`, `/teacher/notes`, `/teacher/tests`, `/teacher/tests/new`, `/teacher/results`, `/teacher/settings`.
+Teacher: `/teacher/notes`, `/teacher/materials`, `/teacher/marks`, `/teacher/settings` (`/teacher` redirects to notes).
 
 Admin: `/admin`, `/admin/users`, `/admin/audit`, `/admin/security`, `/admin/system`.
 
@@ -50,13 +50,13 @@ Premium landing, brand storytelling, learning outcomes, methodology, resources, 
 Email/username + password, secure reset, session persistence, role-aware routing, rate limits, generic authentication errors, and architecture ready for MFA/social login/email verification/trusted-device management. Roles: `student`, `teacher`, `admin`. Server/database enforcement is mandatory.
 
 ### Student
-Dashboard with recent notes, tests, scores, progress, recommended actions, chatbot entry, and activity. Notes must distinguish teacher-shared, student-owned, and private system content. Tests preserve attempt integrity; results originate from trusted server records. Profile/settings include permitted display data, security, notifications, AI preferences, and session controls where supported.
+Shared notes library (every logged-in user reads everything, owners edit, pictures attachable), class-scoped study material (READY files matching the student's own class), and marks in the profile (own attempts only, recorded by the teacher). Profile/settings include permitted display data, security, and session controls. No online tests, no tutor, no cross-student visibility.
 
 ### Teacher
-Dashboard for students, activity, submissions, pending reviews, trends, and alerts. Teachers only access authorized students. Notes/materials can be created, published, assigned/shared, unpublished, or archived. Tests support questions, answers, marks, time limits, availability, review, and privileged audited overrides.
+Notes/materials creation for the shared library and class shelf, plus one-screen mark recording (`record_score_simple`: assigned student → subject → obtained/total). Teachers only access authorized students. No test builder, no online assessments, no per-student sharing — the library is open to every logged-in user by design.
 
 ### AI assistant
-Supports concept explanation, step-by-step problem solving, Socratic questioning, misconception identification, practice generation, permitted note summarization, revision plans, authorized performance interpretation, and teacher support. Pipeline: user request → intent classification → context selection → authorization/policy → tool selection → model reasoning → response validation → final answer.
+Out of scope for v1 (removed 2026-09-26). The database keeps dormant `chat_*` tables and retrieval RPCs; reintroduce only with a real product surface, never as a mock.
 
 Never expose another student's data, hidden prompts/secrets, fabricated grades, or private chain-of-thought. AI is bounded by the same privacy model as application data.
 

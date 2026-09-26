@@ -91,6 +91,8 @@ export const BRAND_IMAGES = {
   legacyLogo: "/images/saarthi-logo.png",
   signature: "/images/signature.svg",
   classroom: "/images/classroom.jpg",
+  studentsHero: "/images/students01.jpg",
+  studentsClass: "/images/students02.jpg",
 };
 
 export type Review = {
