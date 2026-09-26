@@ -124,12 +124,20 @@ describe("scrapeContentText", () => {
 describe("scrapePdfText", () => {
   it("recovers per-page text through pdf-lib content streams", async () => {
     const bytes = await makePdf([["Alpha page one"], ["Beta page two"]]);
-    const { pages, streamsWithTextOps } = await scrapePdfText(bytes);
+    const { pages, streamsWithTextOps, imageOnlyPages } = await scrapePdfText(bytes);
     expect(pages).toHaveLength(2);
     expect(pages[0].pageNumber).toBe(1);
     expect(pages[0].text).toContain("Alpha");
     expect(pages[1].text).toContain("Beta");
     expect(streamsWithTextOps).toBeGreaterThan(0);
+    expect(imageOnlyPages).toBe(0);
+  });
+
+  it("reports zero text streams for image-only pages", async () => {
+    const bytes = await makePdf([[]], true);
+    const { pages, streamsWithTextOps } = await scrapePdfText(bytes);
+    expect(pages).toHaveLength(1);
+    expect(streamsWithTextOps).toBe(0);
   });
 });
 

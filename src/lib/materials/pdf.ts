@@ -1,4 +1,4 @@
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, PDFName } from "pdf-lib";
 import { getDocumentProxy } from "unpdf";
 
 // PDF validation + optimization + extraction + chunking for study materials.
@@ -262,6 +262,7 @@ async function readPageStreams(doc: Awaited<ReturnType<typeof PDFDocument.load>>
   const leaf = doc.getPages()[pageIndex]?.node as unknown as { Contents: () => unknown };
   if (!leaf || typeof leaf.Contents !== "function") return [];
   const entry = context.lookup(leaf.Contents());
+  if (!entry) return [];
   const refs: unknown[] = Array.isArray((entry as { array?: unknown[] }).array)
     ? (entry as { array: unknown[] }).array
     : [entry];
@@ -279,15 +280,23 @@ async function readPageStreams(doc: Awaited<ReturnType<typeof PDFDocument.load>>
 
 /**
  * Fallback: scrape text operators page by page. Returns per-page text plus
- * how many streams actually contained text-showing operators (diagnostics).
+ * diagnostics: how many streams actually contained text-showing operators,
+ * and how many pages are image-only (raster content, no text layer at all).
  */
-export async function scrapePdfText(bytes: Uint8Array): Promise<{ pages: ExtractedPage[]; streamsWithTextOps: number }> {
+export async function scrapePdfText(bytes: Uint8Array): Promise<{
+  pages: ExtractedPage[];
+  streamsWithTextOps: number;
+  imageOnlyPages: number;
+}> {
   const doc = await PDFDocument.load(bytes);
+  const context = (doc as unknown as { context: { lookup: (obj: unknown) => unknown } }).context;
   const pageCount = doc.getPageCount();
   const pages: ExtractedPage[] = [];
   let streamsWithTextOps = 0;
+  let imageOnlyPages = 0;
   for (let pageIndex = 0; pageIndex < pageCount; pageIndex += 1) {
     const parts: string[] = [];
+    let pageHasTextOps = false;
     for (const stream of await readPageStreams(doc, pageIndex)) {
       let raw = stream.bytes;
       if (/FlateDecode/.test(stream.filter)) {
@@ -298,14 +307,49 @@ export async function scrapePdfText(bytes: Uint8Array): Promise<{ pages: Extract
         }
       }
       const content = toLatin1(raw);
-      if (!/[Tt][Jj]\b/.test(content)) continue;
+      // Tj/TJ plus the legacy ' and " single-line text operators.
+      if (!/(?:[Tt][Jj]|(?<![A-Za-z])['"])\b/.test(content)) continue;
+      pageHasTextOps = true;
       streamsWithTextOps += 1;
       const text = scrapeContentText(content);
       if (text) parts.push(text);
     }
-    pages.push({ pageNumber: pageIndex + 1, text: parts.join(" ").replace(/\s+/g, " ").trim() });
+    const pageText = parts.join(" ").replace(/\s+/g, " ").trim();
+    if (!pageHasTextOps && (await countPageImages(context, doc, pageIndex)) > 0) {
+      imageOnlyPages += 1;
+    }
+    pages.push({ pageNumber: pageIndex + 1, text: pageText });
   }
-  return { pages, streamsWithTextOps };
+  return { pages, streamsWithTextOps, imageOnlyPages };
+}
+
+/** Count raster images placed on a page (best-effort, never throws). */
+async function countPageImages(
+  context: { lookup: (obj: unknown) => unknown },
+  doc: Awaited<ReturnType<typeof PDFDocument.load>>,
+  pageIndex: number,
+): Promise<number> {
+  try {
+    const leaf = doc.getPages()[pageIndex]?.node as unknown as { Resources: () => unknown };
+    if (!leaf || typeof leaf.Resources !== "function") return 0;
+    const resources = context.lookup(leaf.Resources()) as {
+      get?: (key: unknown) => unknown;
+    } | null;
+    if (!resources || typeof resources.get !== "function") return 0;
+    const xobjects = context.lookup(resources.get(PDFName.of("XObject"))) as {
+      dict?: Map<unknown, unknown>;
+    } | null;
+    const entries: Array<[unknown, unknown]> =
+      xobjects && xobjects.dict instanceof Map ? [...xobjects.dict.entries()] : [];
+    let images = 0;
+    for (const [, ref] of entries) {
+      const obj = context.lookup(ref) as { dict?: { toString: () => string } } | null;
+      if (obj?.dict && /\/Subtype\s*\/Image/.test(obj.dict.toString())) images += 1;
+    }
+    return images;
+  } catch {
+    return 0;
+  }
 }
 
 export interface RobustExtraction {
@@ -350,7 +394,7 @@ export async function extractPdfTextRobust(bytes: Uint8Array): Promise<RobustExt
     };
   }
 
-  let scraped: { pages: ExtractedPage[]; streamsWithTextOps: number } | null = null;
+  let scraped: { pages: ExtractedPage[]; streamsWithTextOps: number; imageOnlyPages: number } | null = null;
   let scrapeError: string | null = null;
   try {
     scraped = await scrapePdfText(bytes);
@@ -372,7 +416,15 @@ export async function extractPdfTextRobust(bytes: Uint8Array): Promise<RobustExt
     `scraped_chars=${scrapedChars}${scrapeError ? ` (${scrapeError})` : ""}`,
     `text_streams=${scraped?.streamsWithTextOps ?? 0}`,
   ].join(", ");
-  throw new Error(`NO_READABLE_TEXT: ${detail}. Scanned or image-only PDFs are not supported yet.`);
+  const imagePages = scraped?.imageOnlyPages ?? 0;
+  if (imagePages > 0) {
+    throw new Error(
+      `NO_READABLE_TEXT: ${detail}. ${imagePages} of ${pageCount} page(s) contain scanned images with no selectable text layer — even though the file opens as a PDF, its pages are pictures, not text. Export or print the document to a text-based PDF (not a photo/scan) and upload that.`,
+    );
+  }
+  throw new Error(
+    `NO_READABLE_TEXT: ${detail}. The file has no recoverable text content. If this looks like a normal document, re-export it (File → Print → Save as PDF, or Export as PDF) and try the fresh file.`,
+  );
 }
 
 export interface MaterialChunk {
