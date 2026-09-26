@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { escapeLikePattern, toFilterTerm } from "./student";
+import { escapeLikePattern, toFilterTerm } from "./notes";
 
 describe("escapeLikePattern", () => {
   it("escapes LIKE wildcards literally", () => {

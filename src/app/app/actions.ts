@@ -8,15 +8,16 @@ import { requireRole } from "@/lib/auth";
 const noteSchema = z.object({
   title: z.string().trim().min(1).max(200),
   content: z.string().max(50000),
-  visibility: z.enum(["private", "shared", "published"]),
 });
+
+// Notes are shared with everyone logged in: every note is published.
+const SHARED_VISIBILITY = "published";
 
 export async function createNote(formData: FormData) {
   const user = await requireRole(["student"]);
   const parsed = noteSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
-    visibility: formData.get("visibility"),
   });
 
   if (!parsed.success) throw new Error("INVALID_NOTE");
@@ -26,8 +27,8 @@ export async function createNote(formData: FormData) {
     owner_user_id: user.id,
     title: parsed.data.title,
     content: parsed.data.content,
-    visibility: parsed.data.visibility,
-    status: parsed.data.visibility === "published" ? "published" : "draft",
+    visibility: SHARED_VISIBILITY,
+    status: "published",
   });
 
   if (error) throw new Error("NOTE_CREATE_FAILED");
@@ -41,7 +42,6 @@ export async function updateNote(formData: FormData) {
   const parsed = noteSchema.safeParse({
     title: formData.get("title"),
     content: formData.get("content"),
-    visibility: formData.get("visibility"),
   });
 
   if (!id.success || !parsed.success) throw new Error("INVALID_NOTE");
@@ -52,8 +52,8 @@ export async function updateNote(formData: FormData) {
     .update({
       title: parsed.data.title,
       content: parsed.data.content,
-      visibility: parsed.data.visibility,
-      status: parsed.data.visibility === "published" ? "published" : "draft",
+      visibility: SHARED_VISIBILITY,
+      status: "published",
     })
     .eq("id", id.data)
     .eq("owner_user_id", user.id)
