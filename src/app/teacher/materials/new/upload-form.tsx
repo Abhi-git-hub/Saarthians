@@ -129,6 +129,7 @@ function prettify(code: string): string {
     ENCRYPTED_PDF: "Password-protected PDFs cannot be processed. Remove the password and retry.",
     EXTRACTION_FAILED: "The PDF text could not be read.",
     NO_READABLE_TEXT: "No readable text was found — scanned or image-only PDFs are not supported yet.",
+    OCR_FAILED: "Text conversion failed for this scanned file. Retry in a minute, or upload a text-based PDF.",
     EMBEDDING_FAILED: "The search index could not be built right now. Retry in a minute.",
     STORAGE_UPLOAD_FAILED: "The file could not be stored. Retry.",
   };

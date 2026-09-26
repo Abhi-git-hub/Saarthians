@@ -30,7 +30,11 @@ payloads far below the 15 MB product limit):
    ORIGINAL bytes first. The optimized copy is re-extracted and kept only
    if it preserves ≥90% of the characters — stored bytes and indexed text
    always come from the same source. Failures report per-page diagnostics
-   (pages, chars per extractor, streams with text ops).
+   (pages, chars per extractor, image-only page count, streams with text ops).
+5. **OCR stage** for scanned documents: pages with zero text operators route
+   to Gemini vision transcription (page-split, verbatim, page-validated).
+   OCR text is permanently flagged (`extraction_status: 'ocr'`). Without a
+   server Gemini key, scans fail with a clear message instead.
 5. **Chunk** along paragraph/sentence boundaries (~1200 chars, 150 overlap),
    each chunk pinned to its starting page.
 6. **Embed** with `gemini-embedding-001`, `outputDimensionality: 768`,
@@ -103,7 +107,8 @@ best-effort via stream recompression — documented honestly in the UI numbers.
 
 - PDF processing runs synchronously in the upload request (no job queue);
   15 MB cap keeps this inside Workers limits.
-- No OCR: scanned PDFs report `NO_READABLE_TEXT` instead of fake-ready.
+- Scanned PDFs are transcribed through vision OCR and flagged `ocr`; only
+  truly unreadable files report `NO_READABLE_TEXT` with diagnostics.
 - Distributed answer rate-limiting is client-throttle + server deadline;
   a dedicated token bucket is future work.
 - `ATTEMPT_TIME_EXPIRED` in `save_test_answer` is currently unreachable

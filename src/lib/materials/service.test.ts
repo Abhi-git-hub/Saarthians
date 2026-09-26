@@ -1,12 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 import { processMaterialUpload, retryMaterialProcessing } from "./service";
 import { extractPdfTextRobust, optimizePdf, validatePdfUpload } from "./pdf";
+import { isOcrConfigured, ocrPdfPages } from "@/lib/ai/ocr";
 
 vi.mock("./pdf", () => ({
   validatePdfUpload: vi.fn(),
   optimizePdf: vi.fn(),
   extractPdfTextRobust: vi.fn(),
   chunkExtractedPages: vi.fn(),
+}));
+
+vi.mock("@/lib/ai/ocr", () => ({
+  isOcrConfigured: vi.fn().mockReturnValue(false),
+  ocrPdfPages: vi.fn(),
 }));
 
 import { chunkExtractedPages } from "./pdf";
@@ -172,6 +178,48 @@ describe("processMaterialUpload", () => {
     const ids = (chunkInsert?.rows as { id: string }[]).map((r) => r.id);
     expect(ids).toHaveLength(2);
     expect(new Set(ids).size).toBe(2);
+  });
+
+  it("routes scanned documents through OCR and flags the origin", async () => {
+    const { supabase, updates, inserts } = mockDb();
+    vi.mocked(validatePdfUpload).mockResolvedValue({ bytes: BYTES, filename: "scan.pdf", pageCount: 2 });
+    vi.mocked(optimizePdf).mockResolvedValue({ bytes: BYTES, status: "stored_original", originalSize: 10, storedSize: 10, compressionRatio: 0 });
+    vi.mocked(extractPdfTextRobust).mockRejectedValue(new Error("NO_READABLE_TEXT: pages=2, pdfjs_chars=0"));
+    vi.mocked(isOcrConfigured).mockReturnValue(true);
+    vi.mocked(ocrPdfPages).mockResolvedValue([
+      { pageNumber: 1, text: "transcribed page one content here yes" },
+      { pageNumber: 2, text: "transcribed page two content here yes" },
+    ]);
+    vi.mocked(chunkExtractedPages).mockReturnValue([
+      { pageNumber: 1, chunkIndex: 0, text: "transcribed page one content here yes" },
+    ]);
+    const result = await processMaterialUpload(supabase as never, {
+      materialId: "m7",
+      teacherId: "t1",
+      bytes: BYTES,
+      filename: "scan.pdf",
+    });
+    expect(result).toEqual({ materialId: "m7" });
+    expect(vi.mocked(ocrPdfPages)).toHaveBeenCalledWith(BYTES);
+    expect(updates.some((u) => u.patch.processing_status === "needs_ocr")).toBe(true);
+    expect(inserts.some((i) => i.table === "study_material_chunks")).toBe(true);
+    const final = updates[updates.length - 1];
+    expect(final.patch).toMatchObject({ processing_status: "ready", embedding_status: "skipped" });
+    const withOcr = updates.find((u) => u.patch.extraction_status === "ocr");
+    expect(withOcr).toBeDefined();
+    vi.mocked(isOcrConfigured).mockReturnValue(false);
+  });
+
+  it("fails clearly when scans cannot be converted and no key exists", async () => {
+    const { supabase, updates } = mockDb();
+    vi.mocked(validatePdfUpload).mockResolvedValue({ bytes: BYTES, filename: "scan.pdf", pageCount: 1 });
+    vi.mocked(extractPdfTextRobust).mockRejectedValue(new Error("NO_READABLE_TEXT: pages=1"));
+    vi.mocked(isOcrConfigured).mockReturnValue(false);
+    await expect(
+      processMaterialUpload(supabase as never, { materialId: "m8", teacherId: "t1", bytes: BYTES, filename: "scan.pdf" }),
+    ).rejects.toThrow("GEMINI_API_KEY");
+    expect(updates[updates.length - 1].patch.processing_status).toBe("failed");
+    expect(vi.mocked(ocrPdfPages)).not.toHaveBeenCalled();
   });
 });
 

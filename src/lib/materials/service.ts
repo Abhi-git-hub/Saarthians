@@ -1,6 +1,8 @@
 ﻿import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { isOcrConfigured, ocrPdfPages } from "@/lib/ai/ocr";
 import { chunkExtractedPages, extractPdfTextRobust, optimizePdf, validatePdfUpload } from "./pdf";
+import type { ExtractedPage } from "./pdf";
 
 type ServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -56,27 +58,54 @@ export async function processMaterialUpload(
 
   // Extract from the ORIGINAL bytes first: the optimizer rewrite can disturb
   // exotic files, so the canonical text always comes from a verified source.
-  let originalText;
+  // Scanned (image-only) documents route to vision OCR instead of failing,
+  // and the OCR origin stays flagged on the row forever.
+  let originalText: { pages: ExtractedPage[]; source: string; diagnostics: string };
+  let ocrUsed = false;
   try {
     originalText = await extractPdfTextRobust(validated.bytes);
   } catch (error) {
-    await markMaterial(supabase, materialId, { extraction_status: "no_text" });
-    return failMaterial(
-      supabase,
-      materialId,
-      error instanceof Error ? error.message : "NO_READABLE_TEXT",
-    );
+    const reason = error instanceof Error ? error.message : "NO_READABLE_TEXT";
+    if (!reason.startsWith("NO_READABLE_TEXT") || !isOcrConfigured()) {
+      await markMaterial(supabase, materialId, { extraction_status: "no_text" });
+      return failMaterial(
+        supabase,
+        materialId,
+        isOcrConfigured()
+          ? reason
+          : `${reason} Scanned documents need text conversion (server setting GEMINI_API_KEY); otherwise upload a text-based PDF.`,
+      );
+    }
+    await markMaterial(supabase, materialId, { processing_status: "needs_ocr", extraction_status: "pending" });
+    try {
+      const ocrPages = await ocrPdfPages(validated.bytes);
+      originalText = {
+        pages: ocrPages.map((p) => ({ pageNumber: p.pageNumber, text: p.text })),
+        source: "ocr",
+        diagnostics: `ocr ok: ${ocrPages.length} pages transcribed from images`,
+      };
+      ocrUsed = true;
+    } catch (ocrError) {
+      await markMaterial(supabase, materialId, { extraction_status: "no_text" });
+      return failMaterial(
+        supabase,
+        materialId,
+        ocrError instanceof Error ? `OCR_FAILED: ${ocrError.message} (${reason})` : `OCR_FAILED (${reason})`,
+      );
+    }
   }
 
   const optimized = await optimizePdf(validated.bytes);
 
   // Verify the rewrite preserved the text: re-extract from the optimized
   // bytes and keep whichever file the extractor reads better. The stored
-  // bytes and the indexed text always come from the same source.
+  // bytes and the indexed text always come from the same source. Skipped
+  // for OCR text, which was read from the original's images (visually
+  // identical in either file).
   let storedBytes = optimized.bytes;
   let storedText = originalText;
   let optimizationNote = optimized.status;
-  if (optimized.status === "compressed") {
+  if (optimized.status === "compressed" && !ocrUsed) {
     try {
       const recheck = await extractPdfTextRobust(optimized.bytes);
       const originalChars = originalText.pages.reduce((sum, page) => sum + page.text.length, 0);
@@ -115,7 +144,7 @@ export async function processMaterialUpload(
   });
 
   await markMaterial(supabase, materialId, {
-    extraction_status: "complete",
+    extraction_status: ocrUsed ? "ocr" : "complete",
     processing_error: null,
   });
 
