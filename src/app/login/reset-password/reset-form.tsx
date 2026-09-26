@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { WHATSAPP_DISPLAY, whatsAppLink } from "@/lib/site";
 import { updateRecoveryPassword } from "../actions";
 
 type Mode = "request" | "update" | "invalid";
@@ -14,6 +15,7 @@ export function PasswordResetForm({ initialMode }: { initialMode: Mode }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
+  const [contactLink, setContactLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -21,12 +23,23 @@ export function PasswordResetForm({ initialMode }: { initialMode: Mode }) {
     event.preventDefault();
     setPending(true);
     setMessage(null);
+    setContactLink(null);
     setError(null);
 
     const supabase = createClient();
+    const address = email.trim().toLowerCase();
+    // Username accounts have no readable mailbox: their Auth address is a
+    // managed @accounts alias. Sending a reset link there is a dead end, so
+    // say so plainly instead of pretending an email is on its way.
+    if (!address.includes("@")) {
+      setError("Usernames can't receive reset emails. Ask your administrator to set a new password for you.");
+      setContactLink(whatsAppLink("Hi Saarthi Classes, I need my workspace password reset."));
+      setPending(false);
+      return;
+    }
     // The callback exchanges the emailed code for a session server-side
     // (reliable cookie handling) and returns to this page with a session.
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(address, {
       redirectTo: `${window.location.origin}/auth/callback?next=/login/reset-password`,
     });
 
@@ -83,11 +96,12 @@ export function PasswordResetForm({ initialMode }: { initialMode: Mode }) {
   return (
     <form onSubmit={requestReset} className="auth-form">
       <label className="field-label">
-        Account email
-        <input required type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+        Account email or username
+        <input required type="text" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com or your username" />
       </label>
       {error && <p role="alert" className="form-error">{error}</p>}
       {message && <p role="status" className="auth-hint">{message}</p>}
+      {contactLink && <p className="auth-hint"><a href={contactLink} target="_blank" rel="noreferrer">WhatsApp Saarthi Classes ({WHATSAPP_DISPLAY}) →</a></p>}
       <button disabled={pending} type="submit" className="primary-button">{pending ? "Sending…" : "Send reset link →"}</button>
     </form>
   );

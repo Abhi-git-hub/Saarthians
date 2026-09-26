@@ -7,6 +7,7 @@ import {
   adminErrorMessage,
   provisionUserSchema,
   relationshipSchema,
+  resetPasswordSchema,
   setStatusSchema,
   updateProfileSchema,
 } from "@/lib/admin-validation";
@@ -135,6 +136,50 @@ export async function updateUserProfile(formData: FormData): Promise<ActionResul
   }
 
   revalidatePath("/admin/users");
+  return { ok: true };
+}
+
+export async function adminResetPassword(formData: FormData): Promise<ActionResult> {
+  await requireRole(["admin"]);
+  const values = formValues(formData);
+  const parsed = resetPasswordSchema.safeParse({
+    userId: values.userId,
+    username: values.username,
+    newPassword: values.newPassword,
+  });
+  if (!parsed.success) {
+    const flat = parsed.error.flatten().fieldErrors;
+    if (flat.newPassword?.[0]) return { error: flat.newPassword[0] };
+    return { error: "Enter a valid account and a password between 10 and 128 characters." };
+  }
+
+  try {
+    const supabase = await createClient();
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      return { error: "Your session has expired. Please sign in again." };
+    }
+    const { data, error } = await supabase.functions.invoke("provision-user", {
+      body: {
+        action: "reset_password",
+        userId: parsed.data.userId,
+        username: parsed.data.username,
+        newPassword: parsed.data.newPassword,
+      },
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (error) throw error;
+    if (!data?.ok) {
+      const safe = asSafeProvisionMessage(data?.error);
+      throw new Error(safe ?? "PASSWORD_RESET_FAILED");
+    }
+  } catch (error) {
+    return { error: adminErrorMessage(error) };
+  }
+
+  revalidatePath("/admin/users");
+  revalidatePath("/admin");
   return { ok: true };
 }
 

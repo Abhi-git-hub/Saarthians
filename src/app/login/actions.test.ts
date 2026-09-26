@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { RECOVERY_COOKIE_NAME } from "@/lib/recovery";
 import { mapUpdatePasswordError } from "./recovery-errors";
-import { updateRecoveryPassword } from "./actions";
+import { signInWithIdentifier, updateRecoveryPassword } from "./actions";
 
 const USER_A = "11111111-1111-4111-8111-111111111111";
 const USER_B = "22222222-2222-4222-8222-222222222222";
@@ -147,6 +147,75 @@ describe("updateRecoveryPassword recovery gate", () => {
     expect(await updateRecoveryPassword(GOOD)).toEqual({
       error: expect.stringMatching(/invalid or has expired/),
     });
+  });
+});
+
+describe("signInWithIdentifier username fallback", () => {
+  const STUDENT_ID = "33333333-3333-4333-8333-333333333333";
+
+  function mockSignInFlow({
+    firstError,
+    resolvedEmail,
+    retryError,
+  }: {
+    firstError: { message: string } | null;
+    resolvedEmail?: string | null;
+    retryError?: { message: string } | null;
+  }) {
+    const signInWithPassword = vi
+      .fn()
+      .mockResolvedValueOnce({ error: firstError })
+      .mockResolvedValue({ error: retryError ?? null });
+    const rpc = vi.fn().mockResolvedValue({ data: resolvedEmail ?? null });
+    const maybeSingle = vi.fn().mockResolvedValue({ data: { status: "active", role: "student" } });
+    const eq = vi.fn().mockReturnValue({ maybeSingle });
+    const select = vi.fn().mockReturnValue({ eq });
+    vi.mocked(createClient).mockResolvedValue({
+      auth: {
+        signInWithPassword,
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: STUDENT_ID } } }),
+        signOut: vi.fn().mockResolvedValue({}),
+      },
+      from: vi.fn().mockReturnValue({ select }),
+      rpc,
+    } as never);
+    return { signInWithPassword, rpc };
+  }
+
+  it("retries with the resolved login email when a username misses", async () => {
+    const { signInWithPassword, rpc } = mockSignInFlow({
+      firstError: { message: "Invalid login credentials" },
+      resolvedEmail: "admin@example.com",
+    });
+    const result = await signInWithIdentifier({ identifier: "someadmin", password: "correct-password-1" });
+    expect(result).toEqual({ ok: true, redirectTo: "/app" });
+    expect(rpc).toHaveBeenCalledWith("login_email_for_username", { p_username: "someadmin" });
+    expect(signInWithPassword).toHaveBeenCalledTimes(2);
+    expect(signInWithPassword.mock.calls[1][0]).toEqual({
+      email: "admin@example.com",
+      password: "correct-password-1",
+    });
+  });
+
+  it("never retries for email identifiers", async () => {
+    const { signInWithPassword, rpc } = mockSignInFlow({
+      firstError: { message: "Invalid login credentials" },
+    });
+    const result = await signInWithIdentifier({ identifier: "nobody@example.com", password: "correct-password-1" });
+    expect(result).toEqual({ error: expect.stringMatching(/couldn't sign you in/) });
+    expect(rpc).not.toHaveBeenCalled();
+    expect(signInWithPassword).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays generic when the retry also fails", async () => {
+    const { signInWithPassword } = mockSignInFlow({
+      firstError: { message: "Invalid login credentials" },
+      resolvedEmail: "admin@example.com",
+      retryError: { message: "Invalid login credentials" },
+    });
+    const result = await signInWithIdentifier({ identifier: "someadmin", password: "wrong-password-1" });
+    expect(result).toEqual({ error: expect.stringMatching(/couldn't sign you in/) });
+    expect(signInWithPassword).toHaveBeenCalledTimes(2);
   });
 });
 

@@ -42,7 +42,7 @@ export function LoginForm() {
         Password
         <input required minLength={8} maxLength={128} type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
       </label>
-      <p className="auth-hint">Students and teachers use their provisioned username. Administrators use their existing account email.</p>
+      <p className="auth-hint">Usernames and emails both work — use whichever you were given.</p>
       {resetDone && <p role="status" className="form-success">Password updated. Sign in with your new password.</p>}
       {error && <p role="alert" className="form-error">{error}</p>}
       <button disabled={pending} type="submit" className="primary-button">{pending ? "Signing in…" : "Enter workspace →"}</button>

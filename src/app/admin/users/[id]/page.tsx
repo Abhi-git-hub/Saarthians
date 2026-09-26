@@ -4,7 +4,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { getAdminProfile } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, StatusBadge, cardStyle } from "@/components/admin/ui";
-import { ProfileEditForm, StatusForm } from "../user-detail-forms";
+import { PasswordResetForm, ProfileEditForm, StatusForm } from "../user-detail-forms";
 
 export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -48,6 +48,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           role={profile.role}
         />
         <StatusForm userId={profile.id} status={profile.status} isSelf={viewer?.id === profile.id} />
+        {profile.username && <PasswordResetForm userId={profile.id} username={profile.username} />}
       </section>
 
       <section style={{ ...cardStyle, marginTop: 14 }}>

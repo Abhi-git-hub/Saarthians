@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { setUserStatus, updateUserProfile } from "./actions";
+import { adminResetPassword, setUserStatus, updateUserProfile } from "./actions";
 import { buttonStyle, cardStyle, fieldStyle } from "@/components/admin/ui";
 
 function useAction<T extends FormData>(fn: (form: T) => Promise<{ ok: true } | { error: string }>) {
@@ -126,3 +126,50 @@ export function StatusForm({ userId, status, isSelf }: { userId: string; status:
 const labelStyle = { display: "grid", gap: 8, fontSize: 14, fontWeight: 700 };
 const errorStyle = { color: "#a33", margin: 0 };
 const okStyle = { color: "var(--accent)", margin: 0, fontWeight: 650 };
+
+// One-click password rescue for username accounts: email reset links go to
+// managed addresses nobody can open, so the admin sets a fresh password
+// here and shares it with the student or teacher directly.
+export function PasswordResetForm({ userId, username }: { userId: string; username: string | null }) {
+  const { pending, error, done, run } = useAction(adminResetPassword);
+  const [confirm, setConfirm] = useState("");
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  function submit(formData: FormData) {
+    setLocalError(null);
+    const next = String(formData.get("newPassword") ?? "");
+    if (next !== confirm) {
+      setLocalError("The two passwords do not match.");
+      return;
+    }
+    const confirmed = window.confirm(
+      `Set a new password for @${username ?? "this account"}? They will need to sign in again with it.`,
+    );
+    if (!confirmed) return;
+    run(formData);
+  }
+
+  if (!username) return null;
+
+  return (
+    <form action={submit} style={{ ...cardStyle, display: "grid", gap: 12 }}>
+      <input type="hidden" name="userId" value={userId} />
+      <input type="hidden" name="username" value={username} />
+      <span className="eyebrow">Password</span>
+      <label style={labelStyle}>
+        New password
+        <input name="newPassword" type="password" required minLength={10} maxLength={128} autoComplete="new-password" placeholder="Minimum 10 characters" style={fieldStyle} />
+      </label>
+      <label style={labelStyle}>
+        Confirm new password
+        <input type="password" required minLength={10} maxLength={128} autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} style={fieldStyle} />
+      </label>
+      {(localError || error) && <p role="alert" style={errorStyle}>{localError ?? error}</p>}
+      {done && <p role="status" style={okStyle}>Password set for @{username}. Share it with them directly.</p>}
+      <div><button disabled={pending} style={buttonStyle}>{pending ? "Setting…" : "Set new password"}</button></div>
+      <p style={{ color: "var(--muted)", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
+        For username accounts, email reset links cannot arrive — this is the supported rescue path.
+      </p>
+    </form>
+  );
+}

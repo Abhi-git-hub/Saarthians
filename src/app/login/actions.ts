@@ -16,15 +16,33 @@ export async function signInWithIdentifier(input: { identifier: string; password
   const identifier = parsedIdentifier.data.trim().toLowerCase();
   const email = identifier.includes("@") ? identifier : `${identifier}@${managedAccountDomain}`;
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password: input.password });
+  let signInError = (await supabase.auth.signInWithPassword({ email, password: input.password })).error;
+
+  // Username/email confusion is the top lockout cause: an admin typing their
+  // username (instead of their account email) hits a nonexistent managed
+  // address and sees "wrong password". If the direct attempt fails and the
+  // identifier is a username, resolve the account's real login email and
+  // retry exactly once with the same password. Errors stay generic so the
+  // retry reveals nothing new.
+  if (signInError && /invalid login credentials/i.test(signInError.message) && !identifier.includes("@")) {
+    try {
+      const { data: realEmail } = await supabase.rpc("login_email_for_username", { p_username: identifier });
+      if (typeof realEmail === "string" && realEmail && realEmail.toLowerCase() !== email) {
+        const retry = await supabase.auth.signInWithPassword({ email: realEmail, password: input.password });
+        if (!retry.error) signInError = null;
+      }
+    } catch {
+      // Fall through to the generic error below — never leak lookup state.
+    }
+  }
 
   // Only reached after a correct password, so distinguishing the cause here
   // does not aid account enumeration — but it tells the user what to fix.
-  if (error) {
-    if (/email not confirmed/i.test(error.message)) {
+  if (signInError) {
+    if (/email not confirmed/i.test(signInError.message)) {
       return { error: "This account's email is not confirmed yet. Ask the administrator to confirm it, then try again." };
     }
-    if (/invalid login credentials/i.test(error.message)) {
+    if (/invalid login credentials/i.test(signInError.message)) {
       return { error: "We couldn't sign you in. Check your username and password and try again." };
     }
     return { error: "We couldn't sign you in. Check your credentials and try again." };

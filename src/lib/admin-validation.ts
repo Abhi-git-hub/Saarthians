@@ -79,6 +79,15 @@ export const setStatusSchema = z.object({
   status: adminStatusSchema,
 });
 
+// Admin-issued password reset for managed accounts (username login). The new
+// password travels to the provision-user Edge Function, which sets it with
+// its service-role client after verifying the caller is an active admin.
+export const resetPasswordSchema = z.object({
+  userId: uuidSchema,
+  username: usernameSchema,
+  newPassword: provisionPasswordSchema,
+});
+
 export const relationshipSchema = z.object({
   teacherId: uuidSchema,
   studentId: uuidSchema,
