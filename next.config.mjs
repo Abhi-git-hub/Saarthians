@@ -2,9 +2,9 @@
 const csp = [
   "default-src 'self'",
   // Next.js App Router hydration + Tailwind inject inline scripts/styles.
-  // No unsafe-eval anywhere in first-party code (verified); no external
-  // scripts at all. Groq is server-side only and needs no browser entry.
-  "script-src 'self' 'unsafe-inline'",
+  // Cloudflare Web Analytics beacon (enabled in the Cloudflare dashboard).
+  // No unsafe-eval anywhere in first-party code (verified).
+  "script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: https:",
   "font-src 'self'",
@@ -20,6 +20,8 @@ const csp = [
 ].join("; ");
 
 const nextConfig = {
+  // Never advertise the framework in response headers.
+  poweredByHeader: false,
   // Pin Turbopack's workspace root to this project directory. Without this,
   // Turbopack walks up the filesystem for a lockfile and can misidentify the
   // root (e.g. a stray package-lock.json in a parent/home directory), which

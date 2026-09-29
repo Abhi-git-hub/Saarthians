@@ -62,7 +62,7 @@ export function PublicHeader() {
       <a href="#main-content" className="skip-link">Skip to content</a>
       <div className="public-header-inner container">
         <Link href="/" className="public-brand" aria-label="Saarthians home">
-          <SafeImage src={BRAND_IMAGES.logo} alt="" className="public-brand-logo" eager />
+          <SafeImage src={BRAND_IMAGES.logo} alt="Saarthians logo" className="public-brand-logo" eager />
           saarthians<span>.online</span>
         </Link>
         <nav className="public-nav" aria-label="Main navigation">

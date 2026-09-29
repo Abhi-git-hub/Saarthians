@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const protectedPrefixes = ["/app", "/teacher", "/admin"];
+const CANONICAL_HOST = "saarthians.online";
 
 function getSupabaseConfig() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,23 +11,39 @@ function getSupabaseConfig() {
 }
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
-  const { url, key } = getSupabaseConfig();
+  // Canonical host/protocol first (SEO): www collapses to the apex and
+  // plain HTTP upgrades to HTTPS, both via permanent redirects that preserve
+  // path and query. Local development hosts are never redirected.
+  const host = (request.headers.get("host") ?? "").toLowerCase().split(":")[0];
+  const isLocal =
+    host.startsWith("localhost") || host.startsWith("127.") || host.startsWith("192.168.") || host.endsWith(".local");
+  if (!isLocal && (host === `www.${CANONICAL_HOST}` || (host === CANONICAL_HOST && request.nextUrl.protocol === "http:"))) {
+    const canonical = request.nextUrl.clone();
+    canonical.protocol = "https:";
+    canonical.host = CANONICAL_HOST;
+    return NextResponse.redirect(canonical, 301);
+  }
 
   const isProtected = protectedPrefixes.some((prefix) =>
     request.nextUrl.pathname === prefix || request.nextUrl.pathname.startsWith(`${prefix}/`),
   );
 
+  // Public pages need no session work at all: skip Supabase entirely so the
+  // canonical redirect above is the only thing ever standing in front of SEO.
+  if (!isProtected) {
+    return NextResponse.next({ request });
+  }
+
+  let response = NextResponse.next({ request });
+  const { url, key } = getSupabaseConfig();
+
   // Fail closed: without backend config the session cannot be verified, so
   // protected areas redirect to login instead of rendering unverified.
   if (!url || !key) {
-    if (isProtected) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = "/login";
-      loginUrl.searchParams.set("next", request.nextUrl.pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    return response;
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("next", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   const supabase = createServerClient(url, key, {
@@ -66,7 +83,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (isProtected && !userId) {
+  if (!userId) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", request.nextUrl.pathname);
@@ -77,5 +94,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/teacher/:path*", "/admin/:path*"],
+  matcher: ["/:path*"],
 };

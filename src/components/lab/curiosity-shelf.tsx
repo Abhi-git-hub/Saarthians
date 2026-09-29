@@ -35,7 +35,7 @@ export function CuriosityShelf() {
                 <i>{q.category}</i>
                 <em>{q.gradeRange}</em>
               </span>
-              <strong>{q.question}</strong>
+              <span className="curio-q">{q.question}</span>
             </summary>
             <div className="curio-answer">
               <p>{q.answer}</p>

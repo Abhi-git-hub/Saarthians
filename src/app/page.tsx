@@ -83,7 +83,7 @@ export default function Home() {
           <div className="hero-visual hero-arch">
             <SafeImage src={BRAND_IMAGES.studentsHero} alt="Saarthians students in the Shahdara classroom" eager />
             <div className="hero-seal"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthi Classes seal" eager /><span>Guiding towards success</span></div>
-            <div className="hero-float-card float"><strong>Doubts cleared daily.</strong><span>Ask anything · No hesitation</span></div>
+            <div className="hero-float-card float"><strong>Ask anything.</strong><span>No doubt too small · No waiting</span></div>
           </div>
         </div>
       </section>
@@ -276,7 +276,7 @@ export default function Home() {
           <div className="location-card lift">
             <div>
               <span className="eyebrow">Visit Saarthi Classes</span>
-              <h2>Come, sit in a class. <em>Then decide.</em></h2>
+              <h2>See the classroom yourself. <em>Then decide.</em></h2>
               <p>{ADDRESS_LINES.join(", ")}</p>
               <div className="hero-actions">
                 <a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer" className="public-button public-button-secondary">Directions →</a>
@@ -300,7 +300,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="public-footer"><div className="container footer-grid"><div><Link href="/" className="public-brand">saarthians<span>.online</span></Link><p>Learn with direction.</p><p>{ADDRESS_LINES[0]},<br />{ADDRESS_LINES[1]}</p><p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><br /><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY}</a></p></div><div><strong>Explore</strong><Link href="/about">About</Link><Link href="/programs">Programs</Link><Link href="/resources">Resources</Link></div><div><strong>Connect</strong><Link href="/contact">Contact</Link><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">WhatsApp</a><a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer">Location</a></div><div><strong>Member</strong><Link href="/login">Sign in</Link></div><div><strong>Trust</strong><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/security">Security</Link></div></div><div className="container footer-bottom"><span>© 2026 Saarthians · Saarthi Classes</span><span>Built for focused learning.</span></div></footer>
+      <footer className="public-footer"><div className="container footer-grid"><div><Link href="/" className="public-brand">saarthians<span>.online</span></Link><p>Learn with direction.</p><p>{ADDRESS_LINES[0]},<br />{ADDRESS_LINES[1]}</p><p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><br /><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY}</a></p></div><div><strong>Explore</strong><Link href="/about">About</Link><Link href="/programs">Programs</Link><Link href="/resources">Resources</Link></div><div><strong>Connect</strong><Link href="/contact">Contact</Link><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">WhatsApp</a><a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer">Location</a></div><div><strong>Member</strong><Link href="/login">Sign in</Link></div><div><strong>Trust</strong><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/security">Security</Link></div></div><div className="container footer-bottom"><span>© 2026 Saarthians · Saarthi Classes</span><span>Made by Pragya Labs · Built for focused learning.</span></div></footer>
       <WhatsAppFab />
     </main>
   );
