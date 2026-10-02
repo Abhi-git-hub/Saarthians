@@ -9,7 +9,7 @@ import type { Role } from "@/lib/security";
 const navigation: Record<Role, Array<[string, string]>> = {
   student: [["Notes", "/app/notes"], ["Material", "/app/materials"], ["Profile", "/app/profile"]],
   teacher: [["Notes", "/teacher/notes"], ["Material", "/teacher/materials"], ["Marks", "/teacher/marks"]],
-  admin: [["Overview", "/admin"], ["Users", "/admin/users"], ["Relationships", "/admin/relationships"], ["Tests", "/admin/tests"], ["Audit", "/admin/audit"], ["Security", "/admin/security"], ["System", "/admin/system"], ["Settings", "/admin/settings"]],
+  admin: [["Overview", "/admin"], ["Users", "/admin/users"], ["Inbox", "/admin/inbox"], ["Relationships", "/admin/relationships"], ["Tests", "/admin/tests"], ["Audit", "/admin/audit"], ["Security", "/admin/security"], ["System", "/admin/system"], ["Settings", "/admin/settings"]],
 };
 
 const homeFor: Record<Role, string> = { student: "/app/notes", teacher: "/teacher/notes", admin: "/admin" };

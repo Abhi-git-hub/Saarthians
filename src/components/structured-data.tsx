@@ -1,6 +1,8 @@
 // Structured data from published business facts only (see lib/site.ts).
 // No ratings, review counts, prices, awards, or invented claims — every
 // field mirrors visible page content.
+import { CONTACT_EMAIL } from "@/lib/site";
+
 export function OrganizationJsonLd() {
   const data = {
     "@context": "https://schema.org",
@@ -12,7 +14,7 @@ export function OrganizationJsonLd() {
     image: "https://saarthians.online/og-cover.png",
     description:
       "Saarthians is the online home of Saarthi Classes in Shahdara, Delhi, offering Classes 9–12 coaching across school subjects, plus JEE and NEET preparation and a secure student workspace.",
-    email: "hello@saarthians.online",
+    email: CONTACT_EMAIL,
     telephone: "+91-93112-30129",
     address: {
       "@type": "PostalAddress",

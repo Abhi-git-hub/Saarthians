@@ -12,6 +12,7 @@ const PUBLIC_PATHS = [
   "/contact",
   "/privacy",
   "/terms",
+  "/cookies",
   "/coaching-classes-shahdara",
   "/classes/class-9",
   "/classes/class-10",
@@ -24,7 +25,7 @@ const PUBLIC_PATHS = [
 export default function sitemap(): MetadataRoute.Sitemap {
   return PUBLIC_PATHS.map((path) => ({
     url: `${BASE}${path}`,
-    lastModified: new Date("2026-09-23T00:00:00Z"),
+    lastModified: new Date("2026-09-28T00:00:00Z"),
     changeFrequency: path === "/" ? "weekly" : "monthly",
     priority: path === "/" ? 1 : 0.7,
   }));

@@ -12,6 +12,7 @@ import {
   WHATSAPP_NUMBER_FALLBACK,
   whatsAppLink,
 } from "@/lib/site";
+import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact Saarthians | Saarthi Classes Shahdara",
@@ -52,6 +53,19 @@ export default function ContactPage() {
             </div>
           </Reveal>
         </div>
+      </section>
+      <section className="public-section container" style={{ paddingTop: 0 }}>
+        <Reveal>
+          <div className="contact-grid" style={{ marginTop: 8 }}>
+            <ContactForm />
+            <div className="contact-panel">
+              <h2>What happens next</h2>
+              <p>Your message lands directly with the Saarthians team — not a ticketing queue.</p>
+              <p>We reply within a day. Anything urgent? WhatsApp us at {WHATSAPP_DISPLAY} and mention you wrote in.</p>
+              <p style={{ color: "var(--muted)", fontSize: 13 }}>Prefer email? <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+            </div>
+          </div>
+        </Reveal>
       </section>
       <section className="public-section container" style={{ paddingTop: 0 }}>
         <Reveal>

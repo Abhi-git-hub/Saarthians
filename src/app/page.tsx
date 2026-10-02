@@ -69,7 +69,7 @@ export default function Home() {
           <div className="public-hero-copy">
             <span className="eyebrow rise">Saarthi Classes · Shahdara, Delhi</span>
             <h1 className="rise-2">Learn it in class. <em>Keep it forever.</em></h1>
-            <p className="rise-3">Classes 9–12, all subjects, plus JEE & NEET — small batches, doubts cleared daily, and a workspace where every note and mark stays visible.</p>
+            <p className="rise-3">For Classes 9–12 students in Shahdara & East Delhi — all subjects, plus JEE & NEET. Small batches, doubts cleared daily, and a workspace where every note and mark stays visible.</p>
             <div className="hero-actions">
               <a href={whatsAppLink("Hi Saarthi Classes, I would like to know more about admission.")} target="_blank" rel="noreferrer" className="public-button public-button-primary">Talk to Saarthi →</a>
               <Link href="/programs" className="public-button public-button-secondary">Explore programs</Link>
@@ -82,7 +82,7 @@ export default function Home() {
           </div>
           <div className="hero-visual hero-arch">
             <SafeImage src={BRAND_IMAGES.studentsHero} alt="Saarthians students in the Shahdara classroom" eager />
-            <div className="hero-seal"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthi Classes seal" eager /><span>Guiding towards success</span></div>
+            <div className="hero-seal"><SafeImage src={BRAND_IMAGES.logo} alt="Saarthians logo" eager /><span>Guiding towards success</span></div>
             <div className="hero-float-card float"><strong>Ask anything.</strong><span>No doubt too small · No waiting</span></div>
           </div>
         </div>
@@ -96,24 +96,10 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="public-section lab-section" id="lab">
-        <div className="container">
-          <Reveal>
-            <div className="section-intro">
-              <div><span className="chapter-mark"><i>02</i>Think</span><span className="eyebrow">The Learning Lab</span><h2>Questions worth <em>pausing for.</em></h2></div>
-              <p>Real ideas, honestly answered. Open one, think first, then reveal — this is how a Saarthians classroom feels.</p>
-            </div>
-          </Reveal>
-          <Reveal delay={100}>
-            <CuriosityShelf />
-          </Reveal>
-        </div>
-      </section>
-
       <section className="public-section container" id="why">
         <Reveal>
           <div className="section-intro">
-            <div><span className="chapter-mark"><i>03</i>Learn</span><span className="eyebrow">Why Saarthians</span><h2>Teaching that treats every child <em>as capable.</em></h2></div>
+              <div><span className="chapter-mark"><i>02</i>Learn</span><span className="eyebrow">Why Saarthians</span><h2>Teaching that treats every child <em>as capable.</em></h2></div>
             <p>Parents keep describing the same three things. So we built the whole experience around them.</p>
           </div>
         </Reveal>
@@ -163,28 +149,11 @@ export default function Home() {
         </dl>
       </section>
 
-      <section className="public-section container" id="daily">
-        <Reveal>
-          <div className="section-intro">
-            <div><span className="chapter-mark"><i>04</i>Practice</span><span className="eyebrow">One question, every day</span><h2>Today&apos;s <em>challenge.</em></h2></div>
-            <p>The same question for every visitor today. Tomorrow, a new one.</p>
-          </div>
-        </Reveal>
-        <Reveal delay={100}>
-          <DailyChallenge />
-        </Reveal>
-        <div style={{ marginTop: 22 }}>
-          <Reveal delay={140}>
-            <LearningStyle />
-          </Reveal>
-        </div>
-      </section>
-
       <section className="public-section reviews-section" id="reviews">
         <div className="container">
           <Reveal>
             <div className="section-intro">
-              <div><span className="chapter-mark"><i>05</i>Trust</span><span className="eyebrow">Wall of love</span><h2>Parents notice.<br /><em>Students feel it.</em></h2></div>
+              <div><span className="chapter-mark"><i>03</i>Trust</span><span className="eyebrow">Wall of love</span><h2>Parents notice.<br /><em>Students feel it.</em></h2></div>
               <p>Unedited excerpts from our Google Maps listing — with a link to read every word in context.</p>
             </div>
           </Reveal>
@@ -246,7 +215,7 @@ export default function Home() {
       <section className="public-section container" id="journey">
         <Reveal>
           <div className="section-intro">
-            <div><span className="chapter-mark"><i>06</i>Choose your path</span><span className="eyebrow">Find your stage</span><h2>Where are you <em>right now?</em></h2></div>
+            <div><span className="chapter-mark"><i>04</i>Choose your path</span><span className="eyebrow">Find your stage</span><h2>Where are you <em>right now?</em></h2></div>
             <p>Pick a stage to see the actual Saarthians tracks for that level — Class 9 through NEET & JEE.</p>
           </div>
         </Reveal>
@@ -267,6 +236,37 @@ export default function Home() {
           </Reveal>
           <Reveal delay={120}>
             <div className="split-story-copy"><p>Saarthi Classes exists for one reason: students in Shahdara and beyond deserve teaching that treats every concept as learnable and every student as capable of far more than they believe. Small batches, honest feedback, and a workspace that keeps learning visible.</p><Link href="/about" className="light-link">Why Saarthians exists →</Link></div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="public-section lab-section" id="lab">
+        <div className="container">
+          <Reveal>
+            <div className="section-intro">
+              <div><span className="chapter-mark"><i>05</i>Think</span><span className="eyebrow">The Learning Lab</span><h2>Questions worth <em>pausing for.</em></h2></div>
+              <p>Real ideas, honestly answered. Open one, think first, then reveal — this is how a Saarthians classroom feels.</p>
+            </div>
+          </Reveal>
+          <Reveal delay={100}>
+            <CuriosityShelf />
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="public-section container" id="daily">
+        <Reveal>
+          <div className="section-intro">
+            <div><span className="chapter-mark"><i>06</i>Practice</span><span className="eyebrow">One question, every day</span><h2>Today&apos;s <em>challenge.</em></h2></div>
+            <p>The same question for every visitor today. Tomorrow, a new one.</p>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <DailyChallenge />
+        </Reveal>
+        <div style={{ marginTop: 22 }}>
+          <Reveal delay={140}>
+            <LearningStyle />
           </Reveal>
         </div>
       </section>
@@ -300,7 +300,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="public-footer"><div className="container footer-grid"><div><Link href="/" className="public-brand">saarthians<span>.online</span></Link><p>Learn with direction.</p><p>{ADDRESS_LINES[0]},<br />{ADDRESS_LINES[1]}</p><p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><br /><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY}</a></p></div><div><strong>Explore</strong><Link href="/about">About</Link><Link href="/programs">Programs</Link><Link href="/resources">Resources</Link></div><div><strong>Connect</strong><Link href="/contact">Contact</Link><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">WhatsApp</a><a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer">Location</a></div><div><strong>Member</strong><Link href="/login">Sign in</Link></div><div><strong>Trust</strong><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/security">Security</Link></div></div><div className="container footer-bottom"><span>© 2026 Saarthians · Saarthi Classes</span><span>Made by Pragya Labs · Built for focused learning.</span></div></footer>
+      <footer className="public-footer"><div className="container footer-grid"><div><Link href="/" className="public-brand">saarthians<span>.online</span></Link><p>Learn with direction.</p><p>{ADDRESS_LINES[0]},<br />{ADDRESS_LINES[1]}</p><p><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a><br /><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">{WHATSAPP_DISPLAY}</a></p></div><div><strong>Explore</strong><Link href="/about">About</Link><Link href="/programs">Programs</Link><Link href="/resources">Resources</Link></div><div><strong>Connect</strong><Link href="/contact">Contact</Link><a href={whatsAppLink("Hi Saarthi Classes!")} target="_blank" rel="noreferrer">WhatsApp</a><a href={MAPS_PLACE_URL} target="_blank" rel="noreferrer">Location</a></div><div><strong>Member</strong><Link href="/login">Sign in</Link></div><div><strong>Trust</strong><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/cookies">Cookies</Link><Link href="/security">Security</Link></div></div><div className="container footer-bottom"><span>© 2026 Saarthians · Saarthi Classes</span><span>Made by Pragya Labs · Built for focused learning.</span></div></footer>
       <WhatsAppFab />
     </main>
   );

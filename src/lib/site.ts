@@ -3,7 +3,7 @@
 
 export const SITE_NAME = "Saarthians";
 export const BRAND_DOMAIN = "saarthians.online";
-export const CONTACT_EMAIL = "hello@saarthians.online";
+export const CONTACT_EMAIL = "officialsaarthiclasses@gmail.com";
 
 export const FOUNDER_NAME = "Abhi Yadav";
 export const FOUNDER_TITLE = "Founder, Saarthi Classes";
@@ -87,8 +87,7 @@ export const COURSES: Course[] = [
 // public/images/. SafeImage hides itself gracefully if a file is missing, so
 // pages never render broken-image icons.
 export const BRAND_IMAGES = {
-  logo: "/images/saarthians-logo.png",
-  legacyLogo: "/images/saarthi-logo.png",
+  logo: "/images/saarthians-mark.png",
   signature: "/images/signature.svg",
   classroom: "/images/classroom.jpg",
   studentsHero: "/images/students01.jpg",
